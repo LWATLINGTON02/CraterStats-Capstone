@@ -3,19 +3,6 @@ import craterstats
 import time
 import os
 
-# from typelock_client import Signup, Login  # Connection to the Client Program
-
-# Initialize the list of lists to store the keypress data
-keypress_data = []
-
-# Log the character entered by the user and the time it was pressed
-def log_key_press(event):
-    # Record the current time (in seconds)
-    current_time = time.time()
-    # Append the key event name (letter) and the time it was pressed
-    keypress_data.append([event.char, current_time])
-
-
 class TkTemplate(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -26,9 +13,9 @@ class TkTemplate(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (GetStartedPage, FormatPage, StatsPage):
-            frame = F(container, self)
-            self.frames[F] = frame
+        for Frames in (GetStartedPage, FormatPage, StatsPage):
+            frame = Frames(container, self)
+            self.frames[Frames] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame(GetStartedPage)
