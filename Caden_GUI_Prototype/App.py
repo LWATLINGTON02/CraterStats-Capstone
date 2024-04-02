@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from Frames import Stats, Format
+from Frames import Stats, Format, Plot
 
 # -- Windows only configuration --
 try:
@@ -87,11 +87,16 @@ class Window(tk.Tk):
 
         tab1 = Stats(tab_parent, self)
         tab2 = Format(tab_parent, self)
+        tab3 = Plot(tab_parent, self)
 
         tab_parent.add(tab1, text='Stats')
         tab_parent.add(tab2, text='Format')
+        tab_parent.add(tab3, text='Plot')
 
         tab_parent.grid(row=0, column=0, sticky="nsew")
+
+        style = ttk.Style(self)
+        style.theme_use("alt")
 
 
 app = Window()
