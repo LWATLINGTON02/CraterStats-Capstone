@@ -69,7 +69,7 @@ class Format(ttk.Frame):
         self.plot_title_entry.grid(row=1, column=0, sticky='w')
         self.plot_title_checkbox.grid(row=1, column=1, sticky='w')
         self.plot_subtitle_entry.grid(row=2, column=0, sticky='w')
-        self.plot_subtitle_checkbox.grid(row=2, column=1, sticky='w')
+        self.plot_subtitle_checkbox.grid(row=2, column=1, columnspan=2, sticky='w')
         self.plot_print_scale_label.grid(row=1, column=3, sticky='e')
         self.plot_print_scale_entry.grid(row=1, column=4, sticky='e')
         self.plot_text_size_label.grid(row=2, column=3, sticky='e')
@@ -166,3 +166,76 @@ class Format(ttk.Frame):
         self.diam_range_entry.grid(row=6, column=1, sticky='w')
         self.binning_label.grid(row=6, column=2, sticky='w')
         self.binning_dropdown.grid(row=6, column=3, sticky='w')
+
+        self.binning_dropdown["values"] = ("Bin1", "Bin2", "Bin3")
+
+        self.color_selection = tk.StringVar()
+        self.symbol_selection = tk.StringVar()
+
+        # Color and Symbol
+        self.plot_line_color_label = ttk.Label(
+            self,
+            text="Colour"
+        )
+        self.plot_color_dropdown = ttk.Combobox(
+            self,
+            textvariable=self.color_selection,
+            width=5
+        )
+        self.plot_line_symbol_label = ttk.Label(
+            self,
+            text="Sybmol"
+        )
+        self.plot_line_symbol_dropdown = ttk.Combobox(
+            self,
+            textvariable=self.symbol_selection,
+            width=10
+        )
+
+        self.plot_color_dropdown['values'] = ('Red', 'Black', 'Green', 'Blue')
+        self.plot_line_symbol_dropdown['values'] = (
+            'Square', 'Diamond', 'Circle')
+
+        self.plot_line_color_label.grid(row=7, column=0, sticky='w')
+        self.plot_color_dropdown.grid(row=7, column=1, sticky='w')
+        self.plot_line_symbol_label.grid(row=7, column=2, sticky='w')
+        self.plot_line_symbol_dropdown.grid(row=7, column=3, sticky='w')
+
+        self.error_bars = tk.BooleanVar(value=0)
+        self.display_age = tk.BooleanVar(value=0)
+        self.align_age_left = tk.BooleanVar(value=0)
+        self.show_isochron = tk.BooleanVar(value=0)
+        self.plot_fit_error = tk.BooleanVar(value=0)
+
+        # Graph Additions
+        self.error_bars_button = ttk.Checkbutton(
+            self,
+            text="Error bars",
+            variable=self.error_bars
+        )
+        self.display_age_button = ttk.Checkbutton(
+            self,
+            text="Display age",
+            variable=self.display_age
+        )
+        self.align_left_button = ttk.Checkbutton(
+            self,
+            text='Align age left',
+            variable=self.align_age_left
+        )
+        self.show_isochron_button = ttk.Checkbutton(
+            self,
+            text='Show isochron',
+            variable=self.show_isochron
+        )
+        self.plot_fit_error_button = ttk.Checkbutton(
+            self,
+            text="Plot fit error",
+            variable=self.plot_fit_error
+        )
+
+        self.error_bars_button.grid(row=8, column=0, sticky='w')
+        self.display_age_button.grid(row=8, column=1, sticky='w')
+        self.align_left_button.grid(row=8, column=2, sticky='w')
+        self.show_isochron_button.grid(row=8, column=3, sticky='w')
+        self.plot_fit_error_button.grid(row=8, column=4, sticky='w')
