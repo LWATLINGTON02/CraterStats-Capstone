@@ -34,33 +34,33 @@ class Stats(ttk.Frame):
         self.grid_columnconfigure(3, weight=1)
         self.grid_columnconfigure(4, weight=1)
 
-        plot_type = tk.StringVar()
+        self.plot_type = tk.StringVar(value='1')
 
         self.controller = controller
         self.cumulativeR = ttk.Radiobutton(
             plot_types,
             text='cumulative',
-            variable=plot_type,
+            variable=self.plot_type,
             value='cum')
         self.differentialR = ttk.Radiobutton(
             plot_types,
             text='differential',
-            variable=plot_type,
+            variable=self.plot_type,
             value='dif')
         self.relativeR = ttk.Radiobutton(
             plot_types,
             text='relative (R)',
-            variable=plot_type,
+            variable=self.plot_type,
             value='rel')
         self.hartmannR = ttk.Radiobutton(
             plot_types,
             text='Hartmann',
-            variable=plot_type,
+            variable=self.plot_type,
             value='har')
         self.chronologyR = ttk.Radiobutton(
             plot_types,
             text='chronology',
-            variable=plot_type,
+            variable=self.plot_type,
             value='chr')
 
         self.cumulativeR.grid(row=1, column=0, sticky='w')
@@ -208,7 +208,7 @@ class Stats(ttk.Frame):
         self.auto_button.grid(row=1, column=4, sticky='sw')
 
         # Style Buttons
-        style_choice = tk.StringVar()
+        self.style_choice = tk.StringVar()
 
         self.style_label = ttk.Label(
             iso_text,
@@ -217,13 +217,13 @@ class Stats(ttk.Frame):
         self.decadel_button = ttk.Radiobutton(
             iso_text,
             text='decadel',
-            variable=style_choice,
+            variable=self.style_choice,
             value='decadel'
         )
         self.root_2_button = ttk.Radiobutton(
             iso_text,
             text='root-2',
-            variable=style_choice,
+            variable=self.style_choice,
             value='root-2'
         )
 

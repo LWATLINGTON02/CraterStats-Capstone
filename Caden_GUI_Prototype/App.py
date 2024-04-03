@@ -89,13 +89,14 @@ class Window(tk.Tk):
         tab2 = Format(tab_parent, self)
         tab3 = Plot(tab_parent, self)
 
-        tab_parent.add(tab1, text='Stats')
-        tab_parent.add(tab2, text='Format')
+        tab_parent.add(tab1, text='Statistics')
+        tab_parent.add(tab2, text='Formatatting')
         tab_parent.add(tab3, text='Plot')
 
         tab_parent.grid(row=0, column=0, sticky="nsew")
 
         style = ttk.Style(self)
+        print(style.theme_names())
         style.theme_use("alt")
 
 
