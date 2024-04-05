@@ -412,6 +412,30 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                      dpg.get_item_pos(plot_image)[1] - 30)
             )
 
+with dpg.theme() as dark_mode:
+
+    with dpg.theme_component(dpg.mvAll):
+        dpg.add_theme_color(dpg.mvThemeCol_WindowBg,
+                            (60, 60, 60), category=dpg.mvThemeCat_Core)
+
+with dpg.theme() as light_mode:
+    with dpg.theme_component(dpg.mvAll):
+        dpg.add_theme_color(dpg.mvThemeCol_WindowBg,
+                            (225, 225, 225), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Text, (0, 0, 0),
+                            category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_MenuBarBg,
+                            (200, 200, 200), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_TabActive,
+                            (180, 180, 180), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Tab,
+                            (150, 150, 150), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Button,
+                            (42, 97, 235), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
+                            (107, 135, 219), category=dpg.mvThemeCat_Core)
+
+dpg.bind_theme(light_mode)
 dpg.show_style_editor()
 dpg.show_viewport()
 dpg.start_dearpygui()
