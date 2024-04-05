@@ -10,7 +10,7 @@ class Plot(ttk.Frame):
         self.controller = controller
 
         # Plot image
-        self.image = Image.open("Frames\moonpic.png")
+        self.image = Image.open("Caden_GUI_Prototype/Frames/moonpic.png")
 
         self.resized_image = self.image.resize((510, 510))
         self.new_image = ImageTk.PhotoImage(self.resized_image)
