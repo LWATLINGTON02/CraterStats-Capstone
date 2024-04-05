@@ -22,16 +22,17 @@ dpg.create_context()
 
 
 width, height, channels, data = dpg.load_image(
-    'Frames\moonpic.png')
+    'Caden_GUI_Prototype/Frames/moonpic.png')
 
 dpg.create_viewport(title='CraterStats', width=1048,
                     height=768, resizable=False)
 dpg.setup_dearpygui()
+dpg.show_style_editor()
 
 with dpg.texture_registry():
     texture_id = dpg.add_static_texture(width, height, data)
 
-with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True):
+with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True, no_resize=True):
     # Create a menu bar
     with dpg.menu_bar():
         with dpg.menu(label="File"):
@@ -412,11 +413,27 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                      dpg.get_item_pos(plot_image)[1] - 30)
             )
 
+with dpg.font_registry():
+    default_font = dpg.add_font(
+        'Caden_GUI_Prototype/DearPyGUI_Attempt/Fonts/nasalization-rg.otf', 15)
+
 with dpg.theme() as dark_mode:
 
     with dpg.theme_component(dpg.mvAll):
         dpg.add_theme_color(dpg.mvThemeCol_WindowBg,
                             (60, 60, 60), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_HeaderHovered,
+                            (45, 84, 194), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonActive,
+                            (45, 84, 194), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_TabHovered,
+                            (45, 84, 194), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Button,
+                            (42, 97, 235), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
+                            (107, 135, 219), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_CheckMark,
+                            (42, 97, 235), category=dpg.mvThemeCat_Core)
 
 with dpg.theme() as light_mode:
     with dpg.theme_component(dpg.mvAll):
@@ -426,17 +443,34 @@ with dpg.theme() as light_mode:
                             category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_MenuBarBg,
                             (200, 200, 200), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_HeaderHovered,
+                            (45, 84, 194), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonActive,
+                            (45, 84, 194), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBgActive,
+                            (45, 84, 194), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_TabActive,
                             (180, 180, 180), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_Tab,
                             (150, 150, 150), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_TabHovered,
+                            (45, 84, 194), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_Button,
                             (42, 97, 235), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
                             (107, 135, 219), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
+                            (189, 189, 189), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered,
+                            (148, 148, 148), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_CheckMark,
+                            (42, 97, 235), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_PopupBg,
+                            (189, 189, 189), category=dpg.mvThemeCat_Core)
 
-dpg.bind_theme(light_mode)
-dpg.show_style_editor()
+dpg.bind_theme(dark_mode)
+dpg.bind_font(default_font)
+
 dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
