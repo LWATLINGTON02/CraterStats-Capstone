@@ -309,6 +309,9 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 show_iso_check = dpg.add_checkbox(
                     label='Show isochron'
                 )
+
+                dpg.add_spacer(width=80)
+
                 plot_fit_error_check = dpg.add_checkbox(
                     label='Plot fit',
                 )
@@ -349,7 +352,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             bin_input_text = dpg.add_input_text(
                 width=70,
                 pos=(dpg.get_item_pos(plot_image)[0] + 55,
-                     dpg.get_item_pos(plot_image)[1] - 30)
+                     dpg.get_item_pos(plot_image)[1] - 30),
+                readonly=True
             )
 
             n_label = dpg.add_text(
@@ -360,7 +364,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             n_entry_box = dpg.add_input_text(
                 width=70,
                 pos=(dpg.get_item_pos(plot_image)[0] + 135,
-                     dpg.get_item_pos(plot_image)[1] - 30)
+                     dpg.get_item_pos(plot_image)[1] - 30),
+                readonly=True
             )
 
             y_label = dpg.add_text(
