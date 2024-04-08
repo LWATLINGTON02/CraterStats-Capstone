@@ -1,4 +1,5 @@
 import dearpygui.dearpygui as dpg
+import time
 
 
 def save_callback():
@@ -18,11 +19,22 @@ def collapse_window(sender, app_data):
     dpg.configure_item("Plot Settings", collapsed=True)
 
 
+def increase_progress(sender):
+
+    index = 0.0
+
+    while index < 1:
+
+        dpg.set_value("progress_bar", index)
+        index += 0.01
+        time.sleep(0.5)
+
+
 dpg.create_context()
 
 
 width, height, channels, data = dpg.load_image(
-    'Frames\moonpic.png')
+    'Caden_GUI_Prototype\Frames\moonpic.png')
 
 dpg.create_viewport(title='CraterStats', width=1048,
                     height=768, resizable=False)
@@ -30,6 +42,12 @@ dpg.setup_dearpygui()
 
 with dpg.texture_registry():
     texture_id = dpg.add_static_texture(width, height, data)
+
+with dpg.window(width=1045, height=768, id="ProgressBar"):
+
+    dpg.add_progress_bar(id="progress_bar")
+
+    dpg.add_button(label="Increase Progress", callback=increase_progress)
 
 with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True):
     # Create a menu bar
@@ -435,6 +453,8 @@ with dpg.theme() as light_mode:
         dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
                             (107, 135, 219), category=dpg.mvThemeCat_Core)
 
+
+dpg.set_primary_window("ProgressBar", True)
 dpg.bind_theme(light_mode)
 dpg.show_style_editor()
 dpg.show_viewport()
