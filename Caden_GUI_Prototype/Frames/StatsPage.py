@@ -20,7 +20,7 @@ class Stats(ttk.Frame):
         axes_boxes.grid(row=0, column=1, rowspan=2, sticky='ne')
 
         iso_text = ttk.Frame(self)
-        iso_text.grid(row=2, column=0, sticky='sw')
+        iso_text.grid(row=2, column=0, sticky='w')
 
         self.grid_rowconfigure(1, weight=1)
         self.grid_rowconfigure(2, weight=1)
@@ -81,8 +81,8 @@ class Stats(ttk.Frame):
 
         self.chron_func['values'] = ('func1', 'func2', 'func3')
         self.chron_func['state'] = 'readonly'
-        self.chron_func.grid(row=2, column=0, sticky='w', padx=5)
-        self.chron_func_label.grid(row=2, column=1, sticky='ew', padx=5)
+        self.chron_func.grid(row=2, column=0, sticky='w', pady=15)
+        self.chron_func_label.grid(row=2, column=1, sticky='ew', pady=15)
 
         selected_prod_func = tk.StringVar()
 
@@ -96,8 +96,8 @@ class Stats(ttk.Frame):
 
         self.prod_func['values'] = ('func1', 'func2', 'func3')
         self.prod_func['state'] = 'readonly'
-        self.prod_func.grid(row=3, column=0, sticky='w', padx=5)
-        self.prod_func_label.grid(row=3, column=1, sticky='ew', padx=5)
+        self.prod_func.grid(row=3, column=0, sticky='w', pady=15)
+        self.prod_func_label.grid(row=3, column=1, sticky='ew', pady=15)
 
         selected_equil_func = tk.StringVar()
 
@@ -113,8 +113,8 @@ class Stats(ttk.Frame):
 
         self.equil_func['values'] = ('func1', 'func2', 'func3')
         self.equil_func['state'] = 'readonly'
-        self.equil_func.grid(row=4, column=0, sticky='w', padx=5)
-        self.equil_func_label.grid(row=4, column=1, sticky='ew', padx=5)
+        self.equil_func.grid(row=4, column=0, sticky='w', pady=15)
+        self.equil_func_label.grid(row=4, column=1, sticky='ew', pady=15)
 
         # Data Legend Area
 
@@ -145,11 +145,11 @@ class Stats(ttk.Frame):
             text='Randomness',
             variable=self.rand_check_box_var)
 
-        self.display_data_legend_data.grid(row=2, column=2, sticky='nw')
-        self.display_data_legend_fit.grid(row=3, column=2, sticky='nw')
-        self.display_data_legend_funcs.grid(row=4, column=2, sticky='nw')
-        self.display_data_legend_picto.grid(row=5, column=2, sticky='nw')
-        self.display_data_legend_rand.grid(row=6, column=2, sticky='nw')
+        self.display_data_legend_data.grid(row=2, column=2, sticky='nw', pady=5)
+        self.display_data_legend_fit.grid(row=3, column=2, sticky='nw', pady=5)
+        self.display_data_legend_funcs.grid(row=4, column=2, sticky='nw', pady=5)
+        self.display_data_legend_picto.grid(row=5, column=2, sticky='nw', pady=5)
+        self.display_data_legend_rand.grid(row=6, column=2, sticky='nw', pady=5)
 
         self.display_data_legend_data['state'] = 'normal'
         self.display_data_legend_fit['state'] = 'normal'
@@ -170,8 +170,8 @@ class Stats(ttk.Frame):
             text='Isochrons, Ga'
         )
 
-        self.iso_entry_box.grid(row=0, column=0, sticky='w')
-        self.iso_label.grid(row=0, column=1, sticky='w')
+        self.iso_entry_box.grid(row=0, column=0, sticky='w', pady=5)
+        self.iso_label.grid(row=0, column=1, sticky='w', pady=5)
 
         # Axes
         log_d_var = tk.StringVar()
@@ -201,11 +201,11 @@ class Stats(ttk.Frame):
             width=10
         )
 
-        self.axes_label_start.grid(row=1, column=0, sticky='sw')
-        self.log_d_entry.grid(row=1, column=1, sticky='sw')
-        self.axes_label_log_y.grid(row=1, column=2, sticky='sw')
-        self.log_y_entry.grid(row=1, column=3, sticky='sw')
-        self.auto_button.grid(row=1, column=4, sticky='sw')
+        self.axes_label_start.grid(row=1, column=0, sticky='sw', pady=5)
+        self.log_d_entry.grid(row=1, column=1, sticky='sw', pady=5)
+        self.axes_label_log_y.grid(row=1, column=2, sticky='sw', pady=5)
+        self.log_y_entry.grid(row=1, column=3, sticky='sw', pady=5)
+        self.auto_button.grid(row=1, column=4, sticky='sw', pady=5)
 
         # Style Buttons
         self.style_choice = tk.StringVar()
@@ -227,6 +227,6 @@ class Stats(ttk.Frame):
             value='root-2'
         )
 
-        self.style_label.grid(row=2, column=0, sticky='sw')
-        self.decadel_button.grid(row=2, column=1, sticky='sw')
-        self.root_2_button.grid(row=2, column=2, sticky='sw')
+        self.style_label.grid(row=2, column=0, sticky='sw', pady=5)
+        self.decadel_button.grid(row=2, column=1, sticky='sw', pady=5)
+        self.root_2_button.grid(row=2, column=2, sticky='sw', pady=5)
