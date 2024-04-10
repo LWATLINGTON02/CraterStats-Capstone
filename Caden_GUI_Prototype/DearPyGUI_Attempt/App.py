@@ -19,15 +19,25 @@ def collapse_window(sender, app_data):
     dpg.configure_item("Plot Settings", collapsed=True)
 
 
-def increase_progress(sender):
+def increase_progress():
 
     index = 0.0
+    window = dpg.get_windows()[1]
+    dpg.configure_item(item="progress_bar", show=True)
+    dpg.configure_item(item="start button", show=False)
 
-    while index < 1:
+    while index <= 1:
 
         dpg.set_value("progress_bar", index)
-        index += 0.01
-        time.sleep(0.5)
+        if index < 0.5:
+            index += 0.1
+        else:
+            index += 0.2
+        time.sleep(0.15)
+
+    dpg.set_value("progress_bar", 1)
+
+    dpg.configure_item(item=window, show=False)
 
 
 dpg.create_context()
@@ -44,11 +54,6 @@ dpg.show_style_editor()
 with dpg.texture_registry():
     texture_id = dpg.add_static_texture(width, height, data)
 
-with dpg.window(width=1045, height=768, id="ProgressBar"):
-
-    dpg.add_progress_bar(id="progress_bar")
-
-    dpg.add_button(label="Increase Progress", callback=increase_progress)
 
 with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True):
     # Create a menu bar
@@ -431,9 +436,41 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                      dpg.get_item_pos(plot_image)[1] - 30)
             )
 
+with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True):
+
+    title = dpg.add_text(
+        default_value="Welcome to CraterStats!",
+        pos=(dpg.get_viewport_width() / 2 - 325, 30),
+    )
+
+    prog_bar = dpg.add_progress_bar(
+        tag="progress_bar",
+        pos=(dpg.get_viewport_width() / 2 - 350,
+             dpg.get_viewport_height() - 300),
+        show=False,
+    )
+
+
+    dpg.add_button(
+        label="Start Program",
+        callback=increase_progress,
+        pos=((dpg.get_viewport_width() - 180) / 2,
+             dpg.get_item_pos(prog_bar)[1] + 50),
+        tag="start button",
+        height=60,
+        width=180
+    )
+
+
 with dpg.font_registry():
     default_font = dpg.add_font(
         'Caden_GUI_Prototype/DearPyGUI_Attempt/Fonts/nasalization-rg.otf', 15)
+
+    title_font = dpg.add_font(
+        'Caden_GUI_Prototype/DearPyGUI_Attempt/Fonts/nasalization-rg.otf', 60)
+
+    button_font = dpg.add_font(
+        'Caden_GUI_Prototype/DearPyGUI_Attempt/Fonts/nasalization-rg.otf', 25)
 
 with dpg.theme() as dark_mode:
 
@@ -488,7 +525,8 @@ with dpg.theme() as light_mode:
 
 dpg.bind_theme(dark_mode)
 dpg.bind_font(default_font)
-
+dpg.bind_item_font(title, title_font)
+dpg.bind_item_font("start button", button_font)
 dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
