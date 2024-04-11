@@ -1,4 +1,5 @@
 import dearpygui.dearpygui as dpg
+import platform
 import time
 
 
@@ -42,9 +43,12 @@ def increase_progress():
 
 dpg.create_context()
 
-
-width, height, channels, data = dpg.load_image(
-    'Caden_GUI_Prototype\Frames\moonpic.png')
+if platform.platform()[:5] == 'macOS':
+    width, height, channels, data = dpg.load_image(
+        'Caden_GUI_Prototype/Frames/moonpic.png')
+else:
+    width, height, channels, data = dpg.load_image(
+        'Caden_GUI_Prototype\Frames\moonpic.png')
 
 dpg.create_viewport(title='CraterStats', width=1048,
                     height=768, resizable=False)
