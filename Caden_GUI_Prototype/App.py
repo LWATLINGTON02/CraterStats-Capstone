@@ -97,7 +97,6 @@ class Window(tk.Tk):
 
         style = ttk.Style(self)
         print(style.theme_names())
-        style.theme_use("alt")
 
 
 app = Window()

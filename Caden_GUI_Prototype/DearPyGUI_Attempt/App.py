@@ -11,17 +11,11 @@ def select_graph():
     print("Graph Selected")
 
 
-def set_plot_fit_text(sender, app_data):
+def set_plot_fit_text(app_data):
     dpg.set_value('plot_fit_text', app_data)
 
 
-def collapse_window(sender, app_data):
-    dpg.configure_item("Global Settings", collapsed=True)
-    dpg.configure_item("Plot Settings", collapsed=True)
-
-
 def increase_progress():
-
     index = 0.0
     window = dpg.get_windows()[1]
     dpg.configure_item(item="progress_bar", show=True)
@@ -45,10 +39,10 @@ dpg.create_context()
 
 if platform.platform()[:5] == 'macOS':
     width, height, channels, data = dpg.load_image(
-        'Caden_GUI_Prototype/Frames/moonpic.png')
+        '00-demo.png')
 else:
     width, height, channels, data = dpg.load_image(
-        'Caden_GUI_Prototype\Frames\moonpic.png')
+        '00-demo.png')
 
 dpg.create_viewport(title='CraterStats', width=1048,
                     height=768, resizable=False)
@@ -58,8 +52,8 @@ dpg.show_style_editor()
 with dpg.texture_registry():
     texture_id = dpg.add_static_texture(width, height, data)
 
-
-with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True):
+with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(),
+                height=dpg.get_viewport_height(), no_move=True):
     # Create a menu bar
     with dpg.menu_bar():
         with dpg.menu(label="File"):
@@ -83,8 +77,13 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             dpg.add_menu_item(label="merge .diam files")
             dpg.add_menu_item(label="randomness analysis")
 
-        with dpg.menu(label="About"):
-            pass
+        about_menu = dpg.add_menu_item(label="About")
+
+        # with dpg.popup(about_menu, tag="About", modal=True, mousebutton=dpg.mvMouseButton_Left):
+    #     dpg.add_text("CraterStats is a program designed to analyze crater data and produce plots based on the data.")
+    #     dpg.add_text("This program was created by Caden Tedeschi")
+    #     dpg.add_text("Version 1.0")
+    #     dpg.add_text("2024")
 
     with dpg.tab_bar(tag="tab_bars"):
         with dpg.tab(label='Global Settings'):
@@ -97,9 +96,18 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 dpg.add_spacer(height=15)
 
             with dpg.group(tag='func_dropdowns'):
+                chron_sys = dpg.add_combo(
+                    items=('Neukum-Ivanov 2001', 'Ivanov 2001', 'Hartmann 2004 iteration', 'Hartmann & Daubar (2016)'),
+                    label='Chronology System'
+                )
+
+                dpg.add_spacer(height=5)
+
                 chron_func = dpg.add_combo(
                     items=('func1', 'func2', 'func3'),
-                    label='Chronolgy Function'
+                    label='Chronolgy Function',
+                    enabled=False,
+                    no_arrow_button=True
                 )
                 dpg.add_spacer(height=5)
 
@@ -117,7 +125,6 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             dpg.add_spacer(height=15)
 
             with dpg.group(tag='iso', horizontal=True):
-
                 iso_text = dpg.add_input_text(
                     width=75
                 )
@@ -128,7 +135,6 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             dpg.add_spacer(height=15)
 
             with dpg.group(tag='legend_options', horizontal=True):
-
                 data_legend_checkbox = dpg.add_checkbox(
                     label='Data'
                 )
@@ -180,7 +186,6 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
 
         with dpg.tab(label='Plot Settings'):
             with dpg.group(tag='title', horizontal=True):
-
                 dpg.add_input_text(
                     width=150
                 )
@@ -230,7 +235,6 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     new_button = dpg.add_button(
                         label="New",
                         width=75,
-                        callback=collapse_window
                     )
 
                     duplicate_button = dpg.add_button(
@@ -357,7 +361,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             )
 
             cmd_line_arg = dpg.add_text(
-                default_value='craterstats -cs neukumivanov -p source=%sample%/Pickering.scc,psym=o -p type=d-fit,range=[.2,.7],isochron=1 -p range=[2,5],colour=red',
+                default_value='craterstats -cs neukumivanov -p source=%sample%/Pickering.scc,psym=o -p type=d-fit,'
+                              'range=[.2,.7],isochron=1 -p range=[2,5],colour=red',
                 pos=(50, dpg.get_item_pos(plot_image)[1] + 550)
             )
 
@@ -440,8 +445,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                      dpg.get_item_pos(plot_image)[1] - 30)
             )
 
-with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True):
-
+with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(),
+                height=dpg.get_viewport_height(), no_move=True):
     title = dpg.add_text(
         default_value="Welcome to CraterStats!",
         pos=(dpg.get_viewport_width() / 2 - 325, 30),
@@ -454,7 +459,6 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
         show=False,
     )
 
-
     dpg.add_button(
         label="Start Program",
         callback=increase_progress,
@@ -465,19 +469,17 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
         width=180
     )
 
-
 with dpg.font_registry():
     default_font = dpg.add_font(
-        'Caden_GUI_Prototype/DearPyGUI_Attempt/Fonts/nasalization-rg.otf', 15)
+        'Fonts/nasalization-rg.otf', 15)
 
     title_font = dpg.add_font(
-        'Caden_GUI_Prototype/DearPyGUI_Attempt/Fonts/nasalization-rg.otf', 60)
+        'Fonts/nasalization-rg.otf', 60)
 
     button_font = dpg.add_font(
-        'Caden_GUI_Prototype/DearPyGUI_Attempt/Fonts/nasalization-rg.otf', 25)
+        'Fonts/nasalization-rg.otf', 25)
 
 with dpg.theme() as dark_mode:
-
     with dpg.theme_component(dpg.mvAll):
         dpg.add_theme_color(dpg.mvThemeCol_WindowBg,
                             (60, 60, 60), category=dpg.mvThemeCat_Core)
@@ -527,7 +529,7 @@ with dpg.theme() as light_mode:
         dpg.add_theme_color(dpg.mvThemeCol_PopupBg,
                             (189, 189, 189), category=dpg.mvThemeCat_Core)
 
-dpg.bind_theme(dark_mode)
+# dpg.bind_theme(dark_mode)
 dpg.bind_font(default_font)
 dpg.bind_item_font(title, title_font)
 dpg.bind_item_font("start button", button_font)
