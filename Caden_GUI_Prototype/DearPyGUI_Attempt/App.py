@@ -616,7 +616,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 width=70,
                 pos=(dpg.get_item_pos(plot_image)[0] + 55,
                      dpg.get_item_pos(plot_image)[1] - 30),
-                readonly=True
+                readonly=True,
             )
 
             n_label = dpg.add_text(
@@ -628,7 +628,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 width=70,
                 pos=(dpg.get_item_pos(plot_image)[0] + 135,
                      dpg.get_item_pos(plot_image)[1] - 30),
-                readonly=True
+                readonly=True,
             )
 
             y_label = dpg.add_text(
@@ -753,6 +753,13 @@ with dpg.theme() as dark_mode:
         dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
                             (189, 189, 189), category=dpg.mvThemeCat_Core)
 
+    with dpg.theme_component(dpg.mvCombo, enabled_state=False):
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
+                            (51, 51, 51), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Text,
+                            (168, 168, 168), category=dpg.mvThemeCat_Core)
+
+
 with dpg.theme() as light_mode:
     with dpg.theme_component(dpg.mvAll):
         dpg.add_theme_color(dpg.mvThemeCol_WindowBg,
@@ -800,6 +807,13 @@ with dpg.theme() as light_mode:
         dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
                             (189, 189, 189), category=dpg.mvThemeCat_Core)
 
+with dpg.theme() as readonly_entry:
+    with dpg.theme_component(dpg.mvInputText):
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
+                            (51, 51, 51), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Text,
+                            (168, 168, 168), category=dpg.mvThemeCat_Core)
+
 with dpg.theme() as cmd_line_arg_theme:
     with dpg.theme_component(dpg.mvInputText):
         dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
@@ -808,9 +822,13 @@ with dpg.theme() as cmd_line_arg_theme:
                             (255, 255, 255), category=dpg.mvThemeCat_Core)
 
 
+
+
 dpg.set_global_font_scale(0.5)
 dpg.bind_theme(light_mode)
 dpg.bind_item_theme(cmd_line_arg, cmd_line_arg_theme)
+dpg.bind_item_theme(bin_input_text, readonly_entry)
+dpg.bind_item_theme(n_entry_box, readonly_entry)
 dpg.bind_font(nasa_font)
 dpg.bind_item_font(title, nas_title_font)
 dpg.bind_item_font("start button", nasa_button_font)
