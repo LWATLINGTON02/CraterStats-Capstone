@@ -3,16 +3,67 @@ import platform
 import time
 
 
-def save_callback():
-    print("Save Clicked")
-
-
+"""
+Functions
+"""
 def select_graph():
     print("Graph Selected")
 
 
-def set_plot_fit_text(app_data):
+def set_plot_fit_text(sender, app_data):
     dpg.set_value('plot_fit_text', app_data)
+
+
+def set_chron_func(sender, app_data):
+    dpg.set_value(chron_func, app_data)
+    dpg.set_value(prod_func, app_data)
+
+
+def set_chron_sys(sender, app_data):
+
+    items = []
+
+    if app_data == 'Moon':
+        items = ['Moon, Neukem (1983)', 'Moon, Neukem et al (2001)']
+
+    elif app_data == "Mars":
+        items = ['Mars, Ivanov (2001)', 'Mars, Hartmann 2004 interation', 'Mars, Hartmann & Daubar (2016)']
+
+    elif app_data == "Mercury":
+        items = ['Mercury, Strom & Neukum (1988)', 'Mercury, Neukum et al. (2001)', 'Mercury, Le Feuvre and Wieczorek 2011 non-porous', 'Mercury, Le Feuvre and Wieczorek 2011 porous']
+
+    elif app_data == 'Vesta':
+        items = ['Vesta, Rev4, Schmedemann et al (2014)', 'Vesta, Rev3, Schmedemann et al (2014)', 'Vesta, Marchi & O\'Brien (2014)']
+
+    elif app_data == 'Ceres':
+        items = ['Ceres, Hiesinger et al. (2016)']
+
+    elif app_data == 'Ida':
+        items = ['Ida, Schmedemann et al (2014)']
+
+    elif app_data == 'Gaspra':
+        items = ['Gaspra, Schmedemann et al (2014)']
+
+    elif app_data == 'Lutetia':
+        items = ['Lutetia, Schmedemann et al (2014)']
+
+    elif app_data == 'Phobos':
+        items = ['Phobos, Case A - SOM, Schmedemann et al (2014)']
+
+    if not(app_data == 'Moon' or app_data == 'Mars'):
+        dpg.configure_item(epoch_combo, items=['none'])
+        dpg.set_value(epoch_combo, 'none')
+    elif app_data == 'Moon':
+        dpg.configure_item(epoch_combo, items=['none', 'Moon, Wilhelms (1987)'])
+        dpg.set_value(epoch_combo, 'none')
+    elif app_data == 'Mars':
+        dpg.configure_item(epoch_combo, items=['none', 'Mars, Michael (2013)'])
+        dpg.set_value(epoch_combo, 'none')
+
+    dpg.configure_item(chron_sys, items=items)
+    dpg.set_value(chron_sys, items[0])
+    dpg.set_value(chron_func, items[0])
+    dpg.set_value(prod_func, items[0])
 
 
 def increase_progress():
@@ -34,6 +85,10 @@ def increase_progress():
 
     dpg.configure_item(item=window, show=False)
 
+
+"""
+GUI
+"""
 
 dpg.create_context()
 
@@ -96,9 +151,21 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 dpg.add_spacer(height=15)
 
             with dpg.group(tag='func_dropdowns'):
+
+                body = dpg.add_combo(
+                    items=('Moon', 'Mars', 'Mercury', 'Vesta', 'Ceres', 'Ida', 'Gaspra', 'Lutetia', 'Phobos'),
+                    label='Body',
+                    callback=set_chron_sys,
+                    default_value='Moon'
+                )
+
+                dpg.add_spacer(height=5)
+
                 chron_sys = dpg.add_combo(
-                    items=('Neukum-Ivanov 2001', 'Ivanov 2001', 'Hartmann 2004 iteration', 'Hartmann & Daubar (2016)'),
-                    label='Chronology System'
+                    items=('Moon, Neukem (1983)', 'Moon, Neukem et al (2001)'),
+                    label='Chronology System',
+                    callback=set_chron_func,
+                    default_value='Moon, Neukem (1983)'
                 )
 
                 dpg.add_spacer(height=5)
@@ -106,20 +173,31 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 chron_func = dpg.add_combo(
                     items=('func1', 'func2', 'func3'),
                     label='Chronolgy Function',
+                    default_value='Moon, Neukem (1983)',
                     enabled=False,
-                    no_arrow_button=True
                 )
                 dpg.add_spacer(height=5)
 
                 prod_func = dpg.add_combo(
                     items=('func1', 'func2', 'func3'),
-                    label='Production Function'
+                    label='Production Function',
+                    default_value='Moon, Neukem (1983)',
+                    enabled=False
                 )
                 dpg.add_spacer(height=5)
 
+                epoch_combo = dpg.add_combo(
+                    items=('None', 'Wilhelms (1987)'),
+                    label='Epochs',
+                    default_value='none',
+                )
+
+                dpg.add_spacer(height=5)
+
                 equil_func = dpg.add_combo(
-                    items=('func1', 'func2', 'func3'),
-                    label='Equilibrium Function'
+                    items=('none', 'Standard lunar equilibrium (Trask, 1966)', 'Hartmann (1984)'),
+                    label='Equilibrium Function',
+                    default_value='none',
                 )
 
             dpg.add_spacer(height=15)
@@ -136,13 +214,16 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
 
             with dpg.group(tag='legend_options', horizontal=True):
                 data_legend_checkbox = dpg.add_checkbox(
-                    label='Data'
+                    label='Data',
+                    default_value=True
                 )
                 fit_legend_checkbox = dpg.add_checkbox(
-                    label='Fit'
+                    label='Fit',
+                    default_value=True
                 )
                 func_legend_checkbox = dpg.add_checkbox(
-                    label='Functions'
+                    label='Functions',
+                    default_value=True
                 )
                 picto_legend_checkbox = dpg.add_checkbox(
                     label='Pictogram'
@@ -158,13 +239,15 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     default_value="Axes. log D:"
                 )
                 axis_d_input_box = dpg.add_input_text(
-                    width=75
+                    width=75,
+                    default_value="-3.2"
                 )
                 axis_y_input_box = dpg.add_text(
                     default_value='log y:'
                 )
                 dpg.add_input_text(
-                    width=50
+                    width=50,
+                    default_value="-5.5"
                 )
                 axis_auto_button = dpg.add_button(
                     label="Auto",
@@ -225,10 +308,9 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
 
             with dpg.group(tag='plot_fit', horizontal=False):
                 plot_fit_list = dpg.add_listbox(
-                    items=('data', 'age fit', 'resurfacing fit'),
+                    items=['default'],
                     width=150,
-                    default_value='resurfacing fit',
-                    callback=set_plot_fit_text
+                    default_value='default',
                 )
 
                 with dpg.group(tag='top_buttons', horizontal=True):
@@ -259,13 +341,14 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
 
             with dpg.group(tag='fit_type', horizontal=True):
                 plot_fit_text = dpg.add_input_text(
-                    hint=dpg.get_value(plot_fit_list),
+                    default_value='default',
                     width=150,
-                    tag='plot_fit_text'
+                    tag='plot_fit_text',
                 )
                 plot_fit_options = dpg.add_combo(
-                    items=('fit1', 'fit2', 'fit3'),
-                    width=150
+                    items=('crater count', 'cumulative fit', 'differential fit', 'Poisson pdf', 'Poisson buffer pdf'),
+                    width=150,
+                    default_value='crater count'
                 )
                 hide_button = dpg.add_checkbox(
                     label='Hide plot'
@@ -293,14 +376,17 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     default_value='Diameter range:'
                 )
                 diam_range_input = dpg.add_input_text(
-                    width=125
+                    width=125,
+                    default_value='0.0'
                 )
                 binning_label = dpg.add_text(
                     default_value='Binning',
                 )
+
                 binning_options = dpg.add_combo(
                     items=("bin1", "bin2", "bin3"),
-                    width=75
+                    width=100,
+                    default_value='psuedo-log'
                 )
 
             dpg.add_spacer(height=15)
@@ -311,7 +397,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 )
                 color_dropdown = dpg.add_combo(
                     items=('Red', 'Black', 'Green', 'Blue', 'Yellow'),
-                    width=65
+                    width=65,
+                    default_value='Black'
                 )
 
                 symbol_text = dpg.add_text(
@@ -319,14 +406,16 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 )
                 symbol_dropdown = dpg.add_combo(
                     items=('Diamond', 'Square', 'Circle'),
-                    width=75
+                    width=75,
+                    default_value='Square'
                 )
 
             dpg.add_spacer(height=15)
 
             with dpg.group(tag='extra_settings', horizontal=True):
                 error_bar_check = dpg.add_checkbox(
-                    label='Error bars'
+                    label='Error bars',
+                    default_value=True
                 )
                 display_age_check = dpg.add_checkbox(
                     label='Display age'
@@ -342,7 +431,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     label='Show isochron'
                 )
 
-                dpg.add_spacer(width=80)
+                dpg.add_spacer(width=69)
 
                 plot_fit_error_check = dpg.add_checkbox(
                     label='Plot fit',
@@ -369,12 +458,12 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             diameter_info = dpg.add_text(
                 default_value='Diameter',
                 pos=(dpg.get_item_pos(plot_image)[0] - 18,
-                     dpg.get_item_pos(plot_image)[1] - 55)
+                     dpg.get_item_pos(plot_image)[1] - 55),
             )
             diameter_info_input = dpg.add_input_text(
                 width=70,
                 pos=(dpg.get_item_pos(plot_image)[0] - 25,
-                     dpg.get_item_pos(plot_image)[1] - 30)
+                     dpg.get_item_pos(plot_image)[1] - 30),
             )
 
             bin_label = dpg.add_text(
@@ -469,16 +558,28 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
         width=180
     )
 
+"""
+FONTS
+"""
 with dpg.font_registry():
-    default_font = dpg.add_font(
+    nasa_font = dpg.add_font(
         'Fonts/nasalization-rg.otf', 15)
 
-    title_font = dpg.add_font(
+    nas_title_font = dpg.add_font(
         'Fonts/nasalization-rg.otf', 60)
 
-    button_font = dpg.add_font(
+    nasa_button_font = dpg.add_font(
         'Fonts/nasalization-rg.otf', 25)
 
+    arial_font = dpg.add_font('Fonts/Arial Unicode.ttf', 18)
+    arial_title_font = dpg.add_font('Fonts/Arial Unicode.ttf', 60)
+    arial_button_font = dpg.add_font('Fonts/Arial Unicode.ttf', 25)
+
+"""
+Themes
+"""
+
+# Dark mode theme
 with dpg.theme() as dark_mode:
     with dpg.theme_component(dpg.mvAll):
         dpg.add_theme_color(dpg.mvThemeCol_WindowBg,
@@ -495,6 +596,20 @@ with dpg.theme() as dark_mode:
                             (107, 135, 219), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_CheckMark,
                             (42, 97, 235), category=dpg.mvThemeCat_Core)
+        # dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
+        #                     (148, 148, 148), category=dpg.mvThemeCat_Core)
+
+    with dpg.theme_component(dpg.mvCombo, enabled_state=False):
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
+                            (51, 51, 51), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Text,
+                        (168, 168, 168), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered,
+                            (51, 51, 51), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Button,
+                            (189, 189, 189), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
+                            (189, 189, 189), category=dpg.mvThemeCat_Core)
 
 with dpg.theme() as light_mode:
     with dpg.theme_component(dpg.mvAll):
@@ -528,11 +643,25 @@ with dpg.theme() as light_mode:
                             (42, 97, 235), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_PopupBg,
                             (189, 189, 189), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Header,
+                            (135, 135, 135), category=dpg.mvThemeCat_Core)
 
-# dpg.bind_theme(dark_mode)
-dpg.bind_font(default_font)
-dpg.bind_item_font(title, title_font)
-dpg.bind_item_font("start button", button_font)
+    with dpg.theme_component(dpg.mvCombo, enabled_state=False):
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
+                            (51, 51, 51), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Text,
+                        (168, 168, 168), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered,
+                            (51, 51, 51), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Button,
+                            (189, 189, 189), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
+                            (189, 189, 189), category=dpg.mvThemeCat_Core)
+
+dpg.bind_theme(light_mode)
+dpg.bind_font(nasa_font)
+dpg.bind_item_font(title, nas_title_font)
+dpg.bind_item_font("start button", nasa_button_font)
 dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
