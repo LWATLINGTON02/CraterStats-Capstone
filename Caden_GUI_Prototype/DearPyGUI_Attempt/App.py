@@ -2,10 +2,11 @@ import dearpygui.dearpygui as dpg
 import platform
 import time
 
-
 """
 Functions
 """
+
+
 def select_graph():
     print("Graph Selected")
 
@@ -15,7 +16,6 @@ def set_plot_fit_text(sender, app_data):
 
 
 def set_chron_func(sender, app_data):
-
     chron_func_str = ''
     prod_func_str = ''
 
@@ -129,28 +129,31 @@ def set_chron_func(sender, app_data):
 
 
 def set_chron_sys(sender, app_data):
-
     items = []
     chron_func_str = ''
     prod_func_str = ''
 
     if app_data == 'Moon':
-        items = ['Moon, Neukem (1983)', 'Moon, Neukem et al (2001)', 'Moon, Hartmann 2010 iteration', 'Moon, Yue et al. (2022)']
+        items = ['Moon, Neukem (1983)', 'Moon, Neukem et al (2001)', 'Moon, Hartmann 2010 iteration',
+                 'Moon, Yue et al. (2022)']
         chron_func_str = items[0]
         prod_func_str = items[0]
 
     elif app_data == "Mars":
-        items = ['Mars, Neukum-Ivanov (2001)', 'Mars, Ivanov (2001)', 'Mars, Hartmann 2004 iteration', 'Mars, Hartmann & Daubar (2016)']
+        items = ['Mars, Neukum-Ivanov (2001)', 'Mars, Ivanov (2001)', 'Mars, Hartmann 2004 iteration',
+                 'Mars, Hartmann & Daubar (2016)']
         chron_func_str = 'Mars, Hartmann & Neukum (2001)'
         prod_func_str = 'Mars, Ivanov (2001)'
 
     elif app_data == "Mercury":
-        items = ['Mercury, Strom & Neukum (1988)', 'Mercury, Neukum et al. (2001)', 'Mercury, Le Feuvre and Wieczorek 2011 non-porous', 'Mercury, Le Feuvre and Wieczorek 2011 porous']
+        items = ['Mercury, Strom & Neukum (1988)', 'Mercury, Neukum et al. (2001)',
+                 'Mercury, Le Feuvre and Wieczorek 2011 non-porous', 'Mercury, Le Feuvre and Wieczorek 2011 porous']
         chron_func_str = items[0]
         prod_func_str = items[0]
 
     elif app_data == 'Vesta':
-        items = ['Vesta, Rev4, Schmedemann et al (2014)', 'Vesta, Rev3, Schmedemann et al (2014)', 'Vesta, Marchi & O\'Brien (2014)']
+        items = ['Vesta, Rev4, Schmedemann et al (2014)', 'Vesta, Rev3, Schmedemann et al (2014)',
+                 'Vesta, Marchi & O\'Brien (2014)']
         chron_func_str = items[0]
         prod_func_str = items[0]
 
@@ -179,7 +182,7 @@ def set_chron_sys(sender, app_data):
         chron_func_str = items[0]
         prod_func_str = items[0]
 
-    if not(app_data == 'Moon' or app_data == 'Mars'):
+    if not (app_data == 'Moon' or app_data == 'Mars'):
         dpg.configure_item(epoch_combo, items=['none'])
         dpg.set_value(epoch_combo, 'none')
     elif app_data == 'Moon':
@@ -231,13 +234,12 @@ else:
 dpg.create_viewport(title='CraterStats', width=1048,
                     height=768, resizable=False)
 dpg.setup_dearpygui()
-dpg.show_style_editor()
 
 with dpg.texture_registry():
     texture_id = dpg.add_static_texture(width, height, data)
 
 with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(),
-                height=dpg.get_viewport_height(), no_move=True):
+                height=dpg.get_viewport_height(), no_move=True, no_resize=True):
     # Create a menu bar
     with dpg.menu_bar():
         with dpg.menu(label="File"):
@@ -282,7 +284,6 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 dpg.add_spacer(height=15)
 
             with dpg.group(tag='func_dropdowns'):
-
                 body = dpg.add_combo(
                     items=('Moon', 'Mars', 'Mercury', 'Vesta', 'Ceres', 'Ida', 'Gaspra', 'Lutetia', 'Phobos'),
                     label='Body',
@@ -566,7 +567,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
 
             with dpg.group(tag='extra_settings_2', horizontal=True):
                 show_iso_check = dpg.add_checkbox(
-                    label='Show isochron'
+                    label='Show isochron',
+                    default_value=True
                 )
 
                 dpg.add_spacer(width=69)
@@ -587,10 +589,11 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 border_color='#F00'
             )
 
-            cmd_line_arg = dpg.add_text(
+            cmd_line_arg = dpg.add_input_text(
                 default_value='craterstats -cs neukumivanov -p source=%sample%/Pickering.scc,psym=o -p type=d-fit,'
                               'range=[.2,.7],isochron=1 -p range=[2,5],colour=red',
-                pos=(50, dpg.get_item_pos(plot_image)[1] + 550)
+                pos=(50, dpg.get_item_pos(plot_image)[1] + 550),
+                width=dpg.get_viewport_width() - 105,
             )
 
             diameter_info = dpg.add_text(
@@ -673,7 +676,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             )
 
 with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(),
-                height=dpg.get_viewport_height(), no_move=True):
+                height=dpg.get_viewport_height(), no_move=True, no_resize=True,):
     title = dpg.add_text(
         default_value="Welcome to CraterStats!",
         pos=(dpg.get_viewport_width() / 2 - 325, 30),
@@ -701,18 +704,19 @@ FONTS
 """
 with dpg.font_registry():
     nasa_font = dpg.add_font(
-        'Fonts/nasalization-rg.otf', 15)
+        'Fonts/nasalization-rg.otf', 15 * 2)
 
     nas_title_font = dpg.add_font(
-        'Fonts/nasalization-rg.otf', 60)
+        'Fonts/nasalization-rg.otf', 60 * 2)
 
     nasa_button_font = dpg.add_font(
-        'Fonts/nasalization-rg.otf', 25)
+        'Fonts/nasalization-rg.otf', 25 * 2)
 
-    arial_font = dpg.add_font('Fonts/Arial Unicode.ttf', 18)
-    arial_title_font = dpg.add_font('Fonts/Arial Unicode.ttf', 60)
-    arial_button_font = dpg.add_font('Fonts/Arial Unicode.ttf', 25)
+    arial_font = dpg.add_font('Fonts/Arial Unicode.ttf', 18 * 2)
+    arial_title_font = dpg.add_font('Fonts/Arial Unicode.ttf', 60 * 2)
+    arial_button_font = dpg.add_font('Fonts/Arial Unicode.ttf', 25 * 2)
 
+    courier_new = dpg.add_font('Fonts/Courier New.ttf', 13 * 2)
 """
 Themes
 """
@@ -741,7 +745,7 @@ with dpg.theme() as dark_mode:
         dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
                             (51, 51, 51), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_Text,
-                        (168, 168, 168), category=dpg.mvThemeCat_Core)
+                            (168, 168, 168), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered,
                             (51, 51, 51), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_Button,
@@ -788,7 +792,7 @@ with dpg.theme() as light_mode:
         dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
                             (51, 51, 51), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_Text,
-                        (168, 168, 168), category=dpg.mvThemeCat_Core)
+                            (168, 168, 168), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered,
                             (51, 51, 51), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_Button,
@@ -796,10 +800,21 @@ with dpg.theme() as light_mode:
         dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered,
                             (189, 189, 189), category=dpg.mvThemeCat_Core)
 
+with dpg.theme() as cmd_line_arg_theme:
+    with dpg.theme_component(dpg.mvInputText):
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
+                            (0, 0, 0), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_Text,
+                            (255, 255, 255), category=dpg.mvThemeCat_Core)
+
+
+dpg.set_global_font_scale(0.5)
 dpg.bind_theme(light_mode)
+dpg.bind_item_theme(cmd_line_arg, cmd_line_arg_theme)
 dpg.bind_font(nasa_font)
 dpg.bind_item_font(title, nas_title_font)
 dpg.bind_item_font("start button", nasa_button_font)
+dpg.bind_item_font(cmd_line_arg, courier_new)
 dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
