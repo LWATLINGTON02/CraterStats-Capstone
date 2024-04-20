@@ -15,40 +15,169 @@ def set_plot_fit_text(sender, app_data):
 
 
 def set_chron_func(sender, app_data):
-    dpg.set_value(chron_func, app_data)
-    dpg.set_value(prod_func, app_data)
+
+    chron_func_str = ''
+    prod_func_str = ''
+
+    if app_data[:4] == "Moon":
+        chron_func_str = app_data
+
+    elif app_data[:4] == "Mars":
+
+        if app_data == 'Mars, Neukum-Ivanov (2001)':
+            chron_func_str = 'Mars, Hartmann & Neukum (2001)'
+        elif app_data == 'Mars, Ivanov (2001)':
+            chron_func_str = app_data
+        elif app_data == 'Mars, Hartmann 2004 iteration':
+            chron_func_str = 'Mars, Hartmann (2005) [Michael (2013)]'
+        elif app_data == 'Mars, Hartmann & Daubar (2016)':
+            chron_func_str = 'Mars, Hartmann (2005) [Michael (2013)]'
+
+    elif app_data[:4] == "Merc":
+
+        if app_data == 'Mercury, Le Feuvre and Wieczorek 2011 non-porous':
+            chron_func_str = 'Mercury, Le Feuvre and Wieczorek (2011) non-porous'
+        elif app_data == 'Mercury, Le Feuvre and Wieczorek 2011 porous':
+            chron_func_str = 'Mercury, Le Feuvre and Wieczorek (2011) porous'
+        else:
+            chron_func_str = app_data
+
+    elif app_data[:4] == "Vest":
+
+        if app_data == "Vesta, Marchi & O'Brien (2014)":
+            chron_func_str = "Vesta, O'Brien et al. (2014)"
+        else:
+            chron_func_str = app_data
+
+    elif app_data[:4] == "Cere":
+
+        chron_func_str = app_data
+
+    elif app_data[:4] == "Ida,":
+
+        chron_func_str = app_data
+
+    elif app_data[:4] == "Gasp":
+
+        chron_func_str = app_data
+
+    elif app_data[:4] == "Lute":
+
+        chron_func_str = app_data
+
+    elif app_data[:4] == "Phob":
+
+        chron_func_str = app_data
+
+    dpg.set_value(chron_func, chron_func_str)
+
+    if app_data[:4] == 'Moon':
+
+        if app_data == 'Moon, Yue et al. (2022)':
+            prod_func_str = 'Moon, Neukum et al. (2001)'
+        else:
+            prod_func_str = app_data
+
+    elif app_data[:4] == 'Mars':
+
+        if app_data == 'Mars, Neukum-Ivanov (2001)':
+            prod_func_str = 'Mars, Ivanov (2001)'
+        elif app_data == 'Mars, Ivanov (2001)':
+            prod_func_str = app_data
+        elif app_data == 'Mars, Hartmann 2004 iteration':
+            prod_func_str = 'Mars, Hartmann (2005)'
+        elif app_data == 'Mars, Hartmann & Daubar (2016)':
+            prod_func_str = app_data
+
+    elif app_data[:4] == "Merc":
+
+        if app_data == 'Mercury, Le Feuvre and Wieczorek 2011 non-porous':
+            prod_func_str = 'Mercury, Le Feuvre and Wieczorek (2011) non-porous'
+        elif app_data == 'Mercury, Le Feuvre and Wieczorek 2011 porous':
+            prod_func_str = 'Mercury, Le Feuvre and Wieczorek (2011) porous'
+        else:
+            prod_func_str = app_data
+
+    elif app_data[:4] == "Vest":
+
+        if app_data == "Vesta, Marchi & O'Brien (2014)":
+            prod_func_str = 'Vesta, Marchi et al (2013) [inferred, NS]'
+        else:
+            prod_func_str = app_data
+
+    elif app_data[:4] == "Cere":
+
+        prod_func_str = app_data
+
+    elif app_data[:4] == "Ida,":
+
+        prod_func_str = app_data
+
+    elif app_data[:4] == "Gasp":
+
+        prod_func_str = app_data
+
+    elif app_data[:4] == "Lute":
+
+        prod_func_str = app_data
+
+    elif app_data[:4] == "Phob":
+
+        prod_func_str = app_data
+
+    dpg.set_value(prod_func, prod_func_str)
 
 
 def set_chron_sys(sender, app_data):
 
     items = []
+    chron_func_str = ''
+    prod_func_str = ''
 
     if app_data == 'Moon':
-        items = ['Moon, Neukem (1983)', 'Moon, Neukem et al (2001)']
+        items = ['Moon, Neukem (1983)', 'Moon, Neukem et al (2001)', 'Moon, Hartmann 2010 iteration', 'Moon, Yue et al. (2022)']
+        chron_func_str = items[0]
+        prod_func_str = items[0]
 
     elif app_data == "Mars":
-        items = ['Mars, Ivanov (2001)', 'Mars, Hartmann 2004 interation', 'Mars, Hartmann & Daubar (2016)']
+        items = ['Mars, Neukum-Ivanov (2001)', 'Mars, Ivanov (2001)', 'Mars, Hartmann 2004 iteration', 'Mars, Hartmann & Daubar (2016)']
+        chron_func_str = 'Mars, Hartmann & Neukum (2001)'
+        prod_func_str = 'Mars, Ivanov (2001)'
 
     elif app_data == "Mercury":
         items = ['Mercury, Strom & Neukum (1988)', 'Mercury, Neukum et al. (2001)', 'Mercury, Le Feuvre and Wieczorek 2011 non-porous', 'Mercury, Le Feuvre and Wieczorek 2011 porous']
+        chron_func_str = items[0]
+        prod_func_str = items[0]
 
     elif app_data == 'Vesta':
         items = ['Vesta, Rev4, Schmedemann et al (2014)', 'Vesta, Rev3, Schmedemann et al (2014)', 'Vesta, Marchi & O\'Brien (2014)']
+        chron_func_str = items[0]
+        prod_func_str = items[0]
 
     elif app_data == 'Ceres':
         items = ['Ceres, Hiesinger et al. (2016)']
+        chron_func_str = items[0]
+        prod_func_str = items[0]
 
     elif app_data == 'Ida':
         items = ['Ida, Schmedemann et al (2014)']
+        chron_func_str = items[0]
+        prod_func_str = items[0]
 
     elif app_data == 'Gaspra':
         items = ['Gaspra, Schmedemann et al (2014)']
+        chron_func_str = items[0]
+        prod_func_str = items[0]
 
     elif app_data == 'Lutetia':
         items = ['Lutetia, Schmedemann et al (2014)']
+        chron_func_str = items[0]
+        prod_func_str = items[0]
 
     elif app_data == 'Phobos':
-        items = ['Phobos, Case A - SOM, Schmedemann et al (2014)']
+        items = ['Phobos, Case A - SOM, Schmedemann et al (2014)', 'Phobos, Case B - MBA, Schmedemann et al (2014)']
+        chron_func_str = items[0]
+        prod_func_str = items[0]
 
     if not(app_data == 'Moon' or app_data == 'Mars'):
         dpg.configure_item(epoch_combo, items=['none'])
@@ -62,8 +191,8 @@ def set_chron_sys(sender, app_data):
 
     dpg.configure_item(chron_sys, items=items)
     dpg.set_value(chron_sys, items[0])
-    dpg.set_value(chron_func, items[0])
-    dpg.set_value(prod_func, items[0])
+    dpg.set_value(chron_func, chron_func_str)
+    dpg.set_value(prod_func, prod_func_str)
 
 
 def increase_progress():
@@ -147,7 +276,9 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     items=("Cumulative", 'Differential',
                            'Relative (R)', 'Hartmann', 'Chronology'),
                     callback=select_graph,
-                    horizontal=True)
+                    horizontal=True,
+                    default_value='Differential',
+                )
                 dpg.add_spacer(height=15)
 
             with dpg.group(tag='func_dropdowns'):
@@ -165,6 +296,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     items=('Moon, Neukem (1983)', 'Moon, Neukem et al (2001)'),
                     label='Chronology System',
                     callback=set_chron_func,
+
                     default_value='Moon, Neukem (1983)'
                 )
 
@@ -179,7 +311,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 dpg.add_spacer(height=5)
 
                 prod_func = dpg.add_combo(
-                    items=('func1', 'func2', 'func3'),
+                    items=[''],
                     label='Production Function',
                     default_value='Moon, Neukem (1983)',
                     enabled=False
@@ -261,8 +393,9 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     default_value='Stlye:'
                 )
                 style_options = dpg.add_radio_button(
-                    items=("decadel", 'root-2'),
-                    horizontal=True
+                    items=('natural', "decadel", 'root-2'),
+                    horizontal=True,
+                    default_value='natural'
                 )
 
             dpg.add_spacer(height=15)
@@ -274,6 +407,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 )
                 dpg.add_checkbox(
                     label="Title",
+                    default_value=True
                 )
 
                 dpg.add_spacer(width=200)
@@ -282,7 +416,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     default_value='Print scale. cm/decade (or plot width x height. cm):'
                 )
                 dpg.add_input_text(
-                    width=75
+                    width=75,
+                    default_value="7.5x7.5"
                 )
 
             dpg.add_spacer(height=15)
@@ -292,7 +427,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     width=150
                 )
                 dpg.add_checkbox(
-                    label='Subtitle'
+                    label='Subtitle',
+                    default_value=True
                 )
 
                 dpg.add_spacer(width=445)
@@ -301,7 +437,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     default_value='Text size. pt:'
                 )
                 dpg.add_input_text(
-                    width=50
+                    width=50,
+                    default_value="8"
                 )
 
             dpg.add_spacer(height=15)
@@ -385,7 +522,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
 
                 binning_options = dpg.add_combo(
                     items=("bin1", "bin2", "bin3"),
-                    width=100,
+                    width=110,
                     default_value='psuedo-log'
                 )
 
@@ -397,7 +534,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 )
                 color_dropdown = dpg.add_combo(
                     items=('Red', 'Black', 'Green', 'Blue', 'Yellow'),
-                    width=65,
+                    width=80,
                     default_value='Black'
                 )
 
@@ -406,7 +543,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 )
                 symbol_dropdown = dpg.add_combo(
                     items=('Diamond', 'Square', 'Circle'),
-                    width=75,
+                    width=90,
                     default_value='Square'
                 )
 
@@ -418,7 +555,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     default_value=True
                 )
                 display_age_check = dpg.add_checkbox(
-                    label='Display age'
+                    label='Display age',
+                    default_value=True
                 )
                 align_left_check = dpg.add_checkbox(
                     label='Align age left'
