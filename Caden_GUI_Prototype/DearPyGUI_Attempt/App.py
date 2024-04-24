@@ -1,6 +1,6 @@
-import dearpygui.dearpygui as dpg
 import platform
 import time
+import dearpygui.dearpygui as dpg
 
 """
 Functions
@@ -129,6 +129,7 @@ def set_chron_func(sender, app_data):
 
 
 def set_chron_sys(sender, app_data):
+
     items = []
     chron_func_str = ''
     prod_func_str = ''
@@ -231,7 +232,7 @@ else:
     width, height, channels, data = dpg.load_image(
         '00-demo.png')
 
-dpg.create_viewport(title='CraterStats', width=1048,
+dpg.create_viewport(title='CraterStatsIV', width=1048,
                     height=768, resizable=False)
 dpg.setup_dearpygui()
 
@@ -264,12 +265,6 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
             dpg.add_menu_item(label="randomness analysis")
 
         about_menu = dpg.add_menu_item(label="About")
-
-        # with dpg.popup(about_menu, tag="About", modal=True, mousebutton=dpg.mvMouseButton_Left):
-    #     dpg.add_text("CraterStats is a program designed to analyze crater data and produce plots based on the data.")
-    #     dpg.add_text("This program was created by Caden Tedeschi")
-    #     dpg.add_text("Version 1.0")
-    #     dpg.add_text("2024")
 
     with dpg.tab_bar(tag="tab_bars"):
         with dpg.tab(label='Global Settings'):
@@ -534,7 +529,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     default_value='Colour'
                 )
                 color_dropdown = dpg.add_combo(
-                    items=('Red', 'Black', 'Green', 'Blue', 'Yellow'),
+                    items=('Black', 'Red', 'Green', 'Blue', 'Yellow',
+                           'Violet', 'Grey', 'Brown', 'Orange', 'Pink', 'Purple', 'Teal'),
                     width=80,
                     default_value='Black'
                 )
@@ -543,8 +539,10 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     default_value='Symbol',
                 )
                 symbol_dropdown = dpg.add_combo(
-                    items=('Diamond', 'Square', 'Circle'),
-                    width=90,
+                    items=('Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
+                           'Cross', 'Point', 'Inverted triangle', 'Filled square',
+                           'Filled circle', 'Filled star', 'Filled triangle', 'Filled inverted triangle'),
+                    width=180,
                     default_value='Square'
                 )
 
@@ -589,10 +587,15 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 border_color='#F00'
             )
 
+            cmd_line_label = dpg.add_text(
+                default_value='Command Line Arguments:',
+                pos=(52.5, dpg.get_item_pos(plot_image)[1] + 520)
+            )
+
             cmd_line_arg = dpg.add_input_text(
                 default_value='craterstats -cs neukumivanov -p source=%sample%/Pickering.scc,psym=o -p type=d-fit,'
                               'range=[.2,.7],isochron=1 -p range=[2,5],colour=red',
-                pos=(50, dpg.get_item_pos(plot_image)[1] + 550),
+                pos=(52.5, dpg.get_item_pos(plot_image)[1] + 550),
                 width=dpg.get_viewport_width() - 105,
             )
 
@@ -822,10 +825,8 @@ with dpg.theme() as cmd_line_arg_theme:
                             (255, 255, 255), category=dpg.mvThemeCat_Core)
 
 
-
-
 dpg.set_global_font_scale(0.5)
-dpg.bind_theme(light_mode)
+dpg.bind_theme(dark_mode)
 dpg.bind_item_theme(cmd_line_arg, cmd_line_arg_theme)
 dpg.bind_item_theme(bin_input_text, readonly_entry)
 dpg.bind_item_theme(n_entry_box, readonly_entry)
