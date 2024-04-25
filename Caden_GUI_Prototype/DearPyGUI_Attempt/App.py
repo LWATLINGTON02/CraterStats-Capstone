@@ -717,6 +717,7 @@ with dpg.font_registry():
     arial_button_font = dpg.add_font('Fonts/Arial Unicode.ttf', 25 * 2)
 
     courier_new = dpg.add_font('Fonts/Courier New.ttf', 13 * 2)
+    
 """
 Themes
 """
