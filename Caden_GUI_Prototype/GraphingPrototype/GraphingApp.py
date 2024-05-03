@@ -23,7 +23,7 @@ for i in range(0, 100):
     sindatay2.append(2 + 0.5 * np.sin(50 * i / 100))
 
 width, height, channels, data = load_image(
-    '../DearPyGUI_Attempt/00-demo.png')
+    'DearPyGUI_Attempt\\00-demo.png')
 
 with texture_registry():
     texture_id = add_static_texture(width, height, data)

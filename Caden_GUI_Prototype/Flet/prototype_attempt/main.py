@@ -60,6 +60,7 @@ chron_systems = {
 
 plots_dict = {}
 
+
 def print_tree(dictionary, indent=0):
     for key, value in dictionary.items():
         print('  ' * indent + str(key))
@@ -67,6 +68,7 @@ def print_tree(dictionary, indent=0):
             print_tree(value, indent + 1)
         else:
             print('  ' * (indent + 1) + str(value))
+
 
 def main(page: ft.Page):
     def file_picker_result(e: FilePickerResultEvent):
@@ -119,10 +121,12 @@ def main(page: ft.Page):
                 prod_func_val = specifics[1][1:-2]
 
             if specifics[0] == 'set.presentation':
-                presentation_val = specifics[1][1:-2].replace("'","")[:4].lower()
+                presentation_val = specifics[1][1:-
+                                                2].replace("'", "")[:4].lower()
 
             if specifics[0] == 'set.print_dimensions':
-                print_dimensions = (specifics[1].replace("'", "").strip("[]\n").split(","))[0]
+                print_dimensions = (specifics[1].replace(
+                    "'", "").strip("[]\n").split(","))[0]
 
             if specifics[0] == 'set.pt_size':
                 pt_list = specifics[1].strip("[]\n").split(",")
@@ -194,7 +198,6 @@ def main(page: ft.Page):
                 plots_dict[f"plot{count}"][f"plot{count}.type"] = specifics[1][1:-2]
 
             if specifics[0] == f"plot{count}.error_bars":
-                print(type(specifics[1]))
 
                 if int(specifics[1]) == 1:
                     plots_dict[f"plot{count}"][f"plot{count}.error_bars"] = True
@@ -283,7 +286,8 @@ def main(page: ft.Page):
         # print_tree(plots_dict, 0)
         body.value = body_val
         set_chron_sys(body.value, None)
-        chron_sys.value = list(chron_systems.keys())[list(chron_systems.values()).index([chron_func_val, prod_func_val])]
+        chron_sys.value = list(chron_systems.keys())[list(
+            chron_systems.values()).index([chron_func_val, prod_func_val])]
         chron_func.value = chron_func_val
         chron_func.options = [ft.dropdown.Option(chron_func_val)]
         prod_func.value = prod_func_val
@@ -297,21 +301,81 @@ def main(page: ft.Page):
 
         create_plot_lists()
 
-
         page.update()
         data.close()
 
     def create_plot_lists():
 
+        content_list = []
+
+        plot_names = {}
+
         if plots_dict is not None:
-            plot_lists.clean()
 
-            for index, plots in enumerate(plots_dict, 1):
+            for plots in plots_dict:
+                plot_names[plots] = plots_dict[plots][f"{plots}.name"]
 
-                label_ = ft.Chip(label=ft.Text(plots[f"plot{index}.name"]))
+            for plots in plot_names:
+                content_list.append(
+                    ft.Chip(ft.Text(plot_names[plots]), on_click=set_plot_info))
 
-    def set_plot_info():
-        pass
+        print(plot_lists.controls)
+        plot_lists.controls = content_list
+
+        page.update()
+
+    def set_plot_info(e):
+        correct_key = ''
+
+        print(e.control.label.value)
+        for key, val in plots_dict.items():
+            print(val)
+
+            try:
+                try:
+                    if val["plot1.name"] == e.control.label.value:
+                        print("Plot1 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+                try:
+                    if val["plot2.name"] == e.control.label.value:
+                        print("Plot2 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+                try:
+                    if val["plot3.name"] == e.control.label.value:
+                        print("Plot3 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+            except KeyError:
+                print("No values")
+
+        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
+
+        range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
+        range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
+        range_val = ''
+
+        print(range_start, range_end, type(range_start), type(range_end))
+
+        if range_start < 1:
+
+            if range_end < 1:
+
+                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
+
+            else:
+                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
+
+        else:
+            range_val = f"[{int(range_start)} km, {int(range_end)} km]"
+
+        diam_range_entry.value = range_val.strip("[]")
+
+        page.update()
 
     page.title = 'Craterstats IV'
     page.theme_mode = ft.ThemeMode.DARK
@@ -350,9 +414,11 @@ def main(page: ft.Page):
 
             if check_value == system:
                 chron_func.value = chron_systems[system][0]
-                chron_func.options = [ft.dropdown.Option(chron_systems[system][0])]
+                chron_func.options = [
+                    ft.dropdown.Option(chron_systems[system][0])]
                 prod_func.value = chron_systems[system][1]
-                prod_func.options = [ft.dropdown.Option(chron_systems[system][1])]
+                prod_func.options = [
+                    ft.dropdown.Option(chron_systems[system][1])]
 
         page.update()
 
@@ -361,8 +427,6 @@ def main(page: ft.Page):
             check_value = value
         else:
             check_value = e.control.value
-
-
 
         items = []
         chron_func_str = ''
@@ -387,14 +451,16 @@ def main(page: ft.Page):
         elif check_value == "Mercury":
             items = [ft.dropdown.Option('Mercury, Strom & Neukum (1988)'),
                      ft.dropdown.Option('Mercury, Neukum et al. (2001)'),
-                     ft.dropdown.Option('Mercury, Le Feuvre and Wieczorek 2011 non-porous'),
+                     ft.dropdown.Option(
+                         'Mercury, Le Feuvre and Wieczorek 2011 non-porous'),
                      ft.dropdown.Option('Mercury, Le Feuvre and Wieczorek 2011 porous')]
             chron_func_str = 'Mercury, Strom & Neukum (1988)'
             prod_func_str = 'Mercury, Strom & Neukum (1988)'
 
         elif check_value == 'Vesta':
             items = [ft.dropdown.Option('Vesta, Rev4, Schmedemann et al (2014)'),
-                     ft.dropdown.Option('Vesta, Rev3, Schmedemann et al (2014)'),
+                     ft.dropdown.Option(
+                         'Vesta, Rev3, Schmedemann et al (2014)'),
                      ft.dropdown.Option('Vesta, Marchi & O\'Brien (2014)')]
             chron_func_str = "Vesta, Rev4, Schmedemann et al (2014)"
             prod_func_str = "Vesta, Rev4, Schmedemann et al (2014)"
@@ -602,14 +668,20 @@ def main(page: ft.Page):
 
     text_size = ft.TextField(width=150, dense=True, value="8")
 
-    plot_lists = ft.Container(
-        alignment=ft.alignment.top_left,
-        bgcolor=ft.colors.WHITE60,
-        content=ft.Chip(ft.Text("Default")),
-        width=200,
-        height=200,
-        border_radius=10,
-        border=ft.border.all(1, ft.colors.BLACK)
+    plot_lists = ft.ListView(
+        height=250,
+        width=250,
+        item_extent=30,
+        spacing=10,
+        padding=10,
+        controls=[ft.Chip(ft.Text("default"))],
+        first_item_prototype=True,
+    )
+
+    plot_lists_container = ft.Container(
+        content=plot_lists,
+        border=ft.border.all(2, ft.colors.WHITE),
+        alignment=ft.alignment.top_left
     )
 
     new_button = ft.ElevatedButton(text="New", width=115)
@@ -640,9 +712,10 @@ def main(page: ft.Page):
 
     source_file_label = ft.Text("Source file:")
 
-    source_file_entry = ft.TextField(width=250, dense=True, read_only=True)
+    source_file_entry = ft.TextField(width=500, dense=True, read_only=True)
 
-    browse_button = ft.ElevatedButton(text="Browse...", width=115, on_click=lambda _: pick_files_dialog.pick_files())
+    browse_button = ft.ElevatedButton(
+        text="Browse...", width=115, on_click=lambda _: pick_files_dialog.pick_files())
 
     diam_range_entry = ft.TextField(width=150, dense=True, value="0.0")
 
@@ -737,7 +810,7 @@ def main(page: ft.Page):
                 text_size,
             ]),
         ft.Row([
-            plot_lists,
+            plot_lists_container,
             ft.Column([
                 new_button,
                 duplicate_button,
@@ -782,8 +855,6 @@ def main(page: ft.Page):
         ])
     ])
 
-    print(platform.system())
-
     plot_image = ft.Image(
         src="00-demo.png",
         height=500,
@@ -809,14 +880,16 @@ def main(page: ft.Page):
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("Bin"),
-                            ft.TextField(width=100, dense=True, read_only=True),
+                            ft.TextField(width=100, dense=True,
+                                         read_only=True),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("n"),
-                            ft.TextField(width=100, dense=True, read_only=True),
+                            ft.TextField(width=100, dense=True,
+                                         read_only=True),
                         ]
                     ),
                     ft.Column(

@@ -178,7 +178,8 @@ def set_chron_sys(sender, app_data):
         prod_func_str = items[0]
 
     elif app_data == 'Phobos':
-        items = ['Phobos, Case A - SOM, Schmedemann et al (2014)', 'Phobos, Case B - MBA, Schmedemann et al (2014)']
+        items = [
+            'Phobos, Case A - SOM, Schmedemann et al (2014)', 'Phobos, Case B - MBA, Schmedemann et al (2014)']
         chron_func_str = items[0]
         prod_func_str = items[0]
 
@@ -186,7 +187,8 @@ def set_chron_sys(sender, app_data):
         dpg.configure_item(epoch_combo, items=['none'])
         dpg.set_value(epoch_combo, 'none')
     elif app_data == 'Moon':
-        dpg.configure_item(epoch_combo, items=['none', 'Moon, Wilhelms (1987)'])
+        dpg.configure_item(epoch_combo, items=[
+                           'none', 'Moon, Wilhelms (1987)'])
         dpg.set_value(epoch_combo, 'none')
     elif app_data == 'Mars':
         dpg.configure_item(epoch_combo, items=['none', 'Mars, Michael (2013)'])
@@ -226,12 +228,12 @@ dpg.create_context()
 
 if platform.platform()[:5] == 'macOS':
     width, height, channels, data = dpg.load_image(
-        '00-demo.png')
+        'DearPyGUI_Attempt/00-demo.png')
 else:
     width, height, channels, data = dpg.load_image(
-        '00-demo.png')
+        'DearPyGUI_Attempt\\00-demo.png')
 
-dpg.create_viewport(title='CraterStats', width=1048,
+dpg.create_viewport(title='CraterStats IV', width=1048,
                     height=768, resizable=False)
 dpg.setup_dearpygui()
 
@@ -285,7 +287,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
 
             with dpg.group(tag='func_dropdowns'):
                 body = dpg.add_combo(
-                    items=('Moon', 'Mars', 'Mercury', 'Vesta', 'Ceres', 'Ida', 'Gaspra', 'Lutetia', 'Phobos'),
+                    items=('Moon', 'Mars', 'Mercury', 'Vesta', 'Ceres',
+                           'Ida', 'Gaspra', 'Lutetia', 'Phobos'),
                     label='Body',
                     callback=set_chron_sys,
                     default_value='Moon'
@@ -328,7 +331,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                 dpg.add_spacer(height=5)
 
                 equil_func = dpg.add_combo(
-                    items=('none', 'Standard lunar equilibrium (Trask, 1966)', 'Hartmann (1984)'),
+                    items=(
+                        'none', 'Standard lunar equilibrium (Trask, 1966)', 'Hartmann (1984)'),
                     label='Equilibrium Function',
                     default_value='none',
                 )
@@ -484,7 +488,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                     tag='plot_fit_text',
                 )
                 plot_fit_options = dpg.add_combo(
-                    items=('crater count', 'cumulative fit', 'differential fit', 'Poisson pdf', 'Poisson buffer pdf'),
+                    items=('crater count', 'cumulative fit',
+                           'differential fit', 'Poisson pdf', 'Poisson buffer pdf'),
                     width=150,
                     default_value='crater count'
                 )
@@ -581,7 +586,7 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
 
         with dpg.tab(label='Plot'):
             plot_image = dpg.add_image(
-                texture_id,
+                texture_tag=texture_id,
                 width=500,
                 height=500,
                 pos=(
@@ -704,20 +709,24 @@ FONTS
 """
 with dpg.font_registry():
     nasa_font = dpg.add_font(
-        'Fonts/nasalization-rg.otf', 15 * 2)
+        'DearPyGUI_Attempt\\Fonts\\nasalization-rg.otf', 15 * 2)
 
     nas_title_font = dpg.add_font(
-        'Fonts/nasalization-rg.otf', 60 * 2)
+        'DearPyGUI_Attempt\\Fonts\\nasalization-rg.otf', 60 * 2)
 
     nasa_button_font = dpg.add_font(
-        'Fonts/nasalization-rg.otf', 25 * 2)
+        'DearPyGUI_Attempt\\Fonts\\nasalization-rg.otf', 25 * 2)
 
-    arial_font = dpg.add_font('Fonts/Arial Unicode.ttf', 18 * 2)
-    arial_title_font = dpg.add_font('Fonts/Arial Unicode.ttf', 60 * 2)
-    arial_button_font = dpg.add_font('Fonts/Arial Unicode.ttf', 25 * 2)
+    arial_font = dpg.add_font(
+        'DearPyGUI_Attempt\\Fonts\\Arial Unicode.ttf', 18 * 2)
+    arial_title_font = dpg.add_font(
+        'DearPyGUI_Attempt\\Fonts\\Arial Unicode.ttf', 60 * 2)
+    arial_button_font = dpg.add_font(
+        'DearPyGUI_Attempt\\Fonts\\Arial Unicode.ttf', 25 * 2)
 
-    courier_new = dpg.add_font('Fonts/Courier New.ttf', 13 * 2)
-    
+    courier_new = dpg.add_font(
+        'DearPyGUI_Attempt\\Fonts\\Courier New.ttf', 13 * 2)
+
 """
 Themes
 """
@@ -823,14 +832,14 @@ with dpg.theme() as cmd_line_arg_theme:
                             (255, 255, 255), category=dpg.mvThemeCat_Core)
 
 dpg.set_global_font_scale(0.5)
-dpg.bind_theme(dark_mode)
-dpg.bind_item_theme(cmd_line_arg, cmd_line_arg_theme)
-dpg.bind_item_theme(bin_input_text, readonly_entry)
-dpg.bind_item_theme(n_entry_box, readonly_entry)
-dpg.bind_font(nasa_font)
-dpg.bind_item_font(title, nas_title_font)
-dpg.bind_item_font("start button", nasa_button_font)
-dpg.bind_item_font(cmd_line_arg, courier_new)
+# dpg.bind_theme(light_mode)
+# dpg.bind_item_theme(cmd_line_arg, cmd_line_arg_theme)
+# dpg.bind_item_theme(bin_input_text, readonly_entry)
+# dpg.bind_item_theme(n_entry_box, readonly_entry)
+# dpg.bind_font(nasa_font)
+# dpg.bind_item_font(title, nas_title_font)
+# dpg.bind_item_font("start button", nasa_button_font)
+# dpg.bind_item_font(cmd_line_arg, courier_new)
 dpg.show_viewport()
 dpg.start_dearpygui()
 dpg.destroy_context()
