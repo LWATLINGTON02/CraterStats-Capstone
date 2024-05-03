@@ -58,6 +58,13 @@ chron_systems = {
 
 }
 
+colours = ['Black', 'Red', 'Green', 'Blue', 'Yellow',
+                           'Violet', 'Grey', 'Brown', 'Orange', 'Pink', 'Purple', 'Teal']
+
+symbols = ['Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
+           'Cross', 'Point', 'Inverted triangle', 'Filled square',
+           'Filled circle', 'Filled star', 'Filled triangle', 'Filled inverted triangle']
+
 plots_dict = {}
 
 
@@ -374,6 +381,40 @@ def main(page: ft.Page):
             range_val = f"[{int(range_start)} km, {int(range_end)} km]"
 
         diam_range_entry.value = range_val.strip("[]")
+
+        plot_options = plots_dict[correct_key][f"{correct_key}.type"]
+
+        if plot_options == "data":
+            plot_fit_options.value = "crater count"
+
+        elif plot_options == "diff_fit":
+            plot_fit_options.value = "differential fit"
+
+        elif plot_options == "cumu_fit":
+            plot_fit_options.value = "cumulative fit"
+
+        elif plot_options == "poisson":
+            plot_fit_options.value = "Poisson pdf"
+
+        elif plot_options == "poisson_buffer":
+            plot_fit_options.value = "Poisson buffer pdf"
+
+        error_bars.value = plots_dict[correct_key][f"{correct_key}.error_bars"]
+
+        hide_button.value = plots_dict[correct_key][f"{correct_key}.hide"]
+
+        color_dropdown.value = colours[int(plots_dict[correct_key][f"{correct_key}.colour"])]
+
+        symbol_dropdown.value = symbols[int(plots_dict[correct_key][f"{correct_key}.psym"])]
+
+        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
+        binning_options.options = [ft.dropdown.Option(plots_dict[correct_key][f"{correct_key}.binning"])]
+
+        align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
+
+        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
+
+        plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
 
         page.update()
 
@@ -705,7 +746,8 @@ def main(page: ft.Page):
             ft.dropdown.Option("differential fit"),
             ft.dropdown.Option("Poisson pdf"),
             ft.dropdown.Option("Poisson buffer pdf"),
-        ]
+        ],
+        value="crater count"
     )
 
     hide_button = ft.Checkbox(label="Hide plot", value=False)
@@ -721,24 +763,42 @@ def main(page: ft.Page):
 
     color_dropdown = ft.Dropdown(
         dense=True,
-        width=80,
+        width=90,
         options=[
-            ft.dropdown.Option("Red"),
             ft.dropdown.Option("Black"),
+            ft.dropdown.Option("Red"),
             ft.dropdown.Option("Green"),
             ft.dropdown.Option("Blue"),
             ft.dropdown.Option("Yellow"),
+            ft.dropdown.Option("Violet"),
+            ft.dropdown.Option("Grey"),
+            ft.dropdown.Option("Brown"),
+            ft.dropdown.Option("Orange"),
+            ft.dropdown.Option("Pink"),
+            ft.dropdown.Option("Purple"),
+            ft.dropdown.Option("Teal"),
         ],
         value="Black"
     )
 
+
     symbol_dropdown = ft.Dropdown(
         dense=True,
-        width=100,
+        width=210,
         options=[
-            ft.dropdown.Option("Diamond"),
             ft.dropdown.Option("Square"),
             ft.dropdown.Option("Circle"),
+            ft.dropdown.Option("Star"),
+            ft.dropdown.Option("Triangle"),
+            ft.dropdown.Option("Diagonal cross"),
+            ft.dropdown.Option("Cross"),
+            ft.dropdown.Option("Point"),
+            ft.dropdown.Option("Inverted triangle"),
+            ft.dropdown.Option("Filled square"),
+            ft.dropdown.Option("Filled circle"),
+            ft.dropdown.Option("Filled star"),
+            ft.dropdown.Option("Filled triangle"),
+            ft.dropdown.Option("Filled inverted triangle"),
         ],
         value='Square'
     )

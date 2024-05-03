@@ -207,6 +207,8 @@ def increase_progress():
     dpg.configure_item(item="progress_bar", show=True)
     dpg.configure_item(item="start button", show=False)
 
+    print("DEBUG: Got to progress bar before while loop")
+
     while index <= 1:
 
         dpg.set_value("progress_bar", index)
@@ -215,6 +217,8 @@ def increase_progress():
         else:
             index += 0.2
         time.sleep(0.15)
+
+    print("DEBUG: Got to progress bar after while loop")
 
     dpg.set_value("progress_bar", 1)
 
@@ -232,7 +236,7 @@ if platform.platform()[:5] == 'macOS':
         'DearPyGUI_Attempt/00-demo.png')
 else:
     width, height, channels, data = dpg.load_image(
-        'DearPyGUI_Attempt\\00-demo.png')
+        '00-demo.png')
 
 dpg.create_viewport(title='CraterStats IV', width=1048,
                     height=768, resizable=False)
@@ -241,8 +245,7 @@ dpg.setup_dearpygui()
 with dpg.texture_registry():
     texture_id = dpg.add_static_texture(width, height, data)
 
-with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(),
-                height=dpg.get_viewport_height(), no_move=True, no_resize=True):
+with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True, no_resize=True):
     # Create a menu bar
     with dpg.menu_bar():
         with dpg.menu(label="File"):
@@ -683,8 +686,8 @@ with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_view
                      dpg.get_item_pos(plot_image)[1] - 30)
             )
 
-with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(),
-                height=dpg.get_viewport_height(), no_move=True, no_resize=True,):
+with dpg.window(no_close=True, no_title_bar=True, pos=(0, 0), width=dpg.get_viewport_width(), height=dpg.get_viewport_height(), no_move=True, no_resize=True,):
+
     title = dpg.add_text(
         default_value="Welcome to CraterStats!",
         pos=(dpg.get_viewport_width() / 2 - 325, 30),
@@ -712,23 +715,23 @@ FONTS
 """
 with dpg.font_registry():
     nasa_font = dpg.add_font(
-        'DearPyGUI_Attempt\\Fonts\\nasalization-rg.otf', 15 * 2)
+        'Fonts\\nasalization-rg.otf', 15 * 2)
 
     nas_title_font = dpg.add_font(
-        'DearPyGUI_Attempt\\Fonts\\nasalization-rg.otf', 60 * 2)
+        'Fonts\\nasalization-rg.otf', 60 * 2)
 
     nasa_button_font = dpg.add_font(
-        'DearPyGUI_Attempt\\Fonts\\nasalization-rg.otf', 25 * 2)
+        'Fonts\\nasalization-rg.otf', 25 * 2)
 
     arial_font = dpg.add_font(
-        'DearPyGUI_Attempt\\Fonts\\Arial Unicode.ttf', 18 * 2)
+        'Fonts\\Arial Unicode.ttf', 18 * 2)
     arial_title_font = dpg.add_font(
-        'DearPyGUI_Attempt\\Fonts\\Arial Unicode.ttf', 60 * 2)
+        'Fonts\\Arial Unicode.ttf', 60 * 2)
     arial_button_font = dpg.add_font(
-        'DearPyGUI_Attempt\\Fonts\\Arial Unicode.ttf', 25 * 2)
+        'Fonts\\Arial Unicode.ttf', 25 * 2)
 
     courier_new = dpg.add_font(
-        'DearPyGUI_Attempt\\Fonts\\Courier New.ttf', 13 * 2)
+        'Fonts\\Courier New.ttf', 13 * 2)
 
 """
 Themes
@@ -751,8 +754,8 @@ with dpg.theme() as dark_mode:
                             (107, 135, 219), category=dpg.mvThemeCat_Core)
         dpg.add_theme_color(dpg.mvThemeCol_CheckMark,
                             (42, 97, 235), category=dpg.mvThemeCat_Core)
-        # dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
-        #                     (148, 148, 148), category=dpg.mvThemeCat_Core)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
+                            (148, 148, 148), category=dpg.mvThemeCat_Core)
 
     with dpg.theme_component(dpg.mvCombo, enabled_state=False):
         dpg.add_theme_color(dpg.mvThemeCol_FrameBg,
@@ -835,14 +838,16 @@ with dpg.theme() as cmd_line_arg_theme:
                             (255, 255, 255), category=dpg.mvThemeCat_Core)
 
 dpg.set_global_font_scale(0.5)
-# dpg.bind_theme(light_mode)
-# dpg.bind_item_theme(cmd_line_arg, cmd_line_arg_theme)
-# dpg.bind_item_theme(bin_input_text, readonly_entry)
-# dpg.bind_item_theme(n_entry_box, readonly_entry)
-# dpg.bind_font(nasa_font)
-# dpg.bind_item_font(title, nas_title_font)
-# dpg.bind_item_font("start button", nasa_button_font)
-# dpg.bind_item_font(cmd_line_arg, courier_new)
+dpg.bind_theme(light_mode)
+dpg.bind_item_theme(cmd_line_arg, cmd_line_arg_theme)
+dpg.bind_item_theme(bin_input_text, readonly_entry)
+dpg.bind_item_theme(n_entry_box, readonly_entry)
+dpg.bind_font(nasa_font)
+dpg.bind_item_font(title, nas_title_font)
+dpg.bind_item_font("start button", nasa_button_font)
+dpg.bind_item_font(cmd_line_arg, courier_new)
 dpg.show_viewport()
-dpg.start_dearpygui()
+while dpg.is_dearpygui_running():
+    dpg.render_dearpygui_frame()
+
 dpg.destroy_context()
