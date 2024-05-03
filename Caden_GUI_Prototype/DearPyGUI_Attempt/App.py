@@ -822,11 +822,8 @@ with dpg.theme() as cmd_line_arg_theme:
         dpg.add_theme_color(dpg.mvThemeCol_Text,
                             (255, 255, 255), category=dpg.mvThemeCat_Core)
 
-
-
-
 dpg.set_global_font_scale(0.5)
-dpg.bind_theme(light_mode)
+dpg.bind_theme(dark_mode)
 dpg.bind_item_theme(cmd_line_arg, cmd_line_arg_theme)
 dpg.bind_item_theme(bin_input_text, readonly_entry)
 dpg.bind_item_theme(n_entry_box, readonly_entry)
