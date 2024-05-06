@@ -1,4 +1,3 @@
-import platform
 import flet as ft
 from flet import FilePickerResultEvent
 
@@ -59,7 +58,7 @@ chron_systems = {
 }
 
 colours = ['Black', 'Red', 'Green', 'Blue', 'Yellow',
-                           'Violet', 'Grey', 'Brown', 'Orange', 'Pink', 'Purple', 'Teal']
+           'Violet', 'Grey', 'Brown', 'Orange', 'Pink', 'Purple', 'Teal']
 
 symbols = ['Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
            'Cross', 'Point', 'Inverted triangle', 'Filled square',
@@ -78,6 +77,44 @@ def print_tree(dictionary, indent=0):
 
 
 def main(page: ft.Page):
+    def open_about_dialog(e):
+        dlg = ft.AlertDialog(
+            title=ft.Text("CraterstatsIV"),
+            content=ft.Text(
+                '\n'.join(["Developed by The Lunar Pit Patrol, Senior Capstone group for NAU",
+                           "Version: 0.1",
+                           "",
+                           "Explanations of concepts and calculations used in the software are given in publications below:",
+                           "",
+                           "Standardisation of crater count data presentation",
+                           "Arvidson R.E., Boyce J., Chapman C., Cintala M., Fulchignoni M., Moore H., Neukum G., Schultz P., Soderblom L., Strom R., Woronow A., Young R. "
+                           "Standard techniques for presentation and analysis of crater size–frequency data. Icarus 37, 1979.",
+                           "",
+                           "Formulation of a planetary surface chronology model",
+                           "Neukum G., Meteorite bombardment and dating of planetary surfaces (English translation, 1984). Meteoritenbombardement und Datierung planetarer Oberflächen (German original, 1983).",
+                           "",
+                           "Resurfacing correction for cumulative fits; production function differential forms",
+                           "Michael G.G., Neukum G., Planetary surface dating from crater size-frequency distribution measurements: Partial resurfacing events and statistical age uncertainty. EPSL 294, 2010.",
+                           "",
+                           "Differential fitting; binning bias correction; revised Mars epoch boundaries",
+                           "Michael G.G., Planetary surface dating from crater size-frequency distribution measurements: Multiple resurfacing episodes and differential isochron fitting. Icarus, 2013.",
+                           "",
+                           "Poisson timing analysis; mu-notation",
+                           "Michael G.G., Kneissl T., Neesemann A., Planetary surface dating from crater size-frequency distribution measurements: Poisson timing analysis. Icarus, 2016.",
+                           "",
+                           "Poisson calculation for buffered crater count",
+                           "Michael G.G., Yue Z., Gou S., Di K., Dating individual several-km lunar impact craters from the rim annulus in "
+                           "region of planned Chang’E-5 landing Poisson age-likelihood calculation for a buffered crater counting area. EPSL 568, 2021.",
+                           "",
+                           "Full references for specific chronology or other functions are listed with the function definitions in `config/functions.txt`.",
+                           "",
+                           ])),
+            shape=ft.BeveledRectangleBorder(radius=5)
+        )
+        page.dialog = dlg
+        dlg.open = True
+        page.update()
+
     def file_picker_result(e: FilePickerResultEvent):
         count = 0
 
@@ -129,7 +166,7 @@ def main(page: ft.Page):
 
             if specifics[0] == 'set.presentation':
                 presentation_val = specifics[1][1:-
-                                                2].replace("'", "")[:4].lower()
+                2].replace("'", "")[:4].lower()
 
             if specifics[0] == 'set.print_dimensions':
                 print_dimensions = (specifics[1].replace(
@@ -430,21 +467,6 @@ def main(page: ft.Page):
     }
     page.update()
 
-    def handle_menu_item_click(e):
-        print(f"{e.control.value}.on_click")
-        page.show_snack_bar(ft.SnackBar(content=ft.Text(
-            f"{e.control.value} was clicked!")))
-        page.update()
-
-    def handle_on_open(e):
-        print(f"{e.control.value}.on_open")
-
-    def handle_on_close(e):
-        print(f"{e.control.value}.on_close")
-
-    def handle_on_hover(e):
-        print(f"{e.control.value}.on_hover")
-
     def set_chron_func(value, e):
         if e is None:
             check_value = value
@@ -735,7 +757,7 @@ def main(page: ft.Page):
 
     down_button = ft.ElevatedButton(text="Down", width=115)
 
-    plot_fit_text = ft.TextField(width=200, dense=True, value="Default")
+    plot_fit_text = ft.TextField(width=300, dense=True, value="Default")
 
     plot_fit_options = ft.Dropdown(
         width=200,
@@ -780,7 +802,6 @@ def main(page: ft.Page):
         ],
         value="Black"
     )
-
 
     symbol_dropdown = ft.Dropdown(
         dense=True,
@@ -1029,38 +1050,31 @@ def main(page: ft.Page):
         controls=[
             ft.SubmenuButton(
                 content=ft.Text("File"),
-                on_open=handle_on_open,
-                on_close=handle_on_close,
-                on_hover=handle_on_hover,
                 controls=[
                     ft.MenuItemButton(
                         content=ft.Text("Save"),
                         leading=ft.Icon(ft.icons.SAVE),
                         style=ft.ButtonStyle(
                             bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
-                        on_click=handle_menu_item_click
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Open"),
                         leading=ft.Icon(ft.icons.FILE_UPLOAD),
                         style=ft.ButtonStyle(
                             bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
-                        on_click=handle_menu_item_click
+                        on_click=lambda _: pick_files_dialog.pick_files()
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Close"),
                         leading=ft.Icon(ft.icons.CLOSE),
                         style=ft.ButtonStyle(
                             bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
-                        on_click=handle_menu_item_click
+                        on_click=lambda _: page.window_close()
                     )
                 ]
             ),
             ft.SubmenuButton(
                 content=ft.Text("Plot"),
-                on_open=handle_on_open,
-                on_close=handle_on_close,
-                on_hover=handle_on_hover,
                 controls=[
                     ft.MenuItemButton(
                         content=ft.Text("New"),
@@ -1110,8 +1124,9 @@ def main(page: ft.Page):
                     )
                 ]
             ),
-            ft.SubmenuButton(
+            ft.MenuItemButton(
                 content=ft.Text("About"),
+                on_click=open_about_dialog
             )
         ]
     )
