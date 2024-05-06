@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 matplotlib.use('svg')
 
+
 def main(page: ft.Page):
 
     def set_plot_title_and_subtitle(e):
@@ -38,12 +39,16 @@ def main(page: ft.Page):
             page.snack_bar.open = True
             page.update()
 
-        if x_entry.value == '' or y_entry.value == '':
+        if x_entry.value == '':
             x_entry.value = '0'
+
+        if y_entry.value == '':
             y_entry.value = '0'
+
         x_points.append(x_int_val)
         y_points.append(y_int_val)
         ax.plot(x_points, y_points, plot_type)
+
         page.update()
 
     x_points = [1]
@@ -56,21 +61,24 @@ def main(page: ft.Page):
 
     ax.axis([0, 10, 0, 10])
 
-
     x_entry = ft.TextField(
         label='X Value',
+        on_submit=add_point
     )
     y_entry = ft.TextField(
         label='Y Value',
+        on_submit=add_point
     )
 
     title_entry = ft.TextField(
         label='Title',
         on_change=set_plot_title_and_subtitle,
+        on_submit=set_plot_title_and_subtitle
     )
     subtitle_entry = ft.TextField(
         label='Subtitle',
         on_change=set_plot_title_and_subtitle,
+        on_submit=set_plot_title_and_subtitle
     )
 
     show_title = ft.Checkbox(label='Show Title', on_change=set_plot_title_and_subtitle)
@@ -102,7 +110,6 @@ def main(page: ft.Page):
             ]),
         ])
         )
-
 
 
 ft.app(target=main)
