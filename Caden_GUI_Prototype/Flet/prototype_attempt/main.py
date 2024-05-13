@@ -1,70 +1,6 @@
 import flet as ft
 from flet import FilePickerResultEvent
-
-chron_systems = {
-    # Moon Systems
-    "Moon, Neukum (1983)": ["Moon, Neukum (1983)",
-                            "Moon, Neukum (1983)"],
-    "Moon, Neukum et al. (2001)": ['Moon, Neukum et al. (2001)',
-                                   'Moon, Neukum et al. (2001)'],
-    # Mars systems
-    "Mars, Neukum-Ivanov 2001": ['Mars, Hartmann & Neukum (2001)',
-                                 'Mars, Ivanov (2001)'],
-    "Mars, Ivanov 2001": ['Mars, Ivanov (2001)',
-                          'Mars, Ivanov (2001)'],
-    "Mars, Hartmann 2004 iteration": ['Mars, Hartmann (2005) [Michael (2013)]',
-                                      'Mars, Hartmann (2005)'],
-    "Mars, Hartmann & Daubar (2016)": ['Mars, Hartmann (2005) [Michael (2013)]',
-                                       'Mars, Hartmann & Daubar (2016)'],
-    # Mercury Systems
-    "Mercury, Strom & Neukum (1988)": ['Mercury, Strom & Neukum (1988)',
-                                       'Mercury, Strom & Neukum (1988)'],
-    'Mercury, Neukum et al. (2001)': ['Mercury, Neukum et al. (2001)',
-                                      'Mercury, Neukum et al. (2001)'],
-    'Mercury, Le Feuvre and Wieczorek 2011 non-porous': ['Mercury, Le Feuvre and Wieczorek (2011) non-porous',
-                                                         'Mercury, Le Feuvre and Wieczorek (2011) non-porous'],
-    'Mercury, Le Feuvre and Wieczorek 2011 porous': ['Mercury, Le Feuvre and Wieczorek (2011) porous',
-                                                     'Mercury, Le Feuvre and Wieczorek (2011) porous'],
-    ### SMALL BODIES ###
-    # Vesta
-    'Vesta, Rev4, Schmedemann et al (2014)': ['Vesta, Rev4, Schmedemann et al (2014)',
-                                              'Vesta, Rev4, Schmedemann et al (2014)'],
-    'Vesta, Rev3, Schmedemann et al (2014)': ['Vesta, Rev3, Schmedemann et al (2014)',
-                                              'Vesta, Rev3, Schmedemann et al (2014)'],
-    "Vesta, Marchi & O'Brien (2014)": ["Vesta, O'Brien et al. (2014)",
-                                       'Vesta, Marchi et al (2013) [inferred, NS]'],
-    # Ceres
-    'Ceres, Hiesinger et al. (2016)': ['Ceres, Hiesinger et al. (2016)',
-                                       'Ceres, Hiesinger et al. (2016)'],
-
-    # Ida
-    'Ida, Schmedemann et al (2014)': ['Ida, Schmedemann et al (2014)',
-                                      'Ida, Schmedemann et al (2014)'],
-
-    # Gaspra
-    'Gaspra, Schmedemann et al (2014)': ['Gaspra, Schmedemann et al (2014)',
-                                         'Gaspra, Schmedemann et al (2014)'],
-
-    # Lutetia
-    'Lutetia, Schmedemann et al (2014)': ['Lutetia, Schmedemann et al (2014)',
-                                          'Lutetia, Schmedemann et al (2014)'],
-
-    # Phobos
-    'Phobos, Case A - SOM, Schmedemann et al (2014)': ['Phobos, Case A - SOM, Schmedemann et al (2014)',
-                                                       'Phobos, Case A - SOM, Schmedemann et al (2014)'],
-    'Phobos, Case B - MBA, Schmedemann et al (2014)': ['Phobos, Case B - MBA, Schmedemann et al (2014)',
-                                                       'Phobos, Case B - MBA, Schmedemann et al (2014)']
-
-}
-
-colours = ['Black', 'Red', 'Green', 'Blue', 'Yellow',
-           'Violet', 'Grey', 'Brown', 'Orange', 'Pink', 'Purple', 'Teal']
-
-symbols = ['Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
-           'Cross', 'Point', 'Inverted triangle', 'Filled square',
-           'Filled circle', 'Filled star', 'Filled triangle', 'Filled inverted triangle']
-
-plots_dict = {}
+from Globals import *
 
 
 def print_tree(dictionary, indent=0):
@@ -575,6 +511,147 @@ def main(page: ft.Page):
 
         page.update()
 
+    def set_cmd_line_str():
+
+        chron_sys_str = ''
+        equil_func_str = ''
+        epoch_str = ''
+        title_str = ''
+        subtitle_str = ''
+        plot_view_str = ''
+
+        cmd_line_str = ''
+
+        chron_sys_str = set_chron_str()
+        equil_func_str = set_equil_str()
+        epoch_str = set_epoch_str()
+        title_str = set_title_str()
+        subtitle_str = set_subtitle_str()
+        plot_view_str = set_plot_view_str()
+
+        cmd_line_str = f'craterstats {chron_sys_str if chron_sys_str is not None else ""} {equil_func_str if equil_func_str is not None else ""} {epoch_str if epoch_str is not None else ""} {title_str if title_str is not None else ""} {subtitle_str if subtitle_str is not None else ""} {plot_view_str if plot_view_str is not None else ""}'
+
+        cmd_str.value = cmd_line_str
+
+        page.update()
+
+    def set_chron_str():
+
+        new_str = ''
+
+        match chron_sys.value:
+
+            case 'Moon, Neukum (1983)':
+                new_str = '-cs 1'
+            case 'Moon, Neukum et al. (2001)':
+                new_str = '-cs 2'
+            case 'Moon, Hartmann 2010 iteration':
+                new_str = '-cs 3'
+            case 'Moon, Yue et al. (2022)':
+                new_str = '-cs 4'
+            case 'Mars, Neukum-Ivanov (2001)':
+                new_str = '-cs 5'
+            case 'Mars, Ivanov (2001)':
+                new_str = '-cs 6'
+            case 'Mars, Hartmann 2004 iteration':
+                new_str = '-cs 7'
+            case 'Mars, Hartmann & Daubar (2016)':
+                new_str = '-cs 8'
+            case 'Mercury, Strom & Neukum (1988)':
+                new_str = '-cs 9'
+            case 'Mercury, Neukum et al. (2001)':
+                new_str = '-cs 10'
+            case 'Mercury, Le Feuvre and Wieczorek 2011 non-porous':
+                new_str = '-cs 11'
+            case 'Mercury, Le Feuvre and Wieczorek 2011 porous':
+                new_str = '-cs 12'
+            case 'Vesta, Rev4, Schmedemann et al (2014)':
+                new_str = '-cs 13'
+            case 'Vesta, Rev3, Schmedemann et al (2014)':
+                new_str = '-cs 14'
+            case 'Vesta, Marchi & O\'Brien (2014)':
+                new_str = '-cs 15'
+            case 'Ceres, Hiesinger et al. (2016)':
+                new_str = '-cs 16'
+            case 'Ida, Schedemann et al (2014)':
+                new_str = '-cs 17'
+            case 'Gaspra, Schmedemann et al (2014)':
+                new_str = '-cs 18'
+            case 'Lutetia, Schmedemann et al (2014)':
+                new_str = '-cs 19'
+            case 'Phobos, Case A - SOM, Schmedemann et al (2014)':
+                new_str = '-cs 20'
+            case 'Phobos, Case B - MBA, Schedemann et al (2014)':
+                new_str = '-cs 21'
+
+        return new_str
+
+    def set_equil_str():
+
+        new_str = ''
+
+        match equil_func.value:
+
+            case 'Standard lunar equilibrium (Trask, 1966)':
+                new_str = '-ef 1'
+            case 'Hartmann (1984)':
+                new_str = '-ef 2'
+
+        return new_str
+
+    def set_epoch_str():
+
+        new_str = ''
+
+        match epoch.value:
+
+            case 'Moon, Wilhelms (1987)':
+                new_str = '-ep 1'
+
+            case 'Mars, Michael (2013)':
+                new_str = '-ep 2'
+
+        return new_str
+
+    def set_title_str():
+
+        new_str = f"-title {title_entry.value}"
+
+        if title_checkbox.value:
+            return new_str
+
+        return None
+
+    def set_subtitle_str():
+
+        new_str = f'-subtitle {subtitle_entry.value}'
+
+        if subtitle_checkbox.value:
+            return new_str
+
+        return None
+
+    def set_plot_view_str():
+
+        new_str = ''
+
+        match plot_view.value:
+
+            case "cumu":
+                new_str = '-pr cumulative'
+            case "diff":
+                new_str = '-pr differential'
+            case "rela":
+                new_str = '-pr R-plot'
+            case "hart":
+                new_str = '-pr Hartmann'
+            case "chro":
+                new_str = '-pr chronology'
+            case "rate":
+                new_str = '-pr rate'
+
+        return new_str
+
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
@@ -585,6 +662,7 @@ def main(page: ft.Page):
         ft.Radio(value="rela", label="Relative (R)"),
         ft.Radio(value="hart", label="Hartmann"),
         ft.Radio(value="chro", label="Chronology"),
+        ft.Radio(value='rate', label="Rate")
     ]),
         value="diff"
     )
@@ -612,6 +690,8 @@ def main(page: ft.Page):
         options=[
             ft.dropdown.Option("Moon, Neukum (1983)"),
             ft.dropdown.Option("Moon, Neukum et al. (2001)"),
+            ft.dropdown.Option("Moon, Hartmann 2010 iteration"),
+            ft.dropdown.Option("Moon, Yue et al. (2022)"),
         ],
         value="Moon, Neukum (1983)",
         dense=True,
@@ -845,6 +925,16 @@ def main(page: ft.Page):
         value='psuedo-log',
     )
 
+    cmd_str = ft.TextField(
+        dense=True,
+        value="-cs neukumivanov -title Differential plot -subtitle with two differential fit age evaluations -p source=%sample%/Pickering.scc,psym=o -p type=d-fit,range=[.2,.7],isochron=1 -p range=[2,5],colour=red",
+        text_size=12,
+        bgcolor=ft.colors.BLACK,
+        color=ft.colors.WHITE,
+        text_style=ft.TextStyle(font_family="Courier New"),
+        width=1200
+    )
+
     global_settings = ft.Column(
         [
             plot_view,
@@ -1004,15 +1094,7 @@ def main(page: ft.Page):
                 ]
             ),
             plot_image,
-            ft.TextField(
-                dense=True,
-                value="-cs neukumivanov -title Differential plot -subtitle with two differential fit age evaluations -p source=%sample%/Pickering.scc,psym=o -p type=d-fit,range=[.2,.7],isochron=1 -p range=[2,5],colour=red",
-                text_size=12,
-                bgcolor=ft.colors.BLACK,
-                color=ft.colors.WHITE,
-                text_style=ft.TextStyle(font_family="Courier New"),
-                width=1200
-            )
+            cmd_str
         ]
 
     )
@@ -1039,6 +1121,7 @@ def main(page: ft.Page):
             ),
         ],
         expand=1,
+        on_change=lambda _: set_cmd_line_str()
     )
 
     menubar = ft.MenuBar(
