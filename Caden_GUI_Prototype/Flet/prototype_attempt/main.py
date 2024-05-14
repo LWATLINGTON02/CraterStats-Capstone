@@ -519,6 +519,17 @@ def main(page: ft.Page):
         title_str = ''
         subtitle_str = ''
         plot_view_str = ''
+        xrange_str = ''
+        yrange_str = ''
+        iso_str = ''
+        show_iso_str = ''
+        legend_str = ''
+        cite_function_str = ''
+        mu_str = ''
+        style_str = ''
+        print_dim_str = ''
+        pt_size_str = ''
+        p_str = ''
 
         cmd_line_str = ''
 
@@ -528,8 +539,35 @@ def main(page: ft.Page):
         title_str = set_title_str()
         subtitle_str = set_subtitle_str()
         plot_view_str = set_plot_view_str()
+        xrange_str = set_xrange_str()
+        yrange_str = set_yrange_str()
+        iso_str = set_isochron_str()
+        show_iso_str = set_show_isochron_str()
+        legend_str = set_legend_str()
+        cite_function_str = set_cite_function_str()
+        mu_str = set_mu_str()
+        style_str = set_style_str()
+        print_dim_str = set_print_dim_str()
+        pt_size_str = set_pt_size_str()
+        p_str = set_p_str()
 
-        cmd_line_str = f'craterstats {chron_sys_str if chron_sys_str is not None else ""} {equil_func_str if equil_func_str is not None else ""} {epoch_str if epoch_str is not None else ""} {title_str if title_str is not None else ""} {subtitle_str if subtitle_str is not None else ""} {plot_view_str if plot_view_str is not None else ""}'
+        cmd_line_str = (f'craterstats{chron_sys_str if chron_sys_str is not None else ""}'
+                        f'{equil_func_str if equil_func_str is not None else ""}'
+                        f'{epoch_str if epoch_str is not None else ""}'
+                        f'{title_str if title_str is not None else ""}'
+                        f'{subtitle_str if subtitle_str is not None else ""}'
+                        f'{plot_view_str if plot_view_str is not None else ""}'
+                        f'{xrange_str if xrange_str is not None else ""}'
+                        f'{yrange_str if yrange_str is not None else ""}'
+                        f'{iso_str if iso_str is not None else ""}'
+                        f'{show_iso_str if show_iso_str is not None else ""}'
+                        f'{legend_str if legend_str is not None else ""}'
+                        f'{cite_function_str if cite_function_str is not None else ""}'
+                        f'{mu_str if mu_str is not None else ""}'
+                        f'{style_str if style_str is not None else ""}'
+                        f'{print_dim_str if print_dim_str is not None else ""}'
+                        f'{pt_size_str if pt_size_str is not None else ""}'
+                        f'{p_str if p_str is not None else ""}')
 
         cmd_str.value = cmd_line_str
 
@@ -542,47 +580,47 @@ def main(page: ft.Page):
         match chron_sys.value:
 
             case 'Moon, Neukum (1983)':
-                new_str = '-cs 1'
+                new_str = ' -cs 1'
             case 'Moon, Neukum et al. (2001)':
-                new_str = '-cs 2'
+                new_str = ' -cs 2'
             case 'Moon, Hartmann 2010 iteration':
-                new_str = '-cs 3'
+                new_str = ' -cs 3'
             case 'Moon, Yue et al. (2022)':
-                new_str = '-cs 4'
+                new_str = ' -cs 4'
             case 'Mars, Neukum-Ivanov (2001)':
-                new_str = '-cs 5'
+                new_str = ' -cs 5'
             case 'Mars, Ivanov (2001)':
-                new_str = '-cs 6'
+                new_str = ' -cs 6'
             case 'Mars, Hartmann 2004 iteration':
-                new_str = '-cs 7'
+                new_str = ' -cs 7'
             case 'Mars, Hartmann & Daubar (2016)':
-                new_str = '-cs 8'
+                new_str = ' -cs 8'
             case 'Mercury, Strom & Neukum (1988)':
-                new_str = '-cs 9'
+                new_str = ' -cs 9'
             case 'Mercury, Neukum et al. (2001)':
-                new_str = '-cs 10'
+                new_str = ' -cs 10'
             case 'Mercury, Le Feuvre and Wieczorek 2011 non-porous':
-                new_str = '-cs 11'
+                new_str = ' -cs 11'
             case 'Mercury, Le Feuvre and Wieczorek 2011 porous':
-                new_str = '-cs 12'
+                new_str = ' -cs 12'
             case 'Vesta, Rev4, Schmedemann et al (2014)':
-                new_str = '-cs 13'
+                new_str = ' -cs 13'
             case 'Vesta, Rev3, Schmedemann et al (2014)':
-                new_str = '-cs 14'
+                new_str = ' -cs 14'
             case 'Vesta, Marchi & O\'Brien (2014)':
-                new_str = '-cs 15'
+                new_str = ' -cs 15'
             case 'Ceres, Hiesinger et al. (2016)':
-                new_str = '-cs 16'
+                new_str = ' -cs 16'
             case 'Ida, Schedemann et al (2014)':
-                new_str = '-cs 17'
+                new_str = ' -cs 17'
             case 'Gaspra, Schmedemann et al (2014)':
-                new_str = '-cs 18'
+                new_str = ' -cs 18'
             case 'Lutetia, Schmedemann et al (2014)':
-                new_str = '-cs 19'
+                new_str = ' -cs 19'
             case 'Phobos, Case A - SOM, Schmedemann et al (2014)':
-                new_str = '-cs 20'
+                new_str = ' -cs 20'
             case 'Phobos, Case B - MBA, Schedemann et al (2014)':
-                new_str = '-cs 21'
+                new_str = ' -cs 21'
 
         return new_str
 
@@ -593,9 +631,9 @@ def main(page: ft.Page):
         match equil_func.value:
 
             case 'Standard lunar equilibrium (Trask, 1966)':
-                new_str = '-ef 1'
+                new_str = ' -ef 1'
             case 'Hartmann (1984)':
-                new_str = '-ef 2'
+                new_str = ' -ef 2'
 
         return new_str
 
@@ -606,27 +644,27 @@ def main(page: ft.Page):
         match epoch.value:
 
             case 'Moon, Wilhelms (1987)':
-                new_str = '-ep 1'
+                new_str = ' -ep 1'
 
             case 'Mars, Michael (2013)':
-                new_str = '-ep 2'
+                new_str = ' -ep 2'
 
         return new_str
 
     def set_title_str():
 
-        new_str = f"-title {title_entry.value}"
+        new_str = f" -title {title_entry.value}"
 
-        if title_checkbox.value:
+        if title_checkbox.value or title_entry.value != '':
             return new_str
 
         return None
 
     def set_subtitle_str():
 
-        new_str = f'-subtitle {subtitle_entry.value}'
+        new_str = f' -subtitle {subtitle_entry.value}'
 
-        if subtitle_checkbox.value:
+        if subtitle_checkbox.value or subtitle_entry.value != '':
             return new_str
 
         return None
@@ -638,19 +676,82 @@ def main(page: ft.Page):
         match plot_view.value:
 
             case "cumu":
-                new_str = '-pr cumulative'
+                new_str = ' -pr cumulative'
             case "diff":
-                new_str = '-pr differential'
+                new_str = ' -pr differential'
             case "rela":
-                new_str = '-pr R-plot'
+                new_str = ' -pr R-plot'
             case "hart":
-                new_str = '-pr Hartmann'
+                new_str = ' -pr Hartmann'
             case "chro":
-                new_str = '-pr chronology'
+                new_str = ' -pr chronology'
             case "rate":
-                new_str = '-pr rate'
+                new_str = ' -pr rate'
 
         return new_str
+
+    def set_xrange_str():
+        return None
+
+    def set_yrange_str():
+        return None
+
+    def set_isochron_str():
+
+        new_str = f' -isochrons {iso_text.value}'
+
+        return new_str
+
+    def set_show_isochron_str():
+
+        new_str = f' -show_isochron {'1' if show_iso.value else '0'}'
+
+        return new_str
+
+    def set_legend_str():
+
+        return None
+
+    def set_cite_function_str():
+
+         return None
+
+    def set_mu_str():
+
+        new_str = f' -mu {'1' if mu_legend.value else '0'}'
+
+        return new_str
+
+    def set_style_str():
+
+        new_str = f' -style {style_options.value}'
+
+        return new_str
+
+    def set_print_dim_str():
+
+        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f'{{{print_scale_entry.value}}}'}'
+
+        return new_str
+
+    def set_pt_size_str():
+
+        new_str = f' -pt_size {text_size.value}'
+
+        return new_str
+
+    def set_ref_diameter_str():
+
+        return None
+
+    def set_p_str():
+
+        return None
+
+
+
+
+
 
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
@@ -792,7 +893,6 @@ def main(page: ft.Page):
         width=150,
         options=[
             ft.dropdown.Option("natural"),
-            ft.dropdown.Option("decadal"),
             ft.dropdown.Option("root-2"),
         ],
         value="natural",
