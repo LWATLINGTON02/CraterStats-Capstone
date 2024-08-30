@@ -2,7 +2,7 @@ import flet as ft
 from flet import FilePickerResultEvent
 from Globals import *
 
-
+# DEBUG FUNCTION
 def print_tree(dictionary, indent=0):
     for key, value in dictionary.items():
         print('  ' * indent + str(key))
@@ -11,13 +11,23 @@ def print_tree(dictionary, indent=0):
         else:
             print('  ' * (indent + 1) + str(value))
 
-
+"""Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
     def open_about_dialog(e):
+        """
+        Sets about dialog text and opens alert panel
+        About text is updated from CraterstatsIII to include our contribution
+        """
         dlg = ft.AlertDialog(
             title=ft.Text("CraterstatsIV"),
             content=ft.Text(
                 '\n'.join(["GUI Developed by The Lunar Pit Patrol, Senior Capstone group for NAU",
+                           "Lunar Pit Patrol Team:",
+                           "Evan Palmisiano",
+                           "Ibrahim Hmood",
+                           "Alden Smith",
+                           "Caden Tedeschi",
+                           "Levi Watlington\n",
                            "Craterstats Program developped by Michael G.G",
                            "Version: 0.1",
                            "",
@@ -52,11 +62,19 @@ def main(page: ft.Page):
         dlg.open = True
         page.update()
 
+    """
+    Name: file_picker_result
+    Input Parameter: Flet event for when a file is picked
+    Returns: Nothing
+    Description: Reads file data and adjusts all data in application according
+                to file 
+    """
     def file_picker_result(e: FilePickerResultEvent):
         count = 0
 
         data = open(e.files[0].path)
 
+        # Reads through each line of data and sets data based off of line
         for line in data:
             specifics = line.split("=")
             if len(specifics) == 1:
@@ -285,6 +303,12 @@ def main(page: ft.Page):
         page.update()
         data.close()
 
+    """
+    Name: create_plot_lists
+    Input Parameters: None
+    Returns: Nothing
+    Description: 
+    """
     def create_plot_lists():
 
         content_list = []
@@ -305,6 +329,13 @@ def main(page: ft.Page):
 
         page.update()
 
+    """
+    Name: set_plot_info
+    Input Parameters: Event handler
+    Returns: Nothing
+    Description: Changes plot info in Plot Settings tab based off of which 
+                plot type is selected
+    """
     def set_plot_info(e):
         correct_key = ''
 
@@ -392,11 +423,16 @@ def main(page: ft.Page):
 
         page.update()
 
-    page.title = 'Craterstats IV'
-    page.theme_mode = ft.ThemeMode.DARK
-    page.window_width = 1200
-    page.window_height = 900
-    page.window_resizable = False
+
+    """
+    Default Settings for the application
+    """
+    page.title = 'Craterstats IV' # Application title
+    page.theme_mode = ft.ThemeMode.DARK # Flet Default dark theme
+    page.window.width = 1200 # Application width
+    page.window.height = 900 # Application Height
+    page.window.resizable = False #Application size is static
+    # Fonts that can be used inside the application
     page.fonts = {
         "Courier New": "DearPyGUI_Attempt\\Fonts\\Courier New.ttf",
         "Nasa": "DearPyGUI_Attempt\\Fonts\\nasalization-rg.otf",
@@ -404,6 +440,12 @@ def main(page: ft.Page):
     }
     page.update()
 
+    """
+    Name: set_chron_func
+    Input parameters: value, event handler
+    Returns: Nothing
+    Description
+    """
     def set_chron_func(value, e):
         if e is None:
             check_value = value
