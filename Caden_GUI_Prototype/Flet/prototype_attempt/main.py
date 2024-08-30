@@ -17,7 +17,8 @@ def main(page: ft.Page):
         dlg = ft.AlertDialog(
             title=ft.Text("CraterstatsIV"),
             content=ft.Text(
-                '\n'.join(["Developed by The Lunar Pit Patrol, Senior Capstone group for NAU",
+                '\n'.join(["GUI Developed by The Lunar Pit Patrol, Senior Capstone group for NAU",
+                           "Craterstats Program developped by Michael G.G",
                            "Version: 0.1",
                            "",
                            "Explanations of concepts and calculations used in the software are given in publications below:",
