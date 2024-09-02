@@ -14,9 +14,17 @@ def print_tree(dictionary, indent=0):
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
     def open_about_dialog(e):
-        """
-        Sets about dialog text and opens alert panel
-        About text is updated from CraterstatsIII to include our contribution
+        """ Opens and fills about text.
+
+        Opens about popup in application and fills out about section with the
+        information about craterstats taken from CraterstatsIII with additions
+        to include the Lunar Pit Patrol Team and contribution
+
+        Args:
+            none
+        
+        Returns:
+            none        
         """
         dlg = ft.AlertDialog(
             title=ft.Text("CraterstatsIV"),
@@ -62,14 +70,21 @@ def main(page: ft.Page):
         dlg.open = True
         page.update()
 
-    """
-    Name: file_picker_result
-    Input Parameter: Flet event for when a file is picked
-    Returns: Nothing
-    Description: Reads file data and adjusts all data in application according
-                to file 
-    """
+    
     def file_picker_result(e: FilePickerResultEvent):
+        """Fills out data based off of file.
+
+        Data in application is filled out based off of the file that is selected.
+        Data that is filled out is dependent on the file.
+        
+        File types allowed: .plt
+
+        Args:
+            e: FilePickerResultEvent
+        
+        Returns:
+            none       
+        """
         count = 0
 
         data = open(e.files[0].path)
@@ -303,14 +318,18 @@ def main(page: ft.Page):
         page.update()
         data.close()
 
-    """
-    Name: create_plot_lists
-    Input Parameters: None
-    Returns: Nothing
-    Description: 
-    """
     def create_plot_lists():
+        """Creates a dictionary of plots.
 
+        A global dictionary of plots is filled out based off of the information
+        in the file that is uploaded to make different subplots
+
+        Args:
+            none
+
+        Returns:
+            none
+        """
         content_list = []
 
         plot_names = {}
@@ -329,14 +348,19 @@ def main(page: ft.Page):
 
         page.update()
 
-    """
-    Name: set_plot_info
-    Input Parameters: Event handler
-    Returns: Nothing
-    Description: Changes plot info in Plot Settings tab based off of which 
-                plot type is selected
-    """
     def set_plot_info(e):
+        """Sets plotsetting info for subplots
+
+        Changes the settings on the Plot Settings tab depending on which subplot is
+        selected
+
+        Args:
+            e: EventHandler
+
+        Returns:
+            none
+        """
+
         correct_key = ''
 
         print(e.control.label.value)
@@ -440,13 +464,19 @@ def main(page: ft.Page):
     }
     page.update()
 
-    """
-    Name: set_chron_func
-    Input parameters: value, event handler
-    Returns: Nothing
-    Description
-    """
     def set_chron_func(value, e):
+        """Sets chronology function.
+
+        Chronology function on the Global Settings paged is changed dependent on
+        which Chronology System is selected
+
+        Args:
+            Value: None
+            e: Eventhandler
+
+        Returns:
+            none
+        """
         if e is None:
             check_value = value
         else:
@@ -465,6 +495,18 @@ def main(page: ft.Page):
         page.update()
 
     def set_chron_sys(value, e):
+        """Changes chronology system
+
+        Chronology System on the Global Settings page is changed dependent on what
+        celestial body is selected
+
+        Args:
+            Value: None
+            e: Eventhandler
+
+        Returns:
+            none
+        """
         if e is None:
             check_value = value
         else:
@@ -555,6 +597,17 @@ def main(page: ft.Page):
         page.update()
 
     def set_cmd_line_str():
+        """Sets command line string.
+
+        Takes all of the different data in the current applicaiton and sets it
+        equal to its command line counterpart
+
+        Args:
+            none
+        Return:
+            none
+        """
+
 
         chron_sys_str = ''
         equil_func_str = ''
@@ -617,6 +670,19 @@ def main(page: ft.Page):
         page.update()
 
     def set_chron_str():
+        """Sets Chronolgy System command line string.
+        
+        Sets the command line string for the Chronology System that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-cs 1'
+        """
 
         new_str = ''
 
@@ -668,7 +734,19 @@ def main(page: ft.Page):
         return new_str
 
     def set_equil_str():
+        """Sets equilbrium function command line string.
+        
+        Sets the command line string for the Equilibrium Function that is selected
+        in the application
 
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-ef 1'
+        """
         new_str = ''
 
         match equil_func.value:
@@ -681,6 +759,19 @@ def main(page: ft.Page):
         return new_str
 
     def set_epoch_str():
+        """Sets epoch command line string.
+        
+        Sets the command line string for the epoch that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-ep 1'
+        """
 
         new_str = ''
 
@@ -695,6 +786,19 @@ def main(page: ft.Page):
         return new_str
 
     def set_title_str():
+        """Sets title command line string.
+        
+        Sets the command line string for the title that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-title Hartmann and Neukum isochrons'
+        """
 
         new_str = f" -title {title_entry.value}"
 
@@ -704,6 +808,19 @@ def main(page: ft.Page):
         return None
 
     def set_subtitle_str():
+        """Sets subtitle command line string.
+        
+        Sets the command line string for the subtitle that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-subtitle isochrons low'
+        """
 
         new_str = f' -subtitle {subtitle_entry.value}'
 
@@ -713,7 +830,19 @@ def main(page: ft.Page):
         return None
 
     def set_plot_view_str():
+        """Sets plot view command line string.
+        
+        Sets the command line string for the plot view that is selected
+        in the application
 
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-pr cumulative'
+        """
         new_str = ''
 
         match plot_view.value:
@@ -740,12 +869,36 @@ def main(page: ft.Page):
         return None
 
     def set_isochron_str():
+        """Sets isochron command line string.
+        
+        Sets the command line string for the isochron that is selected
+        in the application
 
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-isochrons 0.1,0.1,0.1'
+        """
         new_str = f' -isochrons {iso_text.value}'
 
         return new_str
 
     def set_show_isochron_str():
+        """Sets show isochron command line string.
+        
+        Sets the command line string if show isochrons is an option
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-show_isochron 1'
+        """
 
         new_str = f' -show_isochron {'1' if show_iso.value else '0'}'
 
@@ -760,24 +913,74 @@ def main(page: ft.Page):
          return None
 
     def set_mu_str():
+        """Sets mu command line string.
+        
+        Sets the command line string if mu is selected
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            ' -mu 1'
+        """
 
         new_str = f' -mu {'1' if mu_legend.value else '0'}'
 
         return new_str
 
     def set_style_str():
+        """Sets style command line string.
+        
+        Sets the command line string for the style that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-style decadel'
+        """
 
         new_str = f' -style {style_options.value}'
 
         return new_str
 
     def set_print_dim_str():
+        """Sets print dimension command line string.
+        
+        Sets the command line string for the print dimenstion that is selected
+        in the application
 
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-print_dim {7.5x7.5}'
+        """
         new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f'{{{print_scale_entry.value}}}'}'
 
         return new_str
 
     def set_pt_size_str():
+        """Sets font size command line string.
+        
+        Sets the command line string for the font size that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-pt_size 8'
+        """
 
         new_str = f' -pt_size {text_size.value}'
 
@@ -791,15 +994,16 @@ def main(page: ft.Page):
 
         return None
 
-
-
-
-
+    """
+    Start of FLET GUI options
+    """
 
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
 
+
+    # Plot view Radio options
     plot_view = ft.RadioGroup(ft.Row([
         ft.Radio(value="cumu", label="Cumulative"),
         ft.Radio(value="diff", label="Differential"),
@@ -811,6 +1015,7 @@ def main(page: ft.Page):
         value="diff"
     )
 
+    # Celestial body fropdown options
     body = ft.Dropdown(
         width=500,
         options=[ft.dropdown.Option("Moon"),
@@ -828,6 +1033,7 @@ def main(page: ft.Page):
         on_change=lambda e: set_chron_sys(None, e)
     )
 
+    # Chronolgy System dropdown options
     chron_sys = ft.Dropdown(
         width=500,
         label="Chronology System",
@@ -842,6 +1048,7 @@ def main(page: ft.Page):
         on_change=lambda e: set_chron_func(None, e)
     )
 
+    # Chronology Function Dropdown options
     chron_func = ft.Dropdown(
         width=500,
         label="Chronology Function",
@@ -850,6 +1057,7 @@ def main(page: ft.Page):
         dense=True
     )
 
+    # Production function dropdown options
     prod_func = ft.Dropdown(
         width=500,
         label="Production Function",
@@ -859,6 +1067,7 @@ def main(page: ft.Page):
 
     )
 
+    # Epoch dropdown options
     epoch = ft.Dropdown(
         width=500,
         label="Epochs",
@@ -872,6 +1081,7 @@ def main(page: ft.Page):
 
     )
 
+    # Equilibrium function dropdown options
     equil_func = ft.Dropdown(
         width=500,
         label="Equilibrium Function",
@@ -885,53 +1095,67 @@ def main(page: ft.Page):
         dense=True
     )
 
+    # Isochron text field
     iso_text = ft.TextField(
         width=150,
         dense=True
     )
 
+    # Isochron Label
     iso_label = ft.Checkbox(
         label="Isochrons, Ga",
         value=False,
     )
 
+    # Data legend checkbox
     data_legend = ft.Checkbox(
         label="Data",
         value=True,
     )
 
+    # Fit legend checkbox
     fit_legend = ft.Checkbox(
         label="Fit",
         value=True,
     )
 
+    # Function legend checkbox
     func_legend = ft.Checkbox(
         label="Functions",
         value=True,
     )
 
+    #3sf legend checckbox
     sf_legend = ft.Checkbox(
         label="3sf",
     )
 
+    # randomness legend checkbox
     rand_legend = ft.Checkbox(
         label="Randomness",
     )
 
+    # Mu legend checkbox
     mu_legend = ft.Checkbox(
         label="µ notation"
     )
 
+    # Reference Diameter text field
     ref_diam = ft.TextField(width=50, dense=True)
 
+    # Reference Diameter label
     ref_diam_lbl = ft.Text("Ref diameter,km")
 
+    # Axis Log D Textfield
     axis_d_input_box = ft.TextField(width=75, dense=True, value="-3.2")
 
+    # Axis y TextField
     axis_y_input_box = ft.TextField(width=50, dense=True, value="5.5")
 
+    # Auto Axis button
     axis_auto_button = ft.ElevatedButton(text="Auto", width=80)
 
+    # Style options dropdown
     style_options = ft.Dropdown(
         width=150,
         options=[
@@ -942,18 +1166,25 @@ def main(page: ft.Page):
         dense=True
     )
 
+    # Title entry textfield
     title_entry = ft.TextField(width=150, dense=True, text_vertical_align=0)
 
+    # Title checkbox
     title_checkbox = ft.Checkbox(label="Title", value=True)
 
+    # Print scale textfield
     print_scale_entry = ft.TextField(width=150, dense=True, value="7.5x7.5")
 
+    # Subtitle entry textfield
     subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0)
 
+    # subtitle checkbox
     subtitle_checkbox = ft.Checkbox(label="Subtitle", value=True)
 
+    # Font size textfield
     text_size = ft.TextField(width=150, dense=True, value="8")
 
+    # Plot lists list view
     plot_lists = ft.ListView(
         height=250,
         width=250,
@@ -964,12 +1195,14 @@ def main(page: ft.Page):
         first_item_prototype=True,
     )
 
+    # Plot list container
     plot_lists_container = ft.Container(
         content=plot_lists,
         border=ft.border.all(2, ft.colors.WHITE),
         alignment=ft.alignment.top_left
     )
 
+    """Plot Lists buttons"""
     new_button = ft.ElevatedButton(text="New", width=115)
 
     duplicate_button = ft.ElevatedButton(text="Duplicate", width=115)
@@ -980,8 +1213,11 @@ def main(page: ft.Page):
 
     down_button = ft.ElevatedButton(text="Down", width=115)
 
+
+    # Plot fit text field
     plot_fit_text = ft.TextField(width=300, dense=True, value="Default")
 
+    # Plot fit dropdown
     plot_fit_options = ft.Dropdown(
         width=200,
         dense=True,
@@ -995,17 +1231,23 @@ def main(page: ft.Page):
         value="crater count"
     )
 
+    # Hide Button
     hide_button = ft.Checkbox(label="Hide plot", value=False)
 
+    # Source file label
     source_file_label = ft.Text("Source file:")
 
+    # Source file textfield
     source_file_entry = ft.TextField(width=500, dense=True, read_only=True)
 
+    # File Browse button
     browse_button = ft.ElevatedButton(
         text="Browse...", width=115, on_click=lambda _: pick_files_dialog.pick_files())
 
+    # Diameter Range textfield
     diam_range_entry = ft.TextField(width=150, dense=True, value="0.0")
 
+    # Plot point color dropdown
     color_dropdown = ft.Dropdown(
         dense=True,
         width=90,
@@ -1026,6 +1268,7 @@ def main(page: ft.Page):
         value="Black"
     )
 
+    # Plot point color symbol
     symbol_dropdown = ft.Dropdown(
         dense=True,
         width=210,
@@ -1047,6 +1290,7 @@ def main(page: ft.Page):
         value='Square'
     )
 
+    """PLOT SETTINGS OPTIONS"""
     error_bars = ft.Checkbox(label="Error bars", value=True)
 
     display_age = ft.Checkbox(label="Display age", value=True)
@@ -1057,6 +1301,7 @@ def main(page: ft.Page):
 
     plot_fit_error = ft.Checkbox(label="Plot fit", value=True)
 
+    # Binning options dropdown
     binning_options = ft.Dropdown(
         width=150,
         dense=True,
@@ -1068,6 +1313,7 @@ def main(page: ft.Page):
         value='psuedo-log',
     )
 
+    # Default command line string
     cmd_str = ft.TextField(
         dense=True,
         value="-cs neukumivanov -title Differential plot -subtitle with two differential fit age evaluations -p source=%sample%/Pickering.scc,psym=o -p type=d-fit,range=[.2,.7],isochron=1 -p range=[2,5],colour=red",
@@ -1078,6 +1324,7 @@ def main(page: ft.Page):
         width=1200
     )
 
+    # Global Settings Tab Container
     global_settings = ft.Column(
         [
             plot_view,
@@ -1106,6 +1353,7 @@ def main(page: ft.Page):
         ]
     )
 
+    # Plot settings tab container
     plot_settings = ft.Column([
         ft.Text(),
         ft.GridView(
@@ -1169,6 +1417,7 @@ def main(page: ft.Page):
         ])
     ])
 
+    # plot image
     plot_image = ft.Image(
         src="00-demo.png",
         height=500,
@@ -1176,6 +1425,7 @@ def main(page: ft.Page):
         fit=ft.ImageFit.CONTAIN
     )
 
+    # Plot Tab container
     plot = ft.Column(
         alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -1242,6 +1492,7 @@ def main(page: ft.Page):
 
     )
 
+    # Tabs 
     t = ft.Tabs(
         selected_index=0,
         animation_duration=150,
@@ -1267,6 +1518,7 @@ def main(page: ft.Page):
         on_change=lambda _: set_cmd_line_str()
     )
 
+    # FILE|PLOT|EXPORT|UTILITES Menu bar
     menubar = ft.MenuBar(
         style=ft.MenuStyle(
             alignment=ft.alignment.top_left,
