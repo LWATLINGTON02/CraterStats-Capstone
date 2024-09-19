@@ -900,7 +900,7 @@ def main(page: ft.Page):
             '-show_isochron 1'
         """
 
-        new_str = f' -show_isochron {'1' if show_iso.value else '0'}'
+        new_str = f' -show_isochron {"1" if show_iso.value else "0"}'
 
         return new_str
 
