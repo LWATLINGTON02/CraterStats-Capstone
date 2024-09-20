@@ -2,6 +2,8 @@ import flet as ft
 from flet import FilePickerResultEvent
 from Globals import *
 
+
+
 # DEBUG FUNCTION
 def print_tree(dictionary, indent=0):
     for key, value in dictionary.items():
@@ -13,6 +15,11 @@ def print_tree(dictionary, indent=0):
 
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
+
+
+
+
+
     def open_about_dialog(e):
         """ Opens and fills about text.
 
@@ -666,7 +673,6 @@ def main(page: ft.Page):
                         f'{p_str if p_str is not None else ""}')
 
         cmd_str.value = cmd_line_str
-
         page.update()
 
     def set_chron_str():
@@ -1611,6 +1617,5 @@ def main(page: ft.Page):
 
     page.add(menubar)
     page.add(t)
-
 
 ft.app(target=main, assets_dir="assets")
