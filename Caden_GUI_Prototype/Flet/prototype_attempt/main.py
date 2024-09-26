@@ -1485,7 +1485,7 @@ def main(page: ft.Page):
 
     # plot image
     plot_image = ft.Image(
-        src="00-demo.png",
+        src="empty_plot.png",
         height=500,
         width=500,
         fit=ft.ImageFit.CONTAIN
