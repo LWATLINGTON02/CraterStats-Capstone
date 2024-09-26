@@ -1,14 +1,16 @@
+import os
 import subprocess
 import sys
 import flet as ft
 from flet import FilePickerResultEvent
 from Globals import *
+from datetime import datetime
 
 def install_craterstats():
    try:
       # Check if craterstats is installed by calling it
         subprocess.run(["craterstats", "--help"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print("CraterStats is already installed.")
+        
    except subprocess.CalledProcessError:
         # If the command fails, CraterStats isn't installed
         print("CraterStats not found, installing...")
@@ -36,19 +38,6 @@ def install_craterstats():
                   print("CraterStats successfully installed from source.")
             except subprocess.CalledProcessError:
                   print("Installation failed. Please install CraterStats manually.")
-      
-
-def generatePlot(comarg, img_out):
-   command = comarg + " -o prototype_attempt\\assets\\output"
-   print("\n\n-- generating a new plot --\n\n")
-   print("\n\n command: ", command, "\n\n")
-   try:
-    subprocess.run(command, check=True, capture_output=True, text=True)
-    print("CraterStats success")
-    img_out.update()
-    return img_out
-   except subprocess.CalledProcessError as e:
-      print(f"An error occurred: {e.stderr}")
    
 
 # DEBUG FUNCTION
@@ -59,9 +48,36 @@ def print_tree(dictionary, indent=0):
             print_tree(value, indent + 1)
         else:
             print('  ' * (indent + 1) + str(value))
-
+            
+def generateOutputFileName():
+   timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+   filename = f"plotimage_{timestamp}"
+   count = 1
+   base_filename = filename
+   while os.path.exists(filename):
+      filename = f"{base_filename.split('.')[0]}_{count}"
+      count += 1
+      
+   return filename
+   
+   
+   
+    
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
+    
+    def generatePlot(comarg):
+      filename = generateOutputFileName()
+      command = comarg + " -o prototype_attempt\\assets\\" + filename
+      print("\n\n-- generating a new plot --\n\n")
+      print("\n\n command: ", command, "\n\n")
+      try:
+         subprocess.run(command, check=True, capture_output=True, text=True)
+         print("CraterStats success")
+         plot_image.src = filename + ".png"
+         plot_image.update()
+      except subprocess.CalledProcessError as e:
+         print(f"An error occurred: {e.stderr}")
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -1047,7 +1063,7 @@ def main(page: ft.Page):
     """
     Start of FLET GUI options
     """
-
+    
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
@@ -1469,7 +1485,7 @@ def main(page: ft.Page):
 
     # plot image
     plot_image = ft.Image(
-        src="assets\\output.png",
+        src="00-demo.png",
         height=500,
         width=500,
         fit=ft.ImageFit.CONTAIN
@@ -1535,7 +1551,7 @@ def main(page: ft.Page):
                         ]
                     )
                 ]
-            ),
+               ),
             plot_image,
             cmd_str,
             ft.CupertinoButton(
@@ -1544,11 +1560,10 @@ def main(page: ft.Page):
                alignment=ft.alignment.top_left,
                border_radius=ft.border_radius.all(15),
                opacity_on_click=0.5,
-               on_click = lambda e: generatePlot(cmd_str.value, plot_image) ### ADD CLI FUNCTION HERE
-        )
-        ]
-
-    )
+               on_click = lambda e: generatePlot(cmd_str.value) ### ADD CLI FUNCTION HERE
+            )
+         ]
+      )
 
     # Tabs 
     t = ft.Tabs(
