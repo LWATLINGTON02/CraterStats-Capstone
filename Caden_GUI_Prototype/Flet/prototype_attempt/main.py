@@ -1,8 +1,55 @@
+import subprocess
+import sys
 import flet as ft
 from flet import FilePickerResultEvent
 from Globals import *
 
+def install_craterstats():
+   try:
+      # Check if craterstats is installed by calling it
+        subprocess.run(["craterstats", "--help"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print("CraterStats is already installed.")
+   except subprocess.CalledProcessError:
+        # If the command fails, CraterStats isn't installed
+        print("CraterStats not found, installing...")
 
+        # Attempt to install via pip (replace with actual installation command)
+        subprocess.run([sys.executable, "-m", "pip", "install", "craterstats"], check=True)
+
+        # Verify installation
+        try:
+            subprocess.run(["craterstats", "--help"], check=True)
+            print("CraterStats successfully installed.")
+        except subprocess.CalledProcessError:
+            print("CraterStats not found, installing from source...")
+
+            # Clone the GitHub repository (replace with actual repo URL)
+            subprocess.run(["git", "clone", "https://github.com/ggmichael/craterstats.git"], check=True)
+
+            # Navigate into the repo and install (adjust these commands as needed)
+            subprocess.run(["pip", "install", "-r", "CraterStats/requirements.txt"], check=True)
+            subprocess.run([sys.executable, "CraterStats/setup.py", "install"], check=True)
+
+            # Verify installation
+            try:
+                  subprocess.run(["craterstats", "--help"], check=True)
+                  print("CraterStats successfully installed from source.")
+            except subprocess.CalledProcessError:
+                  print("Installation failed. Please install CraterStats manually.")
+      
+
+def generatePlot(comarg, img_out):
+   command = comarg + " -o prototype_attempt\\assets\\output"
+   print("\n\n-- generating a new plot --\n\n")
+   print("\n\n command: ", command, "\n\n")
+   try:
+    subprocess.run(command, check=True, capture_output=True, text=True)
+    print("CraterStats success")
+    img_out.update()
+    return img_out
+   except subprocess.CalledProcessError as e:
+      print(f"An error occurred: {e.stderr}")
+   
 
 # DEBUG FUNCTION
 def print_tree(dictionary, indent=0):
@@ -15,10 +62,6 @@ def print_tree(dictionary, indent=0):
 
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
-
-
-
-
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -77,7 +120,6 @@ def main(page: ft.Page):
         dlg.open = True
         page.update()
 
-    
     def file_picker_result(e: FilePickerResultEvent):
         """Fills out data based off of file.
 
@@ -454,7 +496,7 @@ def main(page: ft.Page):
 
         page.update()
 
-
+    install_craterstats()
     """
     Default Settings for the application
     """
@@ -888,8 +930,10 @@ def main(page: ft.Page):
 
             '-isochrons 0.1,0.1,0.1'
         """
-        new_str = f' -isochrons {iso_text.value}'
-
+        if iso_label.value == True:
+         new_str = f' -isochrons {iso_text.value}'
+        else:
+         new_str = None 
         return new_str
 
     def set_show_isochron_str():
@@ -906,7 +950,7 @@ def main(page: ft.Page):
             '-show_isochron 1'
         """
 
-        new_str = f' -show_isochron {"1" if show_iso.value else "0"}'
+        new_str = f' -show_isochron {'1' if show_iso.value else '0'}'
 
         return new_str
 
@@ -932,7 +976,7 @@ def main(page: ft.Page):
             ' -mu 1'
         """
 
-        new_str = f' -mu {"1" if mu_legend.value else "0"}'
+        new_str = f' -mu {'1' if mu_legend.value else '0'}'
 
         return new_str
 
@@ -1173,7 +1217,7 @@ def main(page: ft.Page):
     )
 
     # Title entry textfield
-    title_entry = ft.TextField(width=150, dense=True, text_vertical_align=0)
+    title_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, value="Sample Title")
 
     # Title checkbox
     title_checkbox = ft.Checkbox(label="Title", value=True)
@@ -1182,7 +1226,7 @@ def main(page: ft.Page):
     print_scale_entry = ft.TextField(width=150, dense=True, value="7.5x7.5")
 
     # Subtitle entry textfield
-    subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0)
+    subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, value="Sample Subtitle")
 
     # subtitle checkbox
     subtitle_checkbox = ft.Checkbox(label="Subtitle", value=True)
@@ -1425,7 +1469,7 @@ def main(page: ft.Page):
 
     # plot image
     plot_image = ft.Image(
-        src="00-demo.png",
+        src="assets\\output.png",
         height=500,
         width=500,
         fit=ft.ImageFit.CONTAIN
@@ -1493,7 +1537,15 @@ def main(page: ft.Page):
                 ]
             ),
             plot_image,
-            cmd_str
+            cmd_str,
+            ft.CupertinoButton(
+               content=ft.Text("Generate Plot", color=ft.colors.WHITE),
+               bgcolor=ft.colors.BLACK,
+               alignment=ft.alignment.top_left,
+               border_radius=ft.border_radius.all(15),
+               opacity_on_click=0.5,
+               on_click = lambda e: generatePlot(cmd_str.value, plot_image) ### ADD CLI FUNCTION HERE
+        )
         ]
 
     )
@@ -1528,8 +1580,8 @@ def main(page: ft.Page):
     menubar = ft.MenuBar(
         style=ft.MenuStyle(
             alignment=ft.alignment.top_left,
-            mouse_cursor={ft.MaterialState.HOVERED: ft.MouseCursor.WAIT,
-                          ft.MaterialState.DEFAULT: ft.MouseCursor.ZOOM_OUT},
+            mouse_cursor={ft.ControlState.HOVERED: ft.MouseCursor.WAIT,
+                          ft.ControlState.DEFAULT: ft.MouseCursor.ZOOM_OUT},
         ),
         controls=[
             ft.SubmenuButton(
@@ -1539,20 +1591,20 @@ def main(page: ft.Page):
                         content=ft.Text("Save"),
                         leading=ft.Icon(ft.icons.SAVE),
                         style=ft.ButtonStyle(
-                            bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
+                            bgcolor={ft.ControlState.HOVERED: ft.colors.GREEN_100}),
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Open"),
                         leading=ft.Icon(ft.icons.FILE_UPLOAD),
                         style=ft.ButtonStyle(
-                            bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
+                            bgcolor={ft.ControlState.HOVERED: ft.colors.GREEN_100}),
                         on_click=lambda _: pick_files_dialog.pick_files()
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Close"),
                         leading=ft.Icon(ft.icons.CLOSE),
                         style=ft.ButtonStyle(
-                            bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
+                            bgcolor={ft.ControlState.HOVERED: ft.colors.GREEN_100}),
                         on_click=lambda _: page.window_close()
                     )
                 ]
