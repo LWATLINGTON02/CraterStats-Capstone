@@ -1,7 +1,8 @@
+import craterstats
 import flet as ft
 from flet import FilePickerResultEvent
-from Globals import *
 
+from Globals import *
 
 
 # DEBUG FUNCTION
@@ -13,12 +14,53 @@ def print_tree(dictionary, indent=0):
         else:
             print('  ' * (indent + 1) + str(value))
 
+
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
+
+
 def main(page: ft.Page):
+    def print_craters():
+        print_tree(plots_dict)
+        craterPlot = craterstats.Craterplot(
+            {'cratercount': None,
+             'source': plots_dict['plot1']['plot1.source'],
+             'name': plots_dict['plot1']['plot1.name'],
+             'range': plots_dict['plot1']['plot1.range'],
+             'type': plots_dict['plot1']['plot1.type'],
+             'hide': plots_dict['plot1']['plot1.hide'],
+             'colour': plots_dict['plot1']['plot1.colour'],
+             'psym': plots_dict['plot1']['plot1.psym'],
+             # 'binning': plots_dict['plot1']['plot1.binning'],
+             'age_left': plots_dict['plot1']['plot1.age_left'],
+             'display_age': plots_dict['plot1']['plot1.display_age'],
+             'resurf': plots_dict['plot1']['plot1.resurf'],
+             'isochron': plots_dict['plot1']['plot1.isochron'],
+             'offset_age': plots_dict['plot1']['plot1.offset_age'],
+             }
+        )
 
+        print(plot_view.value)
 
+        craterPlotSet = craterstats.Craterplotset(
+            {
+                'title': title_entry.value,
+                'subtitle': subtitle_entry.value,
+                'presentation': plot_view.value,
+                'style': style_options.value,
+                'isochrons': iso_text.value,
+                'show_isochrons': show_iso.value,
+                'print_dimensions': print_scale_entry.value,
+                'pt_size': text_size.value,
+                'ref_diameter': ref_diam.value,
+                'cite_functions': func_legend.value,
+                'randomness': rand_legend.value,
+                'mu': mu_legend.value,
+                'show_title': title_checkbox.value,
+                'show_subtitle': subtitle_checkbox.value,
+            }
+        )
 
-
+        craterPlot.overplot(craterPlotSet)
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -77,7 +119,6 @@ def main(page: ft.Page):
         dlg.open = True
         page.update()
 
-    
     def file_picker_result(e: FilePickerResultEvent):
         """Fills out data based off of file.
 
@@ -454,15 +495,14 @@ def main(page: ft.Page):
 
         page.update()
 
-
     """
     Default Settings for the application
     """
-    page.title = 'Craterstats IV' # Application title
-    page.theme_mode = ft.ThemeMode.DARK # Flet Default dark theme
-    page.window.width = 1200 # Application width
-    page.window.height = 900 # Application Height
-    page.window.resizable = False #Application size is static
+    page.title = 'Craterstats IV'  # Application title
+    page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
+    page.window.width = 1200  # Application width
+    page.window.height = 900  # Application Height
+    page.window.resizable = False  # Application size is static
     # Fonts that can be used inside the application
     page.fonts = {
         "Courier New": "DearPyGUI_Attempt\\Fonts\\Courier New.ttf",
@@ -615,7 +655,6 @@ def main(page: ft.Page):
             none
         """
 
-
         chron_sys_str = ''
         equil_func_str = ''
         epoch_str = ''
@@ -692,50 +731,48 @@ def main(page: ft.Page):
 
         new_str = ''
 
-        match chron_sys.value:
-
-            case 'Moon, Neukum (1983)':
-                new_str = ' -cs 1'
-            case 'Moon, Neukum et al. (2001)':
-                new_str = ' -cs 2'
-            case 'Moon, Hartmann 2010 iteration':
-                new_str = ' -cs 3'
-            case 'Moon, Yue et al. (2022)':
-                new_str = ' -cs 4'
-            case 'Mars, Neukum-Ivanov (2001)':
-                new_str = ' -cs 5'
-            case 'Mars, Ivanov (2001)':
-                new_str = ' -cs 6'
-            case 'Mars, Hartmann 2004 iteration':
-                new_str = ' -cs 7'
-            case 'Mars, Hartmann & Daubar (2016)':
-                new_str = ' -cs 8'
-            case 'Mercury, Strom & Neukum (1988)':
-                new_str = ' -cs 9'
-            case 'Mercury, Neukum et al. (2001)':
-                new_str = ' -cs 10'
-            case 'Mercury, Le Feuvre and Wieczorek 2011 non-porous':
-                new_str = ' -cs 11'
-            case 'Mercury, Le Feuvre and Wieczorek 2011 porous':
-                new_str = ' -cs 12'
-            case 'Vesta, Rev4, Schmedemann et al (2014)':
-                new_str = ' -cs 13'
-            case 'Vesta, Rev3, Schmedemann et al (2014)':
-                new_str = ' -cs 14'
-            case 'Vesta, Marchi & O\'Brien (2014)':
-                new_str = ' -cs 15'
-            case 'Ceres, Hiesinger et al. (2016)':
-                new_str = ' -cs 16'
-            case 'Ida, Schedemann et al (2014)':
-                new_str = ' -cs 17'
-            case 'Gaspra, Schmedemann et al (2014)':
-                new_str = ' -cs 18'
-            case 'Lutetia, Schmedemann et al (2014)':
-                new_str = ' -cs 19'
-            case 'Phobos, Case A - SOM, Schmedemann et al (2014)':
-                new_str = ' -cs 20'
-            case 'Phobos, Case B - MBA, Schedemann et al (2014)':
-                new_str = ' -cs 21'
+        if chron_sys.value == 'Moon, Neukum (1983)':
+            new_str = ' -cs 1'
+        elif chron_sys.value == 'Moon, Neukum et al. (2001)':
+            new_str = ' -cs 2'
+        elif chron_sys.value == 'Moon, Hartmann 2010 iteration':
+            new_str = ' -cs 3'
+        elif chron_sys.value == 'Moon, Yue et al. (2022)':
+            new_str = ' -cs 4'
+        elif chron_sys.value == 'Mars, Neukum-Ivanov (2001)':
+            new_str = ' -cs 5'
+        elif chron_sys.value == 'Mars, Ivanov (2001)':
+            new_str = ' -cs 6'
+        elif chron_sys.value == 'Mars, Hartmann 2004 iteration':
+            new_str = ' -cs 7'
+        elif chron_sys.value == 'Mars, Hartmann & Daubar (2016)':
+            new_str = ' -cs 8'
+        elif chron_sys.value == 'Mercury, Strom & Neukum (1988)':
+            new_str = ' -cs 9'
+        elif chron_sys.value == 'Mercury, Neukum et al. (2001)':
+            new_str = ' -cs 10'
+        elif chron_sys.value == 'Mercury, Le Feuvre and Wieczorek 2011 non-porous':
+            new_str = ' -cs 11'
+        elif chron_sys.value == 'Mercury, Le Feuvre and Wieczorek 2011 porous':
+            new_str = ' -cs 12'
+        elif chron_sys.value == 'Vesta, Rev4, Schmedemann et al (2014)':
+            new_str = ' -cs 13'
+        elif chron_sys.value == 'Vesta, Rev3, Schmedemann et al (2014)':
+            new_str = ' -cs 14'
+        elif chron_sys.value == 'Vesta, Marchi & O\'Brien (2014)':
+            new_str = ' -cs 15'
+        elif chron_sys.value == 'Ceres, Hiesinger et al. (2016)':
+            new_str = ' -cs 16'
+        elif chron_sys.value == 'Ida, Schedemann et al (2014)':
+            new_str = ' -cs 17'
+        elif chron_sys.value == 'Gaspra, Schmedemann et al (2014)':
+            new_str = ' -cs 18'
+        elif chron_sys.value == 'Lutetia, Schmedemann et al (2014)':
+            new_str = ' -cs 19'
+        elif chron_sys.value == 'Phobos, Case A - SOM, Schmedemann et al (2014)':
+            new_str = ' -cs 20'
+        elif chron_sys.value == 'Phobos, Case B - MBA, Schedemann et al (2014)':
+            new_str = ' -cs 21'
 
         return new_str
 
@@ -755,12 +792,10 @@ def main(page: ft.Page):
         """
         new_str = ''
 
-        match equil_func.value:
-
-            case 'Standard lunar equilibrium (Trask, 1966)':
-                new_str = ' -ef 1'
-            case 'Hartmann (1984)':
-                new_str = ' -ef 2'
+        if equil_func.value == 'Standard lunar equilibrium (Trask, 1966)':
+            new_str = ' -ef 1'
+        elif equil_func.value == 'Hartmann (1984)':
+            new_str = ' -ef 2'
 
         return new_str
 
@@ -781,19 +816,19 @@ def main(page: ft.Page):
 
         new_str = ''
 
-        match epoch.value:
+        if epoch.value == 'Moon, Wilhelms (1987)':
+            new_str = ' -ep 1'
 
-            case 'Moon, Wilhelms (1987)':
-                new_str = ' -ep 1'
+        elif epoch.value == 'Mars, Michael (2013)':
+            new_str = ' -ep 2'
 
-            case 'Mars, Michael (2013)':
-                new_str = ' -ep 2'
 
         return new_str
 
+
     def set_title_str():
         """Sets title command line string.
-        
+
         Sets the command line string for the title that is selected
         in the application
 
@@ -813,9 +848,10 @@ def main(page: ft.Page):
 
         return None
 
+
     def set_subtitle_str():
         """Sets subtitle command line string.
-        
+
         Sets the command line string for the subtitle that is selected
         in the application
 
@@ -835,9 +871,10 @@ def main(page: ft.Page):
 
         return None
 
+
     def set_plot_view_str():
         """Sets plot view command line string.
-        
+
         Sets the command line string for the plot view that is selected
         in the application
 
@@ -851,32 +888,33 @@ def main(page: ft.Page):
         """
         new_str = ''
 
-        match plot_view.value:
-
-            case "cumu":
-                new_str = ' -pr cumulative'
-            case "diff":
-                new_str = ' -pr differential'
-            case "rela":
-                new_str = ' -pr R-plot'
-            case "hart":
-                new_str = ' -pr Hartmann'
-            case "chro":
-                new_str = ' -pr chronology'
-            case "rate":
-                new_str = ' -pr rate'
+        if plot_view.value == "cumu":
+            new_str = ' -pr cumulative'
+        elif plot_view.value == "diff":
+            new_str = ' -pr differential'
+        elif plot_view.value == "rela":
+            new_str = ' -pr R-plot'
+        elif plot_view.value == "hart":
+            new_str = ' -pr Hartmann'
+        elif plot_view.value == "chro":
+            new_str = ' -pr chronology'
+        elif plot_view.value == "rate":
+            new_str = ' -pr rate'
 
         return new_str
+
 
     def set_xrange_str():
         return None
 
+
     def set_yrange_str():
         return None
 
+
     def set_isochron_str():
         """Sets isochron command line string.
-        
+
         Sets the command line string for the isochron that is selected
         in the application
 
@@ -892,9 +930,10 @@ def main(page: ft.Page):
 
         return new_str
 
+
     def set_show_isochron_str():
         """Sets show isochron command line string.
-        
+
         Sets the command line string if show isochrons is an option
 
         Args:
@@ -910,17 +949,18 @@ def main(page: ft.Page):
 
         return new_str
 
-    def set_legend_str():
 
+    def set_legend_str():
         return None
 
-    def set_cite_function_str():
 
-         return None
+    def set_cite_function_str():
+        return None
+
 
     def set_mu_str():
         """Sets mu command line string.
-        
+
         Sets the command line string if mu is selected
 
         Args:
@@ -936,9 +976,10 @@ def main(page: ft.Page):
 
         return new_str
 
+
     def set_style_str():
         """Sets style command line string.
-        
+
         Sets the command line string for the style that is selected
         in the application
 
@@ -955,9 +996,10 @@ def main(page: ft.Page):
 
         return new_str
 
+
     def set_print_dim_str():
         """Sets print dimension command line string.
-        
+
         Sets the command line string for the print dimenstion that is selected
         in the application
 
@@ -969,13 +1011,14 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f'{{{print_scale_entry.value}}}'}'
+        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
 
         return new_str
 
+
     def set_pt_size_str():
         """Sets font size command line string.
-        
+
         Sets the command line string for the font size that is selected
         in the application
 
@@ -992,13 +1035,14 @@ def main(page: ft.Page):
 
         return new_str
 
-    def set_ref_diameter_str():
 
+    def set_ref_diameter_str():
         return None
+
 
     def set_p_str():
-
         return None
+
 
     """
     Start of FLET GUI options
@@ -1007,7 +1051,6 @@ def main(page: ft.Page):
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
-
 
     # Plot view Radio options
     plot_view = ft.RadioGroup(ft.Row([
@@ -1131,7 +1174,7 @@ def main(page: ft.Page):
         value=True,
     )
 
-    #3sf legend checckbox
+    # 3sf legend checckbox
     sf_legend = ft.Checkbox(
         label="3sf",
     )
@@ -1218,7 +1261,6 @@ def main(page: ft.Page):
     up_button = ft.ElevatedButton(text="Up", width=115)
 
     down_button = ft.ElevatedButton(text="Down", width=115)
-
 
     # Plot fit text field
     plot_fit_text = ft.TextField(width=300, dense=True, value="Default")
@@ -1498,7 +1540,7 @@ def main(page: ft.Page):
 
     )
 
-    # Tabs 
+    # Tabs
     t = ft.Tabs(
         selected_index=0,
         animation_duration=150,
