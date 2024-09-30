@@ -24,4 +24,4 @@ fi
 pip install -r "requirements.txt"
 
 # run the application
-python main.py
+flet run main.py
