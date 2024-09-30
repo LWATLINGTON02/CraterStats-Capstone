@@ -3,7 +3,7 @@
 # create virtual envirnment named .venv
 python -m venv .venv
 
-# check if os is windows or unix an activate venv
+# check if os is windows or unix and activate venv
 if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "darwin"* ]]; then
     echo "Unix-like OS detected"
     # activate venv for unix
