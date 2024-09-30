@@ -4,41 +4,7 @@ import sys
 import flet as ft
 from flet import FilePickerResultEvent
 from Globals import *
-from datetime import datetime
-
-def install_craterstats():
-   try:
-      # Check if craterstats is installed by calling it
-        subprocess.run(["craterstats", "--help"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        
-   except subprocess.CalledProcessError:
-        # If the command fails, CraterStats isn't installed
-        print("CraterStats not found, installing...")
-
-        # Attempt to install via pip (replace with actual installation command)
-        subprocess.run([sys.executable, "-m", "pip", "install", "craterstats"], check=True)
-
-        # Verify installation
-        try:
-            subprocess.run(["craterstats", "--help"], check=True)
-            print("CraterStats successfully installed.")
-        except subprocess.CalledProcessError:
-            print("CraterStats not found, installing from source...")
-
-            # Clone the GitHub repository (replace with actual repo URL)
-            subprocess.run(["git", "clone", "https://github.com/ggmichael/craterstats.git"], check=True)
-
-            # Navigate into the repo and install (adjust these commands as needed)
-            subprocess.run(["pip", "install", "-r", "CraterStats/requirements.txt"], check=True)
-            subprocess.run([sys.executable, "CraterStats/setup.py", "install"], check=True)
-
-            # Verify installation
-            try:
-                  subprocess.run(["craterstats", "--help"], check=True)
-                  print("CraterStats successfully installed from source.")
-            except subprocess.CalledProcessError:
-                  print("Installation failed. Please install CraterStats manually.")
-   
+from datetime import datetime   
 
 # DEBUG FUNCTION
 def print_tree(dictionary, indent=0):
@@ -512,7 +478,6 @@ def main(page: ft.Page):
 
         page.update()
 
-    install_craterstats()
     """
     Default Settings for the application
     """
