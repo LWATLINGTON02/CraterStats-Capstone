@@ -1,9 +1,16 @@
-import craterstats
+from argparse import Namespace
 import flet as ft
+from craterstats import cli, Craterplot, Craterplotset
 from flet import FilePickerResultEvent
 
 from Globals import *
+from gm.file import filename, file_exists, read_textstructure, read_textfile
+import importlib.resources as importlib_resources
+import os
 
+# GM Folder from CraterstatsIII
+# Also from craterstats
+PATH = os.path.dirname(os.path.abspath(__file__))
 
 # DEBUG FUNCTION
 def print_tree(dictionary, indent=0):
@@ -14,53 +21,90 @@ def print_tree(dictionary, indent=0):
         else:
             print('  ' * (indent + 1) + str(value))
 
-
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
-
-
 def main(page: ft.Page):
     def print_craters():
-        print_tree(plots_dict)
-        craterPlot = craterstats.Craterplot(
-            {'cratercount': None,
-             'source': plots_dict['plot1']['plot1.source'],
-             'name': plots_dict['plot1']['plot1.name'],
-             'range': plots_dict['plot1']['plot1.range'],
-             'type': plots_dict['plot1']['plot1.type'],
-             'hide': plots_dict['plot1']['plot1.hide'],
-             'colour': plots_dict['plot1']['plot1.colour'],
-             'psym': plots_dict['plot1']['plot1.psym'],
-             # 'binning': plots_dict['plot1']['plot1.binning'],
-             'age_left': plots_dict['plot1']['plot1.age_left'],
-             'display_age': plots_dict['plot1']['plot1.display_age'],
-             'resurf': plots_dict['plot1']['plot1.resurf'],
-             'isochron': plots_dict['plot1']['plot1.isochron'],
-             'offset_age': plots_dict['plot1']['plot1.offset_age'],
-             }
+
+        template = PATH + "/craterstats_config_files/default.plt"
+        functions = PATH + "/craterstats_config_files/functions.txt"
+        functions_user = PATH + "/craterstats_config_files/functions_user.txt"
+
+        print("Chron Sys:", set_chron_str()[-2:].replace(' ', ''))
+        print("Equilibrium:", equil_func.value)
+        print("Epochs:", epoch.value)
+
+        arg = Namespace(
+            about=False,
+            autoscale=False,
+            chronology_system=set_chron_str()[-2:].replace(' ', ''),
+            cite_function=func_legend.value,
+            demo=False,
+            epochs=epoch.value if epoch.value != 'none' else None,
+            equilibrium=equil_func.value if equil_func.value != 'none' else None,
+            format=None,
+            input=None,
+            invert=None,
+            isochrons=iso_text.value,
+            lcs=False,
+            legend=None,
+            lpc=False,
+            mu=mu_legend.value,
+            out='',
+            plot=None,
+            presentation=plot_view.value,
+            print_dim=[print_scale_entry.value],
+            pt_size=text_size.value,
+            ref_diameter=ref_diam.value,
+            show_isochrons=show_iso.value,
+            sig_figs='3',
+            src=source_file_entry.value,
+            style=style_options.value,
+            subtitle=subtitle_entry.value,
+            template=None,
+            title=title_entry.value,
+            transparent=False,
+            xrange=None,
+            yrange=None
         )
 
-        print(plot_view.value)
+        settings = read_textstructure(template if arg.template is None else arg.template)
+        systems = read_textfile(functions, ignore_hash=True, strip=';', as_string=True)
+        if file_exists(functions_user):
+            systems += read_textfile(functions_user, ignore_hash=True, strip=';', as_string=True)
 
-        craterPlotSet = craterstats.Craterplotset(
-            {
-                'title': title_entry.value,
-                'subtitle': subtitle_entry.value,
-                'presentation': plot_view.value,
-                'style': style_options.value,
-                'isochrons': iso_text.value,
-                'show_isochrons': show_iso.value,
-                'print_dimensions': print_scale_entry.value,
-                'pt_size': text_size.value,
-                'ref_diameter': ref_diam.value,
-                'cite_functions': func_legend.value,
-                'randomness': rand_legend.value,
-                'mu': mu_legend.value,
-                'show_title': title_checkbox.value,
-                'show_subtitle': subtitle_checkbox.value,
-            }
-        )
+        functionStr = read_textstructure(systems, from_string=True)
 
-        craterPlot.overplot(craterPlotSet)
+        craterPlot = cli.construct_plot_dicts(arg, settings)
+        defaultFilename = '_'.join(sorted(set([filename(d['source'], 'n') for d in craterPlot])))
+        craterPlotSet = cli.construct_cps_dict(arg, settings, functionStr, defaultFilename)
+
+        if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
+            craterPlotSet['legend'] += 'p'
+
+        plot = [Craterplot(d) for d in craterPlot]
+
+        print(craterPlotSet)
+        print(type(craterPlotSet))
+
+
+
+        plotSettings = Craterplotset(craterPlotSet, plot)
+
+        if plot:
+            plotSettings.autoscale(craterPlotSet['xrange'] if 'xrange' in craterPlotSet else None,
+                                     craterPlotSet['yrange'] if 'yrange' in craterPlotSet else None)
+
+        drawn = False
+        for format in plotSettings.format:
+            if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
+                if not drawn:
+                    plotSettings.draw()
+                    drawn = True
+                plotSettings.fig.savefig(craterPlotSet['out']+'.'+format, dpi=500, transparent=arg.transparent)
+            if format in {'txt'}:
+                plotSettings.create_summary_table()
+
+        print(arg)
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -85,7 +129,7 @@ def main(page: ft.Page):
                            "Alden Smith",
                            "Caden Tedeschi",
                            "Levi Watlington\n",
-                           "Craterstats Program developped by Michael G.G",
+                           "Craterstats Program developed by Michael G.G",
                            "Version: 0.1",
                            "",
                            "Explanations of concepts and calculations used in the software are given in publications below:",
@@ -184,7 +228,7 @@ def main(page: ft.Page):
 
             if specifics[0] == 'set.presentation':
                 presentation_val = specifics[1][1:-
-                2].replace("'", "")[:4].lower()
+                2].replace("'", "").lower()
 
             if specifics[0] == 'set.print_dimensions':
                 print_dimensions = (specifics[1].replace(
@@ -843,7 +887,7 @@ def main(page: ft.Page):
 
         new_str = f" -title {title_entry.value}"
 
-        if title_checkbox.value or title_entry.value != '':
+        if title_checkbox.value and title_entry.value != '':
             return new_str
 
         return None
@@ -866,7 +910,7 @@ def main(page: ft.Page):
 
         new_str = f' -subtitle {subtitle_entry.value}'
 
-        if subtitle_checkbox.value or subtitle_entry.value != '':
+        if subtitle_checkbox.value and subtitle_entry.value != '':
             return new_str
 
         return None
@@ -1054,11 +1098,11 @@ def main(page: ft.Page):
 
     # Plot view Radio options
     plot_view = ft.RadioGroup(ft.Row([
-        ft.Radio(value="cumu", label="Cumulative"),
-        ft.Radio(value="diff", label="Differential"),
-        ft.Radio(value="rela", label="Relative (R)"),
-        ft.Radio(value="hart", label="Hartmann"),
-        ft.Radio(value="chro", label="Chronology"),
+        ft.Radio(value="cumulative", label="Cumulative"),
+        ft.Radio(value="differential", label="Differential"),
+        ft.Radio(value="R-plot", label="Relative (R)"),
+        ft.Radio(value="Hartmann", label="Hartmann"),
+        ft.Radio(value="chronology", label="Chronology"),
         ft.Radio(value='rate', label="Rate")
     ]),
         value="diff"
@@ -1563,7 +1607,7 @@ def main(page: ft.Page):
             ),
         ],
         expand=1,
-        on_change=lambda _: set_cmd_line_str()
+        on_change=lambda _: set_cmd_line_str() or print_craters()
     )
 
     # FILE|PLOT|EXPORT|UTILITES Menu bar
