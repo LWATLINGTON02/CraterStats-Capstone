@@ -29,10 +29,6 @@ def main(page: ft.Page):
         functions = PATH + "/craterstats_config_files/functions.txt"
         functions_user = PATH + "/craterstats_config_files/functions_user.txt"
 
-        print("Chron Sys:", set_chron_str()[-2:].replace(' ', ''))
-        print("Equilibrium:", equil_func.value)
-        print("Epochs:", epoch.value)
-
         arg = Namespace(
             about=False,
             autoscale=False,
@@ -86,9 +82,12 @@ def main(page: ft.Page):
         print(craterPlotSet)
         print(type(craterPlotSet))
 
+        if craterPlotSet['ref_diameter'] == '':
+            craterPlotSet['ref_diameter'] = '1.0'
+
+        plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
 
-        plotSettings = Craterplotset(craterPlotSet, plot)
 
         if plot:
             plotSettings.autoscale(craterPlotSet['xrange'] if 'xrange' in craterPlotSet else None,
