@@ -1,4 +1,6 @@
 from argparse import Namespace
+from datetime import datetime
+
 import flet as ft
 from craterstats import cli, Craterplot, Craterplotset
 from flet import FilePickerResultEvent
@@ -20,6 +22,18 @@ def print_tree(dictionary, indent=0):
             print_tree(value, indent + 1)
         else:
             print('  ' * (indent + 1) + str(value))
+
+def generateOutputFileName():
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"plotimage_{timestamp}"
+    count = 1
+    base_filename = file_name
+    while os.path.exists(file_name):
+        file_name = f"{base_filename.split('.')[0]}_{count}"
+        count += 1
+
+    return file_name
+
 
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
@@ -71,13 +85,14 @@ def main(page: ft.Page):
         functionStr = read_textstructure(systems, from_string=True)
 
         craterPlot = cli.construct_plot_dicts(arg, settings)
-        defaultFilename = '_'.join(sorted(set([filename(d['source'], 'n') for d in craterPlot])))
+        defaultFilename = generateOutputFileName()
         craterPlotSet = cli.construct_cps_dict(arg, settings, functionStr, defaultFilename)
 
         if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
             craterPlotSet['legend'] += 'p'
 
         plot = [Craterplot(d) for d in craterPlot]
+
 
         print(craterPlotSet)
         print(type(craterPlotSet))
@@ -93,17 +108,25 @@ def main(page: ft.Page):
             plotSettings.autoscale(craterPlotSet['xrange'] if 'xrange' in craterPlotSet else None,
                                      craterPlotSet['yrange'] if 'yrange' in craterPlotSet else None)
 
+
+        newFileName = generateOutputFileName()
+
+        craterPlotSet['out'] = PATH + '/assets/' + newFileName
+
+        print("Output to:", craterPlotSet['out'])
+
         drawn = False
         for format in plotSettings.format:
             if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
                 if not drawn:
                     plotSettings.draw()
                     drawn = True
-                plotSettings.fig.savefig(craterPlotSet['out']+'.'+format, dpi=500, transparent=arg.transparent)
+                plotSettings.fig.savefig(craterPlotSet['out'], dpi=500, transparent=arg.transparent)
+                plot_image.src = craterPlotSet['out']
+                plot_image.update()
             if format in {'txt'}:
                 plotSettings.create_summary_table()
 
-        print(arg)
 
     def open_about_dialog(e):
         """ Opens and fills about text.
