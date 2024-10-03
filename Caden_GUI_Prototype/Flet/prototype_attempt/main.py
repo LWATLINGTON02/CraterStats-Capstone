@@ -38,7 +38,7 @@ def generateOutputFileName():
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
     def print_plot():
-        """ Creates plot images using values selected in file or uploaded.
+        """ Creates plot images.
 
         Craterstats plots are created either by using the functions that are selected in the GUI or by uploading
         a .plt file. This function is mostly pulled from the craterstats cli.py main function with some modifications
