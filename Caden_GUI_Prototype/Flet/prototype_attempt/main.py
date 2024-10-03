@@ -1633,7 +1633,7 @@ def main(page: ft.Page):
             ),
         ],
         expand=1,
-        on_change=lambda _: set_cmd_line_str() or print_craters()
+        on_change=lambda _: set_cmd_line_str() or print_plot()
     )
 
     # FILE|PLOT|EXPORT|UTILITES Menu bar
