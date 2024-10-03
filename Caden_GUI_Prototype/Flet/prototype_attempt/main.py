@@ -37,7 +37,19 @@ def generateOutputFileName():
 
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
-    def print_craters():
+    def print_plot():
+        """ Opens and fills about text.
+
+        Opens about popup in application and fills out about section with the
+        information about craterstats taken from CraterstatsIII with additions
+        to include the Lunar Pit Patrol Team and contribution
+
+        Args:
+            none
+
+        Returns:
+            none
+        """
 
         template = PATH + "/craterstats_config_files/default.plt"
         functions = PATH + "/craterstats_config_files/functions.txt"
@@ -93,10 +105,6 @@ def main(page: ft.Page):
 
         plot = [Craterplot(d) for d in craterPlot]
 
-
-        print(craterPlotSet)
-        print(type(craterPlotSet))
-
         if craterPlotSet['ref_diameter'] == '':
             craterPlotSet['ref_diameter'] = '1.0'
 
@@ -107,13 +115,9 @@ def main(page: ft.Page):
         if plot:
             plotSettings.autoscale(craterPlotSet['xrange'] if 'xrange' in craterPlotSet else None,
                                      craterPlotSet['yrange'] if 'yrange' in craterPlotSet else None)
-
-
         newFileName = generateOutputFileName()
 
-        craterPlotSet['out'] = PATH + '/assets/' + newFileName
-
-        print("Output to:", craterPlotSet['out'])
+        craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
 
         drawn = False
         for format in plotSettings.format:
@@ -122,7 +126,7 @@ def main(page: ft.Page):
                     plotSettings.draw()
                     drawn = True
                 plotSettings.fig.savefig(craterPlotSet['out'], dpi=500, transparent=arg.transparent)
-                plot_image.src = craterPlotSet['out']
+                plot_image.src = craterPlotSet['out'] + '.png'
                 plot_image.update()
             if format in {'txt'}:
                 plotSettings.create_summary_table()
@@ -1533,7 +1537,7 @@ def main(page: ft.Page):
 
     # plot image
     plot_image = ft.Image(
-        src="00-demo.png",
+        src="blank_plot.png",
         height=500,
         width=500,
         fit=ft.ImageFit.CONTAIN
