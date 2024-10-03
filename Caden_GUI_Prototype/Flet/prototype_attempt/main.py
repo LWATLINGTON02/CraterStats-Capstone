@@ -1,51 +1,16 @@
 from argparse import Namespace
-from datetime import datetime
 
 import flet as ft
 from craterstats import cli, Craterplot, Craterplotset
 from flet import FilePickerResultEvent
 
 from Globals import *
-from gm.file import filename, file_exists, read_textstructure, read_textfile
-import importlib.resources as importlib_resources
-import os
+from gm.file import file_exists, read_textstructure, read_textfile
+from helperFunctions import *
 
 # GM Folder from CraterstatsIII
 # Also from craterstats
 PATH = os.path.dirname(os.path.abspath(__file__))
-
-# DEBUG FUNCTION
-def print_tree(dictionary, indent=0):
-    for key, value in dictionary.items():
-        print('  ' * indent + str(key))
-        if isinstance(value, dict):
-            print_tree(value, indent + 1)
-        else:
-            print('  ' * (indent + 1) + str(value))
-
-def generateOutputFileName():
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"plotimage_{timestamp}"
-    count = 1
-    base_filename = file_name
-    while os.path.exists(file_name):
-        file_name = f"{base_filename.split('.')[0]}_{count}"
-        count += 1
-
-    return file_name
-
-def delete_temp_plots(folder_path, extensions):
-
-    # Loop through all files in the folder
-    for file in os.listdir(folder_path):
-
-        # Check if the file has the correct extension
-        for extension in extensions:
-
-            if file.endswith(extension):
-
-                # Delete the file
-                os.remove(os.path.join(folder_path, file))
 
 
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
@@ -110,7 +75,7 @@ def main(page: ft.Page):
         functionStr = read_textstructure(systems, from_string=True)
 
         craterPlot = cli.construct_plot_dicts(arg, settings)
-        defaultFilename = generateOutputFileName()
+        defaultFilename = generate_output_file_name()
         craterPlotSet = cli.construct_cps_dict(arg, settings, functionStr, defaultFilename)
 
         if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
@@ -126,7 +91,7 @@ def main(page: ft.Page):
         if plot:
             plotSettings.autoscale(craterPlotSet['xrange'] if 'xrange' in craterPlotSet else None,
                                      craterPlotSet['yrange'] if 'yrange' in craterPlotSet else None)
-        newFileName = generateOutputFileName()
+        newFileName = generate_output_file_name()
 
         craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
 
@@ -265,7 +230,7 @@ def main(page: ft.Page):
 
             if specifics[0] == 'set.presentation':
                 presentation_val = specifics[1][1:-
-                2].replace("'", "").lower()
+                2].replace("'", "")
 
             if specifics[0] == 'set.print_dimensions':
                 print_dimensions = (specifics[1].replace(
@@ -443,6 +408,7 @@ def main(page: ft.Page):
         text_size.value = font_pt
 
         create_plot_lists()
+        print_plot()
 
         page.update()
         data.close()
@@ -969,15 +935,15 @@ def main(page: ft.Page):
         """
         new_str = ''
 
-        if plot_view.value == "cumu":
+        if plot_view.value == "cumulative":
             new_str = ' -pr cumulative'
-        elif plot_view.value == "diff":
+        elif plot_view.value == "differential":
             new_str = ' -pr differential'
-        elif plot_view.value == "rela":
+        elif plot_view.value == "R-plot":
             new_str = ' -pr R-plot'
-        elif plot_view.value == "hart":
+        elif plot_view.value == "Hartmann":
             new_str = ' -pr Hartmann'
-        elif plot_view.value == "chro":
+        elif plot_view.value == "chronology":
             new_str = ' -pr chronology'
         elif plot_view.value == "rate":
             new_str = ' -pr rate'
@@ -986,11 +952,11 @@ def main(page: ft.Page):
 
 
     def set_xrange_str():
-        return None
+        pass
 
 
     def set_yrange_str():
-        return None
+        pass
 
 
     def set_isochron_str():
@@ -1036,7 +1002,7 @@ def main(page: ft.Page):
 
 
     def set_cite_function_str():
-        return None
+        pass
 
 
     def set_mu_str():
@@ -1118,11 +1084,11 @@ def main(page: ft.Page):
 
 
     def set_ref_diameter_str():
-        return None
+        pass
 
 
     def set_p_str():
-        return None
+        pass
 
 
     """
@@ -1142,7 +1108,7 @@ def main(page: ft.Page):
         ft.Radio(value="chronology", label="Chronology"),
         ft.Radio(value='rate', label="Rate")
     ]),
-        value="diff"
+        value="differential"
     )
 
     # Celestial body fropdown options
@@ -1647,7 +1613,7 @@ def main(page: ft.Page):
         on_change=lambda _: set_cmd_line_str() or print_plot()
     )
 
-    # FILE|PLOT|EXPORT|UTILITES Menu bar
+    # FILE|PLOT|EXPORT|UTILITIES Menu bar
     menubar = ft.MenuBar(
         style=ft.MenuStyle(
             alignment=ft.alignment.top_left,
