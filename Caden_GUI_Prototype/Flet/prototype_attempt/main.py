@@ -548,8 +548,8 @@ def main(page: ft.Page):
     page.title = 'Craterstats IV'  # Application title
     page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
     page.window.width = 1200  # Application width
-    page.window.height = 900  # Application Height
-    page.window.resizable = False  # Application size is static
+    page.window.height = 1200  # Application Height
+    page.window.resizable = True  # Application size is static
     # Fonts that can be used inside the application
     page.fonts = {
         "Courier New": "DearPyGUI_Attempt\\Fonts\\Courier New.ttf",
@@ -1194,7 +1194,8 @@ def main(page: ft.Page):
     # Isochron text field
     iso_text = ft.TextField(
         width=150,
-        dense=True
+        dense=True,
+        bgcolor=ft.colors.GREY_900
     )
 
     # Isochron Label
@@ -1237,16 +1238,16 @@ def main(page: ft.Page):
     )
 
     # Reference Diameter text field
-    ref_diam = ft.TextField(width=50, dense=True)
+    ref_diam = ft.TextField(width=50, dense=True, bgcolor=ft.colors.GREY_900)
 
     # Reference Diameter label
     ref_diam_lbl = ft.Text("Ref diameter,km")
 
     # Axis Log D Textfield
-    axis_d_input_box = ft.TextField(width=75, dense=True, value="-3.2")
+    axis_d_input_box = ft.TextField(width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900)
 
     # Axis y TextField
-    axis_y_input_box = ft.TextField(width=50, dense=True, value="5.5")
+    axis_y_input_box = ft.TextField(width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900)
 
     # Auto Axis button
     axis_auto_button = ft.ElevatedButton(text="Auto", width=80)
@@ -1263,22 +1264,22 @@ def main(page: ft.Page):
     )
 
     # Title entry textfield
-    title_entry = ft.TextField(width=150, dense=True, text_vertical_align=0)
+    title_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, bgcolor=ft.colors.GREY_900)
 
     # Title checkbox
     title_checkbox = ft.Checkbox(label="Title", value=True)
 
     # Print scale textfield
-    print_scale_entry = ft.TextField(width=150, dense=True, value="7.5x7.5")
+    print_scale_entry = ft.TextField(width=150, dense=True, value="7.5x7.5", bgcolor=ft.colors.GREY_900)
 
     # Subtitle entry textfield
-    subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0)
+    subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, bgcolor=ft.colors.GREY_900)
 
     # subtitle checkbox
     subtitle_checkbox = ft.Checkbox(label="Subtitle", value=True)
 
     # Font size textfield
-    text_size = ft.TextField(width=150, dense=True, value="8")
+    text_size = ft.TextField(width=150, dense=True, value="8", bgcolor=ft.colors.GREY_900)
 
     # Plot lists list view
     plot_lists = ft.ListView(
@@ -1310,7 +1311,7 @@ def main(page: ft.Page):
     down_button = ft.ElevatedButton(text="Down", width=115)
 
     # Plot fit text field
-    plot_fit_text = ft.TextField(width=300, dense=True, value="Default")
+    plot_fit_text = ft.TextField(width=300, dense=True, value="Default", bgcolor=ft.colors.GREY_900)
 
     # Plot fit dropdown
     plot_fit_options = ft.Dropdown(
@@ -1333,14 +1334,14 @@ def main(page: ft.Page):
     source_file_label = ft.Text("Source file:")
 
     # Source file textfield
-    source_file_entry = ft.TextField(width=500, dense=True, read_only=True)
+    source_file_entry = ft.TextField(width=500, dense=True, read_only=True, bgcolor=ft.colors.GREY_900)
 
     # File Browse button
     browse_button = ft.ElevatedButton(
         text="Browse...", width=115, on_click=lambda _: pick_files_dialog.pick_files())
 
     # Diameter Range textfield
-    diam_range_entry = ft.TextField(width=150, dense=True, value="0.0")
+    diam_range_entry = ft.TextField(width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900)
 
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
@@ -1353,7 +1354,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Blue"),
             ft.dropdown.Option("Yellow"),
             ft.dropdown.Option("Violet"),
-            ft.dropdown.Option("Grey"),
+            ft.dropdown.Option("GREY_900"),
             ft.dropdown.Option("Brown"),
             ft.dropdown.Option("Orange"),
             ft.dropdown.Option("Pink"),
@@ -1532,7 +1533,8 @@ def main(page: ft.Page):
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("Diameter"),
-                            ft.TextField(width=100, dense=True),
+                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
+
                         ]
                     ),
                     ft.Column(
@@ -1540,7 +1542,7 @@ def main(page: ft.Page):
                         controls=[
                             ft.Text("Bin"),
                             ft.TextField(width=100, dense=True,
-                                         read_only=True),
+                                         read_only=True, bgcolor=ft.colors.GREY_900),
                         ]
                     ),
                     ft.Column(
@@ -1548,35 +1550,35 @@ def main(page: ft.Page):
                         controls=[
                             ft.Text("n"),
                             ft.TextField(width=100, dense=True,
-                                         read_only=True),
+                                         read_only=True, bgcolor=ft.colors.GREY_900),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("y"),
-                            ft.TextField(width=100, dense=True),
+                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("Age"),
-                            ft.TextField(width=100, dense=True),
+                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("N(1)"),
-                            ft.TextField(width=100, dense=True),
+                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("a0"),
-                            ft.TextField(width=100, dense=True),
+                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
                         ]
                     )
                 ]
