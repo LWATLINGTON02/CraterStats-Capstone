@@ -110,8 +110,6 @@ def main(page: ft.Page):
 
         plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
-
-
         if plot:
             plotSettings.autoscale(craterPlotSet['xrange'] if 'xrange' in craterPlotSet else None,
                                      craterPlotSet['yrange'] if 'yrange' in craterPlotSet else None)
