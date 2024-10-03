@@ -34,6 +34,19 @@ def generateOutputFileName():
 
     return file_name
 
+def delete_temp_plots(folder_path, extensions):
+
+    # Loop through all files in the folder
+    for file in os.listdir(folder_path):
+
+        # Check if the file has the correct extension
+        for extension in extensions:
+
+            if file.endswith(extension):
+
+                # Delete the file
+                os.remove(os.path.join(folder_path, file))
+
 
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
@@ -1729,3 +1742,5 @@ def main(page: ft.Page):
     page.add(t)
 
 ft.app(target=main, assets_dir="assets")
+
+delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
