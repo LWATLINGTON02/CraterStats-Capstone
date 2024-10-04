@@ -30,7 +30,7 @@ def delete_temp_plots(folder_path, extensions):
         # Check if the file has the correct extension
         for extension in extensions:
 
-            if file.endswith(extension):
+            if file.endswith(extension) and file != "blank_plot.png":
 
                 # Delete the file
                 os.remove(os.path.join(folder_path, file))

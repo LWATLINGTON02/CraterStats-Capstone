@@ -547,8 +547,8 @@ def main(page: ft.Page):
     """
     page.title = 'Craterstats IV'  # Application title
     page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
-    page.window.width = 1200  # Application width
-    page.window.height = 1200  # Application Height
+    page.window.width = 1920  # Application width
+    page.window.height = 1080  # Application Height
     page.window.resizable = True  # Application size is static
     # Fonts that can be used inside the application
     page.fonts = {
@@ -1515,9 +1515,9 @@ def main(page: ft.Page):
 
     # plot image
     plot_image = ft.Image(
-        src="blank_plot.png",
-        height=500,
-        width=500,
+        src="/plots/blank_plot.png",
+        height=800,
+        width=800,
         fit=ft.ImageFit.CONTAIN
     )
 
@@ -1533,7 +1533,12 @@ def main(page: ft.Page):
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("Diameter"),
-                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
+                            ft.TextField(
+                                width=100,
+                                dense=True,
+                                bgcolor=ft.colors.GREY_900,
+                                read_only=True
+                            ),
 
                         ]
                     ),
@@ -1541,44 +1546,72 @@ def main(page: ft.Page):
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("Bin"),
-                            ft.TextField(width=100, dense=True,
-                                         read_only=True, bgcolor=ft.colors.GREY_900),
+                            ft.TextField(
+                                width=100,
+                                dense=True,
+                                bgcolor=ft.colors.GREY_900,
+                                read_only=True
+                            ),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("n"),
-                            ft.TextField(width=100, dense=True,
-                                         read_only=True, bgcolor=ft.colors.GREY_900),
+                            ft.TextField(
+                                width=100,
+                                dense=True,
+                                bgcolor=ft.colors.GREY_900,
+                                read_only=True
+                            ),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("y"),
-                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
+                            ft.TextField(
+                                width=100,
+                                dense=True,
+                                bgcolor=ft.colors.GREY_900,
+                                read_only=True
+                            ),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("Age"),
-                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
+                            ft.TextField(
+                                width=100,
+                                dense=True,
+                                bgcolor=ft.colors.GREY_900,
+                                read_only=True
+                            ),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("N(1)"),
-                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
+                            ft.TextField(
+                                width=100,
+                                dense=True,
+                                bgcolor=ft.colors.GREY_900,
+                                read_only=True
+                            ),
                         ]
                     ),
                     ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Text("a0"),
-                            ft.TextField(width=100, dense=True, bgcolor=ft.colors.GREY_900),
+                            ft.TextField(
+                                width=100,
+                                dense=True,
+                                bgcolor=ft.colors.GREY_900,
+                                read_only=True
+                            ),
                         ]
                     )
                 ]
