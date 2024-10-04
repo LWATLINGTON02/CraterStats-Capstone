@@ -548,6 +548,8 @@ def main(page: ft.Page):
     page.window.width = 1920  # Application width
     page.window.height = 1080  # Application Height
     page.window.resizable = True  # Application size is static
+    page.window.left = 0    # Set the window position to the leftmost side
+    page.window.top = 0  # Set window positino to the top of screen
     # Fonts that can be used inside the application
     page.fonts = {
         "Courier New": "DearPyGUI_Attempt\\Fonts\\Courier New.ttf",
