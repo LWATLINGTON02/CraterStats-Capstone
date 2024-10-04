@@ -270,7 +270,6 @@ def main(page: ft.Page):
                     title_checkbox.value = True
                 else:
                     title_checkbox.value = False
-                    title_entry.read_only = True
 
             if specifics[0] == "set.show_subtitle":
                 if int(specifics[1]) == 1:
@@ -278,7 +277,6 @@ def main(page: ft.Page):
 
                 else:
                     subtitle_checkbox.value = False
-                    subtitle_entry.read_only = True
 
             if specifics[0] == "set.style":
                 print(specifics[1][1:-2])
@@ -1516,8 +1514,8 @@ def main(page: ft.Page):
     # plot image
     plot_image = ft.Image(
         src="/plots/blank_plot.png",
-        height=800,
-        width=800,
+        height=600,
+        width=600,
         fit=ft.ImageFit.CONTAIN
     )
 
