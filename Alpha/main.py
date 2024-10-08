@@ -53,7 +53,7 @@ def main(page: ft.Page):
             plot=None,
             presentation=plot_view.value,
             print_dim=[print_scale_entry.value],
-            pt_size=text_size.value,
+            pt_size=text_size.value if text_size.value != '' else '8',
             ref_diameter=ref_diam.value,
             show_isochrons=show_iso.value,
             sig_figs='3',
@@ -270,7 +270,6 @@ def main(page: ft.Page):
                     title_checkbox.value = True
                 else:
                     title_checkbox.value = False
-                    title_entry.read_only = True
 
             if specifics[0] == "set.show_subtitle":
                 if int(specifics[1]) == 1:
@@ -278,7 +277,6 @@ def main(page: ft.Page):
 
                 else:
                     subtitle_checkbox.value = False
-                    subtitle_entry.read_only = True
 
             if specifics[0] == "set.style":
                 print(specifics[1][1:-2])
@@ -1110,7 +1108,8 @@ def main(page: ft.Page):
         ft.Radio(value="chronology", label="Chronology"),
         ft.Radio(value='rate', label="Rate")
     ]),
-        value="differential"
+        value="differential",
+        on_change=lambda e: print_plot()
     )
 
     # Celestial body fropdown options
@@ -1128,7 +1127,7 @@ def main(page: ft.Page):
         label="Body",
         value="Moon",
         dense=True,
-        on_change=lambda e: set_chron_sys(None, e)
+        on_change=lambda e: set_chron_sys(None, e) or print_plot()
     )
 
     # Chronolgy System dropdown options
@@ -1143,7 +1142,7 @@ def main(page: ft.Page):
         ],
         value="Moon, Neukum (1983)",
         dense=True,
-        on_change=lambda e: set_chron_func(None, e)
+        on_change=lambda e: set_chron_func(None, e) or print_plot()
     )
 
     # Chronology Function Dropdown options
@@ -1152,7 +1151,8 @@ def main(page: ft.Page):
         label="Chronology Function",
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
-        dense=True
+        dense=True,
+        on_change=lambda e: print_plot()
     )
 
     # Production function dropdown options
@@ -1161,8 +1161,8 @@ def main(page: ft.Page):
         label="Production Function",
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
-        dense=True
-
+        dense=True,
+        on_change=lambda e: print_plot()
     )
 
     # Epoch dropdown options
@@ -1175,8 +1175,8 @@ def main(page: ft.Page):
             ft.dropdown.Option("Moon, Wilhelms (1987)"),
             ft.dropdown.Option("Mars, Michael (2013)"),
         ],
-        dense=True
-
+        dense=True,
+        on_change=lambda e: print_plot()
     )
 
     # Equilibrium function dropdown options
@@ -1190,69 +1190,78 @@ def main(page: ft.Page):
                 "Standard lunar equilibrium (Trask, 1966)"),
             ft.dropdown.Option("Hartmann (1984)"),
         ],
-        dense=True
+        dense=True,
+        on_change=lambda e: print_plot()
     )
 
     # Isochron text field
     iso_text = ft.TextField(
         width=150,
         dense=True,
-        bgcolor=ft.colors.GREY_900
+        bgcolor=ft.colors.GREY_900,
+        on_change=lambda e: print_plot()
     )
 
     # Isochron Label
     iso_label = ft.Checkbox(
         label="Isochrons, Ga",
         value=False,
+        on_change=lambda e: print_plot()
     )
 
     # Data legend checkbox
     data_legend = ft.Checkbox(
         label="Data",
         value=True,
+        on_change=lambda e: print_plot()
     )
 
     # Fit legend checkbox
     fit_legend = ft.Checkbox(
         label="Fit",
         value=True,
+        on_change=lambda e: print_plot()
     )
 
     # Function legend checkbox
     func_legend = ft.Checkbox(
         label="Functions",
         value=True,
+        on_change=lambda e: print_plot()
     )
 
     # 3sf legend checckbox
     sf_legend = ft.Checkbox(
         label="3sf",
+        on_change=lambda e: print_plot()
     )
 
     # randomness legend checkbox
     rand_legend = ft.Checkbox(
         label="Randomness",
+        on_change=lambda e: print_plot()
     )
 
     # Mu legend checkbox
     mu_legend = ft.Checkbox(
-        label="µ notation"
+        label="µ notation",
+        on_change=lambda e: print_plot()
     )
 
     # Reference Diameter text field
-    ref_diam = ft.TextField(width=50, dense=True, bgcolor=ft.colors.GREY_900)
+    ref_diam = ft.TextField(width=50, dense=True, bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Reference Diameter label
     ref_diam_lbl = ft.Text("Ref diameter,km")
 
     # Axis Log D Textfield
-    axis_d_input_box = ft.TextField(width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900)
+    axis_d_input_box = ft.TextField(width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Axis y TextField
-    axis_y_input_box = ft.TextField(width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900)
+    axis_y_input_box = ft.TextField(width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Auto Axis button
-    axis_auto_button = ft.ElevatedButton(text="Auto", width=80)
+    axis_auto_button = ft.ElevatedButton(text="Auto", width=80, on_click=lambda e: print_plot())
 
     # Style options dropdown
     style_options = ft.Dropdown(
@@ -1262,26 +1271,27 @@ def main(page: ft.Page):
             ft.dropdown.Option("root-2"),
         ],
         value="natural",
-        dense=True
+        dense=True,
+        on_change=lambda e: print_plot()
     )
 
     # Title entry textfield
-    title_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, bgcolor=ft.colors.GREY_900)
+    title_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Title checkbox
-    title_checkbox = ft.Checkbox(label="Title", value=True)
+    title_checkbox = ft.Checkbox(label="Title", value=True, on_change=lambda e: print_plot())
 
     # Print scale textfield
-    print_scale_entry = ft.TextField(width=150, dense=True, value="7.5x7.5", bgcolor=ft.colors.GREY_900)
+    print_scale_entry = ft.TextField(width=150, dense=True, value="7.5x7.5", bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Subtitle entry textfield
-    subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, bgcolor=ft.colors.GREY_900)
+    subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # subtitle checkbox
-    subtitle_checkbox = ft.Checkbox(label="Subtitle", value=True)
+    subtitle_checkbox = ft.Checkbox(label="Subtitle", value=True, on_change=lambda e: print_plot())
 
     # Font size textfield
-    text_size = ft.TextField(width=150, dense=True, value="8", bgcolor=ft.colors.GREY_900)
+    text_size = ft.TextField(width=150, dense=True, value="8", bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Plot lists list view
     plot_lists = ft.ListView(
@@ -1313,7 +1323,7 @@ def main(page: ft.Page):
     down_button = ft.ElevatedButton(text="Down", width=115)
 
     # Plot fit text field
-    plot_fit_text = ft.TextField(width=300, dense=True, value="Default", bgcolor=ft.colors.GREY_900)
+    plot_fit_text = ft.TextField(width=300, dense=True, value="Default", bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Plot fit dropdown
     plot_fit_options = ft.Dropdown(
@@ -1326,7 +1336,8 @@ def main(page: ft.Page):
             ft.dropdown.Option("Poisson pdf"),
             ft.dropdown.Option("Poisson buffer pdf"),
         ],
-        value="crater count"
+        value="crater count",
+        on_change=lambda e: print_plot()
     )
 
     # Hide Button
@@ -1343,7 +1354,7 @@ def main(page: ft.Page):
         text="Browse...", width=115, on_click=lambda _: pick_files_dialog.pick_files())
 
     # Diameter Range textfield
-    diam_range_entry = ft.TextField(width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900)
+    diam_range_entry = ft.TextField(width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
@@ -1363,7 +1374,8 @@ def main(page: ft.Page):
             ft.dropdown.Option("Purple"),
             ft.dropdown.Option("Teal"),
         ],
-        value="Black"
+        value="Black",
+        on_change=lambda e: print_plot()
     )
 
     # Plot point color symbol
@@ -1385,19 +1397,20 @@ def main(page: ft.Page):
             ft.dropdown.Option("Filled triangle"),
             ft.dropdown.Option("Filled inverted triangle"),
         ],
-        value='Square'
+        value='Square',
+        on_change=lambda e: print_plot()
     )
 
     """PLOT SETTINGS OPTIONS"""
-    error_bars = ft.Checkbox(label="Error bars", value=True)
+    error_bars = ft.Checkbox(label="Error bars", value=True, on_change=lambda e: print_plot())
 
-    display_age = ft.Checkbox(label="Display age", value=True)
+    display_age = ft.Checkbox(label="Display age", value=True, on_change=lambda e: print_plot())
 
-    align_left = ft.Checkbox(label="Align age left")
+    align_left = ft.Checkbox(label="Align age left", on_change=lambda e: print_plot())
 
-    show_iso = ft.Checkbox(label="Show isochron", value=True)
+    show_iso = ft.Checkbox(label="Show isochron", value=True, on_change=lambda e: print_plot())
 
-    plot_fit_error = ft.Checkbox(label="Plot fit", value=True)
+    plot_fit_error = ft.Checkbox(label="Plot fit", value=True, on_change=lambda e: print_plot())
 
     # Binning options dropdown
     binning_options = ft.Dropdown(
@@ -1409,6 +1422,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("log"),
         ],
         value='psuedo-log',
+        on_change=lambda e: print_plot()
     )
 
     # Default command line string
@@ -1419,7 +1433,8 @@ def main(page: ft.Page):
         bgcolor=ft.colors.BLACK,
         color=ft.colors.WHITE,
         text_style=ft.TextStyle(font_family="Courier New"),
-        width=1200
+        width=1200,
+        on_change=lambda e: print_plot()
     )
 
     # Global Settings Tab Container
@@ -1625,7 +1640,7 @@ def main(page: ft.Page):
     )
 
     # Tabs
-    t = ft.Tabs(
+    tabs = ft.Tabs(
         selected_index=0,
         animation_duration=150,
         tabs=[
@@ -1638,12 +1653,6 @@ def main(page: ft.Page):
                 text="Plot Settings",
                 icon=ft.icons.SCATTER_PLOT_OUTLINED,
                 content=plot_settings,
-
-            ),
-            ft.Tab(
-                text="Plot",
-                icon=ft.icons.ADD_CHART,
-                content=plot,
             ),
         ],
         expand=1,
@@ -1741,8 +1750,37 @@ def main(page: ft.Page):
         ]
     )
 
+    two_column_layout = ft.Row(
+        controls=[
+            ft.Container(
+                content=tabs,
+                expand=2
+            ),
+            ft.Container(
+                content=plot_image,
+                expand=3
+            ),
+        ],
+        expand=True
+    )
+
+    bottom_row = ft.Row(
+        controls=[cmd_str],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER
+    )
+
+    page_layout = ft.Column(
+        controls=[
+            two_column_layout,
+            ft.Divider(),
+            bottom_row
+        ],
+        expand=True
+    )
+
     page.add(menubar)
-    page.add(t)
+    page.add(page_layout)
 
 ft.app(target=main, assets_dir="assets")
 
