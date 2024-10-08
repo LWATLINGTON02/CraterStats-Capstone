@@ -12,7 +12,6 @@ from helperFunctions import *
 # Also from craterstats
 PATH = os.path.dirname(os.path.abspath(__file__))
 
-
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 def main(page: ft.Page):
     def print_plot():
@@ -106,7 +105,6 @@ def main(page: ft.Page):
                 plot_image.update()
             if format in {'txt'}:
                 plotSettings.create_summary_table()
-
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -231,6 +229,7 @@ def main(page: ft.Page):
             if specifics[0] == 'set.presentation':
                 presentation_val = specifics[1][1:-
                 2].replace("'", "")
+
 
             if specifics[0] == 'set.print_dimensions':
                 print_dimensions = (specifics[1].replace(
@@ -483,7 +482,6 @@ def main(page: ft.Page):
                 print("No values")
 
         source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
-
         range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
         range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
         range_val = ''
