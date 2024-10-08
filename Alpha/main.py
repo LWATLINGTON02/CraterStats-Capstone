@@ -114,6 +114,8 @@ def main(page: ft.Page):
             if format in {'txt'}:
                 plotSettings.create_summary_table()
 
+        set_cmd_line_str()
+
     def open_about_dialog(e):
         """ Opens and fills about text.
 
@@ -1272,7 +1274,7 @@ def main(page: ft.Page):
     )
 
     # Title entry textfield
-    title_entry = ft.TextField(width=150, dense=True, text_vertical_align=0,
+    title_entry = ft.TextField(dense=True, content_padding=ft.padding.all(8), width=6000,
                                bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
 
     # Title checkbox
@@ -1280,11 +1282,11 @@ def main(page: ft.Page):
         label="Title", value=True, on_change=lambda e: print_plot())
 
     # Print scale textfield
-    print_scale_entry = ft.TextField(width=150, height=50, dense=True, value="7.5x7.5",
+    print_scale_entry = ft.TextField(dense=True, value="7.5x7.5", content_padding=ft.padding.all(8),
                                      bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
 
     # Subtitle entry textfield
-    subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0,
+    subtitle_entry = ft.TextField(dense=True, content_padding=ft.padding.all(8),
                                   bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
 
     # subtitle checkbox
@@ -1292,7 +1294,7 @@ def main(page: ft.Page):
         label="Subtitle", value=True, on_change=lambda e: print_plot())
 
     # Font size textfield
-    text_size = ft.TextField(width=150, dense=True, value="8", bgcolor=ft.colors.GREY_900,
+    text_size = ft.TextField(dense=True, value="8", bgcolor=ft.colors.GREY_900, content_padding=ft.padding.all(8),
                              on_blur=lambda e: print_plot() or print(text_size.value) or print(type(text_size.value)))
 
     # Plot lists list view
@@ -1439,12 +1441,12 @@ def main(page: ft.Page):
     # Default command line string
     cmd_str = ft.TextField(
         dense=True,
-        value="-cs neukumivanov -title Differential plot -subtitle with two differential fit age evaluations -p source=%sample%/Pickering.scc,psym=o -p type=d-fit,range=[.2,.7],isochron=1 -p range=[2,5],colour=red",
+        value="craterstats -cs 1 -pr differential -isochrons  -show_isochron 1 -mu 0 -style natural -print_dim {7.5x7.5} -pt_size 8",
         text_size=12,
         bgcolor=ft.colors.BLACK,
         color=ft.colors.WHITE,
         text_style=ft.TextStyle(font_family="Courier New"),
-        width=1200,
+        width=1500,
     )
 
     # Global Settings Tab Container
@@ -1743,6 +1745,10 @@ def main(page: ft.Page):
             ft.SubmenuButton(
                 content=ft.Text("Utilities"),
                 controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("Demo"),
+                        leading=ft.Icon(ft.icons.START)
+                    ),
                     ft.MenuItemButton(
                         content=ft.Text("sum .stat files"),
                         leading=ft.Icon(ft.icons.ADD)
