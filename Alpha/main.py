@@ -1282,7 +1282,7 @@ def main(page: ft.Page):
     title_checkbox = ft.Checkbox(label="Title", value=True, on_change=lambda e: print_plot())
 
     # Print scale textfield
-    print_scale_entry = ft.TextField(width=150, dense=True, value="7.5x7.5", bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
+    print_scale_entry = ft.TextField(width=150, height=50, dense=True, value="7.5x7.5", bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
 
     # Subtitle entry textfield
     subtitle_entry = ft.TextField(width=150, dense=True, text_vertical_align=0, bgcolor=ft.colors.GREY_900, on_change=lambda e: print_plot())
@@ -1476,14 +1476,17 @@ def main(page: ft.Page):
                 title_entry,
                 title_checkbox,
                 ft.VerticalDivider(),
-                ft.Text("Print scale. cm/decade (or plot width x height. cm):"),
+                ft.Text("Print scale. cm/decade (or plot width x height. cm):", style=ft.TextStyle(height=1, size=11)),
                 print_scale_entry,
                 subtitle_entry,
                 subtitle_checkbox,
                 ft.VerticalDivider(),
                 ft.Text("Text size. pt:"),
                 text_size,
-            ]),
+            ],
+            spacing=20
+
+            ),
         ft.Row([
             plot_lists_container,
             ft.Column([
@@ -1641,7 +1644,7 @@ def main(page: ft.Page):
 
     # Tabs
     tabs = ft.Tabs(
-        selected_index=0,
+        selected_index=1,
         animation_duration=150,
         tabs=[
             ft.Tab(
