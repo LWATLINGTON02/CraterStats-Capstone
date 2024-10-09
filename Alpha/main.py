@@ -3,6 +3,7 @@ from argparse import Namespace
 import flet as ft
 from craterstats import cli, Craterplot, Craterplotset
 from flet import FilePickerResultEvent
+import shutil
 
 from Globals import *
 from gm.file import file_exists, read_textstructure, read_textfile
@@ -434,6 +435,19 @@ def main(page: ft.Page):
 
         page.update()
         data.close()
+
+    def save_image(e):
+        
+
+        if save_file_dialog.result and save_file_dialog.result.path:
+            export_path = save_file_dialog.result.path
+
+            if not export_path.lower().endswith(".png"):
+                export_path += ".png"
+
+            
+                shutil.copy(plot_image.src, export_path)
+                page.update()
 
     def create_plot_lists():
         """Creates a dictionary of plots.
@@ -1109,6 +1123,10 @@ def main(page: ft.Page):
 
     page.overlay.append(pick_files_dialog)
 
+    save_file_dialog = ft.FilePicker(on_result=save_image)
+
+    page.overlay.append(save_file_dialog)
+
     # Plot view Radio options
     plot_view = ft.RadioGroup(ft.Row([
         ft.Radio(value="cumulative", label="Cumulative"),
@@ -1565,8 +1583,8 @@ def main(page: ft.Page):
     # plot image
     plot_image = ft.Image(
         src="/plots/blank_plot.png",
-        height=800,
-        width=800,
+        height=600,
+        width=600,
         fit=ft.ImageFit.CONTAIN
     )
 
@@ -1756,7 +1774,10 @@ def main(page: ft.Page):
                 controls=[
                     ft.MenuItemButton(
                         content=ft.Text("Image"),
-                        leading=ft.Icon(ft.icons.IMAGE)
+                        leading=ft.Icon(ft.icons.IMAGE),
+                         on_click=lambda _: save_file_dialog.save_file(
+                         dialog_title="Save the image",
+                         file_type="image/png")
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Summary file"),
