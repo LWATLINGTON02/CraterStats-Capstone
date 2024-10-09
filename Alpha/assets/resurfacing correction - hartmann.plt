@@ -29,7 +29,7 @@ set.xrange=[-2,3,-3,2,-2,3,-3.15,2.56,4.5,0,4.5,0]
 set.yrange=[-7,1,-5,5,-4,1,-8,5,-6,2,-6,3]
 set.count=3
 
-plot1.source='D:\mydocs\craterstatsII\sample\ECHUS_CHAP_AR1_A.stat'
+plot1.source='/Users/caden/Library/CloudStorage/OneDrive-Personal/Fall2024/CS486C/CraterStats-Capstone/Alpha/sample/ECHUS_CHAP_AR1_A.stat'
 plot1.name='ECHUS_CHAP_AR1_A'
 plot1.range=[0.01,100]
 plot1.type='data'
@@ -50,7 +50,7 @@ plot1.isochron=0
 plot1.offset=[0,0]
 plot1.offset_age=[0,0]
 
-plot2.source='D:\mydocs\craterstatsII\sample\ECHUS_CHAP_AR1_A.stat'
+plot2.source='/Users/caden/Library/CloudStorage/OneDrive-Personal/Fall2024/CS486C/CraterStats-Capstone/Alpha/sample/ECHUS_CHAP_AR1_A.stat'
 plot2.name='ECHUS_CHAP_AR1_A(1)'
 plot2.range=[0.6,1.6]
 plot2.type='diff_fit'
@@ -71,7 +71,7 @@ plot2.isochron=0
 plot2.offset=[0,0]
 plot2.offset_age=[0.0357,0.0812]
 
-plot3.source='D:\mydocs\craterstatsII\sample\ECHUS_CHAP_AR1_A.stat'
+plot3.source='/Users/caden/Library/CloudStorage/OneDrive-Personal/Fall2024/CS486C/CraterStats-Capstone/Alpha/sample/ECHUS_CHAP_AR1_A.stat'
 plot3.name='ECHUS_CHAP_AR1_A(2)'
 plot3.range=[0.11,0.6]
 plot3.type='diff_fit'
