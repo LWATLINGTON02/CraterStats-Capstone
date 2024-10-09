@@ -7,6 +7,8 @@ from flet import FilePickerResultEvent
 from Globals import *
 from gm.file import file_exists, read_textstructure, read_textfile
 from helperFunctions import *
+import Globals
+
 
 # GM Folder from CraterstatsIII
 # Also from craterstats
@@ -17,6 +19,17 @@ PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def main(page: ft.Page):
+
+    image_sources = ['/plots/blank_plot.png']
+
+    def toggle_demo(e):
+        Globals.demo_mode = not Globals.demo_mode
+
+        print(two_column_layout.controls[1].content)
+        print(Globals.demo_mode)
+
+        page.update()
+
     def print_plot():
         """ Creates plot images.
 
@@ -79,10 +92,13 @@ def main(page: ft.Page):
 
         functionStr = read_textstructure(systems, from_string=True)
 
-        craterPlot = cli.construct_plot_dicts(arg, settings)
-        defaultFilename = generate_output_file_name()
-        craterPlotSet = cli.construct_cps_dict(
-            arg, settings, functionStr, defaultFilename)
+        try:
+            craterPlot = cli.construct_plot_dicts(arg, settings)
+            defaultFilename = generate_output_file_name()
+            craterPlotSet = cli.construct_cps_dict(
+                arg, settings, functionStr, defaultFilename)
+        except ValueError as err:
+            print("Error", err)
 
         if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
             craterPlotSet['legend'] += 'p'
@@ -1274,7 +1290,7 @@ def main(page: ft.Page):
     )
 
     # Title entry textfield
-    title_entry = ft.TextField(dense=True, content_padding=ft.padding.all(8), width=6000,
+    title_entry = ft.TextField(expand=True, dense=True, content_padding=ft.padding.all(8),
                                bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
 
     # Title checkbox
@@ -1367,7 +1383,7 @@ def main(page: ft.Page):
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
         dense=True,
-        width=90,
+        width=120,
         options=[
             ft.dropdown.Option("Black"),
             ft.dropdown.Option("Red"),
@@ -1552,6 +1568,16 @@ def main(page: ft.Page):
         height=800,
         width=800,
         fit=ft.ImageFit.CONTAIN
+    )
+
+    carousel_images = [ft.Image(src=img, width=800, height=800)
+                       for img in image_sources]
+    image_carousel = ft.Tabs(
+        tabs=[ft.Tab(text=f"Image {i+1}", icon=ft.icons.IMAGE, content=img)
+              for i, img in enumerate(carousel_images)
+              ],
+        selected_index=0,
+        visible=False
     )
 
     # Plot Tab container
@@ -1747,7 +1773,8 @@ def main(page: ft.Page):
                 controls=[
                     ft.MenuItemButton(
                         content=ft.Text("Demo"),
-                        leading=ft.Icon(ft.icons.START)
+                        leading=ft.Icon(ft.icons.PLAY_ARROW_ROUNDED),
+                        # on_click=lambda e: toggle_demo(e)
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("sum .stat files"),
@@ -1770,6 +1797,8 @@ def main(page: ft.Page):
         ]
     )
 
+    print(Globals.demo_mode)
+
     two_column_layout = ft.Row(
         controls=[
             ft.Container(
@@ -1777,7 +1806,7 @@ def main(page: ft.Page):
                 expand=2
             ),
             ft.Container(
-                content=plot_image,
+                content=image_carousel if Globals.demo_mode else plot_image,
                 expand=3
             ),
         ],
@@ -1806,3 +1835,4 @@ def main(page: ft.Page):
 ft.app(target=main, assets_dir="assets")
 
 delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
+3

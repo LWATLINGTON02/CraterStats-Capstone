@@ -66,3 +66,5 @@ symbols = ['Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
            'Filled circle', 'Filled star', 'Filled triangle', 'Filled inverted triangle']
 
 plots_dict = {}
+
+demo_mode = False
