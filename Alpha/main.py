@@ -1,5 +1,7 @@
 from argparse import Namespace
 
+import concurrent.futures
+
 import flet as ft
 from craterstats import cli, Craterplot, Craterplotset
 from flet import FilePickerResultEvent
@@ -21,15 +23,109 @@ PATH = os.path.dirname(os.path.abspath(__file__))
 
 def main(page: ft.Page):
 
-    image_sources = ['/plots/blank_plot.png']
+    def loading_circle():
+
+        loading = ft.AlertDialog(
+            title=ft.Text("Creating Demo Plots..."),
+            content=ft.ProgressRing()
+        )
+
+        page.dialog = loading
+        loading.open = True
+        page.update()
+
+        return loading
+
+    # Function to update the displayed image
+
+    def demo_view(demo_dict):
+        carousel_images = list(demo_dict.keys())
+        setattr(Globals, 'demo_cmd_str',
+                demo_dict[carousel_images[Globals.image_index]])
+
+        def update_image():
+            # Update the image based on the current index
+            print(demo_dict[carousel_images[Globals.image_index]])
+            setattr(Globals, 'demo_cmd_str',
+                    demo_dict[carousel_images[Globals.image_index]])
+            cmd_str.value = Globals.demo_cmd_str
+            demo_image.src = f"{PATH}/../demo/{carousel_images[Globals.image_index]}"
+            demo_image.update()
+            page.update()
+
+        # Function to go to the next image
+        def next_image(e):
+            print(len(carousel_images))
+            print(Globals.image_index)
+            setattr(Globals, 'image_index', Globals.image_index + 1)
+            if Globals.image_index >= len(carousel_images) - 2:
+                # Loop back to the first image
+                setattr(Globals, 'iamge_index', 0)
+            update_image()
+
+        # Function to go to the previous image
+        def prev_image(e):
+            setattr(Globals, 'image_index', Globals.image_index - 1)
+            if Globals.image_index < 0:
+                # Loop back to the last image
+                setattr(Globals, 'iamge_index', len(carousel_images) - 2)
+            update_image()
+
+        demo_image = ft.Image(
+            src=f"{PATH}/../demo/{carousel_images[Globals.image_index]}",
+            width=600,
+            height=600,
+        )
+
+        cmd_str = ft.TextField(
+            value=Globals.demo_cmd_str,
+            text_size=12,
+            bgcolor=ft.colors.BLACK,
+            color=ft.colors.WHITE,
+            text_style=ft.TextStyle(font_family="Courier New"),
+            width=1500
+        )
+
+        demo_modal = ft.AlertDialog(
+            title=ft.Text("Demo Plots"),
+            content=ft.Column(
+                controls=[
+                    demo_image,
+                    ft.VerticalDivider(),
+                    cmd_str
+                ]
+            ),
+            shape=ft.RoundedRectangleBorder(radius=5),
+            actions=[
+                ft.ElevatedButton(
+                    text="Prev", on_click=lambda e: prev_image(e)),
+                ft.ElevatedButton(
+                    text="Next", on_click=lambda e: next_image(e)),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END
+        )
+
+        page.dialog = demo_modal
+        demo_modal.open = True
+        page.update()
+
+        return demo_view
 
     def toggle_demo(e):
-        Globals.demo_mode = not Globals.demo_mode
 
-        print(two_column_layout.controls[1].content)
-        print(Globals.demo_mode)
+        command_dict = {}
 
+        loading = loading_circle()
+
+        cli.demo()
+
+        command_dict = parse_demo_commands(PATH + "/../demo/")
+
+        loading.open = False
         page.update()
+        demo = demo_view(command_dict)
+
+        Globals.demo_mode = False
 
     def print_plot():
         """ Creates plot images.
@@ -54,7 +150,7 @@ def main(page: ft.Page):
             autoscale=False,
             chronology_system=set_chron_str()[-2:].replace(' ', ''),
             cite_function=func_legend.value,
-            demo=False,
+            demo=Globals.demo_mode,
             epochs=epoch.value if epoch.value != 'none' else None,
             equilibrium=equil_func.value if equil_func.value != 'none' else None,
             format=None,
@@ -83,6 +179,10 @@ def main(page: ft.Page):
             yrange=None
         )
 
+        if arg.demo:
+            toggle_demo(None)
+            return
+
         settings = read_textstructure(
             template if arg.template is None else arg.template)
         systems = read_textfile(
@@ -98,8 +198,10 @@ def main(page: ft.Page):
             defaultFilename = generate_output_file_name()
             craterPlotSet = cli.construct_cps_dict(
                 arg, settings, functionStr, defaultFilename)
-        except ValueError as err:
-            print("Error", err)
+        except SystemExit as err:
+            print("Error couldn't create craterplotset")
+        except Exception as err:
+            print("Other Error", err)
 
         if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
             craterPlotSet['legend'] += 'p'
@@ -132,6 +234,7 @@ def main(page: ft.Page):
                 plotSettings.create_summary_table()
 
         set_cmd_line_str()
+        page.update()
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -431,13 +534,25 @@ def main(page: ft.Page):
         text_size.value = font_pt
 
         create_plot_lists()
-        print_plot()
+        run_plot_async()
 
         page.update()
         data.close()
 
+    def run_plot_async():
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(print_plot)
+
+            try:
+                result = future.result()
+            except SystemExit as e:
+                print(f"Caught {e}")
+
+            # except Exception as e:
+            #     print(f"Caught Unexpected: {e}")
+            #     print(f"{chron_sys.value}")
+
     def save_image(e):
-        
 
         if save_file_dialog.result and save_file_dialog.result.path:
             export_path = save_file_dialog.result.path
@@ -445,7 +560,6 @@ def main(page: ft.Page):
             if not export_path.lower().endswith(".png"):
                 export_path += ".png"
 
-            
                 shutil.copy(plot_image.src, export_path)
                 page.update()
 
@@ -472,7 +586,7 @@ def main(page: ft.Page):
 
             for plots in plot_names:
                 content_list.append(
-                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: set_plot_info(e) or print_plot()))
+                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: set_plot_info(e) or run_plot_async()))
 
         print(plot_lists.controls)
         plot_lists.controls = content_list
@@ -851,7 +965,7 @@ def main(page: ft.Page):
             new_str = ' -cs 15'
         elif chron_sys.value == 'Ceres, Hiesinger et al. (2016)':
             new_str = ' -cs 16'
-        elif chron_sys.value == 'Ida, Schedemann et al (2014)':
+        elif chron_sys.value == 'Ida, Schmedemann et al (2014)':
             new_str = ' -cs 17'
         elif chron_sys.value == 'Gaspra, Schmedemann et al (2014)':
             new_str = ' -cs 18'
@@ -1137,7 +1251,7 @@ def main(page: ft.Page):
         ft.Radio(value='rate', label="Rate")
     ]),
         value="differential",
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Celestial body fropdown options
@@ -1155,7 +1269,7 @@ def main(page: ft.Page):
         label="Body",
         value="Moon",
         dense=True,
-        on_change=lambda e: set_chron_sys(None, e) or print_plot()
+        on_change=lambda e: set_chron_sys(None, e) or run_plot_async()
     )
 
     # Chronolgy System dropdown options
@@ -1170,7 +1284,7 @@ def main(page: ft.Page):
         ],
         value="Moon, Neukum (1983)",
         dense=True,
-        on_change=lambda e: set_chron_func(None, e) or print_plot()
+        on_change=lambda e: set_chron_func(None, e) or run_plot_async()
     )
 
     # Chronology Function Dropdown options
@@ -1180,7 +1294,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
         dense=True,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Production function dropdown options
@@ -1190,7 +1304,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
         dense=True,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Epoch dropdown options
@@ -1204,7 +1318,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Mars, Michael (2013)"),
         ],
         dense=True,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Equilibrium function dropdown options
@@ -1219,7 +1333,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Hartmann (1984)"),
         ],
         dense=True,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Isochron text field
@@ -1227,73 +1341,73 @@ def main(page: ft.Page):
         width=150,
         dense=True,
         bgcolor=ft.colors.GREY_900,
-        on_blur=lambda e: print_plot()
+        on_blur=lambda e: run_plot_async()
     )
 
     # Isochron Label
     iso_label = ft.Checkbox(
         label="Isochrons, Ga",
         value=False,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Data legend checkbox
     data_legend = ft.Checkbox(
         label="Data",
         value=True,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Fit legend checkbox
     fit_legend = ft.Checkbox(
         label="Fit",
         value=True,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Function legend checkbox
     func_legend = ft.Checkbox(
         label="Functions",
         value=True,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # 3sf legend checckbox
     sf_legend = ft.Checkbox(
         label="3sf",
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # randomness legend checkbox
     rand_legend = ft.Checkbox(
         label="Randomness",
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Mu legend checkbox
     mu_legend = ft.Checkbox(
         label="µ notation",
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Reference Diameter text field
     ref_diam = ft.TextField(
-        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
+        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
 
     # Reference Diameter label
     ref_diam_lbl = ft.Text("Ref diameter,km")
 
     # Axis Log D Textfield
     axis_d_input_box = ft.TextField(
-        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
+        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
 
     # Axis y TextField
     axis_y_input_box = ft.TextField(
-        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
+        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
 
     # Auto Axis button
     axis_auto_button = ft.ElevatedButton(
-        text="Auto", width=80, on_click=lambda e: print_plot())
+        text="Auto", width=80, on_click=lambda e: run_plot_async())
 
     # Style options dropdown
     style_options = ft.Dropdown(
@@ -1304,32 +1418,32 @@ def main(page: ft.Page):
         ],
         value="natural",
         dense=True,
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Title entry textfield
     title_entry = ft.TextField(expand=True, dense=True, content_padding=ft.padding.all(8),
-                               bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
+                               bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
 
     # Title checkbox
     title_checkbox = ft.Checkbox(
-        label="Title", value=True, on_change=lambda e: print_plot())
+        label="Title", value=True, on_change=lambda e: run_plot_async())
 
     # Print scale textfield
     print_scale_entry = ft.TextField(dense=True, value="7.5x7.5", content_padding=ft.padding.all(8),
-                                     bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
+                                     bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
 
     # Subtitle entry textfield
     subtitle_entry = ft.TextField(dense=True, content_padding=ft.padding.all(8),
-                                  bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
+                                  bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
 
     # subtitle checkbox
     subtitle_checkbox = ft.Checkbox(
-        label="Subtitle", value=True, on_change=lambda e: print_plot())
+        label="Subtitle", value=True, on_change=lambda e: run_plot_async())
 
     # Font size textfield
     text_size = ft.TextField(dense=True, value="8", bgcolor=ft.colors.GREY_900, content_padding=ft.padding.all(8),
-                             on_blur=lambda e: print_plot() or print(text_size.value) or print(type(text_size.value)))
+                             on_blur=lambda e: run_plot_async() or print(text_size.value) or print(type(text_size.value)))
 
     # Plot lists list view
     plot_lists = ft.ListView(
@@ -1339,7 +1453,7 @@ def main(page: ft.Page):
         spacing=10,
         padding=10,
         controls=[ft.Chip(ft.Text("default"),
-                          on_click=lambda e: print_plot())],
+                          on_click=lambda e: run_plot_async())],
         first_item_prototype=True,
     )
 
@@ -1363,7 +1477,7 @@ def main(page: ft.Page):
 
     # Plot fit text field
     plot_fit_text = ft.TextField(width=300, dense=True, value="Default",
-                                 bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
+                                 bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
 
     # Plot fit dropdown
     plot_fit_options = ft.Dropdown(
@@ -1377,7 +1491,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Poisson buffer pdf"),
         ],
         value="crater count",
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Hide Button
@@ -1396,7 +1510,7 @@ def main(page: ft.Page):
 
     # Diameter Range textfield
     diam_range_entry = ft.TextField(
-        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: print_plot())
+        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
 
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
@@ -1417,7 +1531,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Teal"),
         ],
         value="Black",
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Plot point color symbol
@@ -1440,24 +1554,24 @@ def main(page: ft.Page):
             ft.dropdown.Option("Filled inverted triangle"),
         ],
         value='Square',
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     """PLOT SETTINGS OPTIONS"""
     error_bars = ft.Checkbox(
-        label="Error bars", value=True, on_change=lambda e: print_plot())
+        label="Error bars", value=True, on_change=lambda e: run_plot_async())
 
     display_age = ft.Checkbox(
-        label="Display age", value=True, on_change=lambda e: print_plot())
+        label="Display age", value=True, on_change=lambda e: run_plot_async())
 
     align_left = ft.Checkbox(label="Align age left",
-                             on_change=lambda e: print_plot())
+                             on_change=lambda e: run_plot_async())
 
     show_iso = ft.Checkbox(label="Show isochron", value=True,
-                           on_change=lambda e: print_plot())
+                           on_change=lambda e: run_plot_async())
 
     plot_fit_error = ft.Checkbox(
-        label="Plot fit", value=True, on_change=lambda e: print_plot())
+        label="Plot fit", value=True, on_change=lambda e: run_plot_async())
 
     # Binning options dropdown
     binning_options = ft.Dropdown(
@@ -1465,11 +1579,15 @@ def main(page: ft.Page):
         dense=True,
         options=[
             ft.dropdown.Option("psuedo-log"),
-            ft.dropdown.Option("log"),
-            ft.dropdown.Option("log"),
+            ft.dropdown.Option("20/decade"),
+            ft.dropdown.Option("10/decade"),
+            ft.dropdown.Option("x2"),
+            ft.dropdown.Option("root-2"),
+            ft.dropdown.Option("4th root-2"),
+            ft.dropdown.Option("none"),
         ],
         value='psuedo-log',
-        on_change=lambda e: print_plot()
+        on_change=lambda e: run_plot_async()
     )
 
     # Default command line string
@@ -1586,16 +1704,6 @@ def main(page: ft.Page):
         height=600,
         width=600,
         fit=ft.ImageFit.CONTAIN
-    )
-
-    carousel_images = [ft.Image(src=img, width=800, height=800)
-                       for img in image_sources]
-    image_carousel = ft.Tabs(
-        tabs=[ft.Tab(text=f"Image {i+1}", icon=ft.icons.IMAGE, content=img)
-              for i, img in enumerate(carousel_images)
-              ],
-        selected_index=0,
-        visible=False
     )
 
     # Plot Tab container
@@ -1716,7 +1824,7 @@ def main(page: ft.Page):
             ),
         ],
         expand=1,
-        on_change=lambda _: set_cmd_line_str() or print_plot()
+        on_change=lambda _: set_cmd_line_str() or run_plot_async()
     )
 
     # FILE|PLOT|EXPORT|UTILITIES Menu bar
@@ -1775,9 +1883,9 @@ def main(page: ft.Page):
                     ft.MenuItemButton(
                         content=ft.Text("Image"),
                         leading=ft.Icon(ft.icons.IMAGE),
-                         on_click=lambda _: save_file_dialog.save_file(
-                         dialog_title="Save the image",
-                         file_type="image/png")
+                        on_click=lambda _: save_file_dialog.save_file(
+                            dialog_title="Save the image",
+                            file_type="image/png")
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Summary file"),
@@ -1795,7 +1903,8 @@ def main(page: ft.Page):
                     ft.MenuItemButton(
                         content=ft.Text("Demo"),
                         leading=ft.Icon(ft.icons.PLAY_ARROW_ROUNDED),
-                        # on_click=lambda e: toggle_demo(e)
+                        on_click=lambda e: (setattr(
+                            Globals, 'demo_mode', True), run_plot_async())
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("sum .stat files"),
@@ -1827,7 +1936,7 @@ def main(page: ft.Page):
                 expand=2
             ),
             ft.Container(
-                content=image_carousel if Globals.demo_mode else plot_image,
+                content=plot_image if not Globals.demo_mode else None,
                 expand=3
             ),
         ],
@@ -1856,4 +1965,4 @@ def main(page: ft.Page):
 ft.app(target=main, assets_dir="assets")
 
 delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
-3
+delete_temp_plots(PATH + "/../demo/", None)

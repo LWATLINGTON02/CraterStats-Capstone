@@ -1,3 +1,6 @@
+import os
+
+
 chron_systems = {
     # Moon Systems
     "Moon, Neukum (1983)": ["Moon, Neukum (1983)",
@@ -67,4 +70,11 @@ symbols = ['Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
 
 plots_dict = {}
 
+
+
+"""
+DEMO CAROUSEL GLBOALS
+"""
 demo_mode = False
+image_index = 0
+demo_cmd_str = ''
