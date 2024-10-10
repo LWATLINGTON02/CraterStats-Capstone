@@ -43,6 +43,9 @@ def main(page: ft.Page):
         setattr(Globals, 'demo_cmd_str',
                 demo_dict[carousel_images[Globals.image_index]])
 
+        print_tree(demo_dict, 0)
+        print(len(demo_dict.keys()))
+
         def update_image():
             # Update the image based on the current index
             print(demo_dict[carousel_images[Globals.image_index]])
@@ -56,19 +59,26 @@ def main(page: ft.Page):
         # Function to go to the next image
         def next_image(e):
             print(len(carousel_images))
-            print(Globals.image_index)
             setattr(Globals, 'image_index', Globals.image_index + 1)
-            if Globals.image_index >= len(carousel_images) - 2:
+            print(Globals.image_index)
+
+            if Globals.image_index >= 24:
+                print("index >= 24")
                 # Loop back to the first image
-                setattr(Globals, 'iamge_index', 0)
+                setattr(Globals, 'image_index', 0)
             update_image()
 
         # Function to go to the previous image
         def prev_image(e):
+            print(len(carousel_images))
             setattr(Globals, 'image_index', Globals.image_index - 1)
+            print(Globals.image_index)
+
             if Globals.image_index < 0:
+                print("index < 0")
                 # Loop back to the last image
-                setattr(Globals, 'iamge_index', len(carousel_images) - 2)
+                setattr(Globals, 'image_index', 24)
+                print(Globals.image_index)
             update_image()
 
         demo_image = ft.Image(
