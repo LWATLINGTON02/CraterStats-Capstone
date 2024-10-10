@@ -194,7 +194,7 @@ def main(page: ft.Page):
             src=source_file_entry.value,
             style=style_options.value,
             subtitle=subtitle_entry.value if subtitle_checkbox.value else None,
-            template=Globals.template_file if Globals.template_file != template else None,
+            template=None,
             title=title_entry.value if title_checkbox.value else None,
             transparent=False,
             xrange=None,
