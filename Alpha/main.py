@@ -25,6 +25,10 @@ def main(page: ft.Page):
 
     print(Globals.template_file)
 
+    def on_resize(e):
+        # Trigger UI update when window is resized
+        page.update()
+
     def loading_circle():
 
         loading = ft.AlertDialog(
@@ -732,6 +736,7 @@ def main(page: ft.Page):
     page.window.resizable = True  # Application size is static
     page.window.left = 0    # Set the window position to the leftmost side
     page.window.top = 0
+    page.window.resizable = True
     # Fonts that can be used inside the application
     page.fonts = {
         "Courier New": "Fonts/Courier New.ttf",
@@ -1262,6 +1267,9 @@ def main(page: ft.Page):
     Start of FLET GUI options
     """
 
+    # This sets up an event listener for window resizing
+    page.on_resize = on_resize
+
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
@@ -1730,10 +1738,12 @@ def main(page: ft.Page):
     # plot image
     plot_image = ft.Image(
         src="/plots/blank_plot.png",
-        height=600,
-        width=600,
+        height=page.window.height * 0.55,
+        width=page.window.width * 0.55,
         fit=ft.ImageFit.CONTAIN
     )
+
+    plot_image.resizable = True
 
     # Plot Tab container
     plot = ft.Column(
@@ -1962,11 +1972,13 @@ def main(page: ft.Page):
         controls=[
             ft.Container(
                 content=tabs,
-                expand=2
+                expand=2,
+                width=page.window.width * 0.5
             ),
             ft.Container(
                 content=plot_image if not Globals.demo_mode else None,
-                expand=3
+                expand=2,
+                width=page.window.width * 0.5
             ),
         ],
         expand=True
