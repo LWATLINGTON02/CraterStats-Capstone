@@ -1,5 +1,6 @@
 import os
 
+PATH = os.path.dirname(os.path.abspath(__file__))
 
 chron_systems = {
     # Moon Systems
@@ -70,6 +71,8 @@ symbols = ['Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
 
 plots_dict = {}
 
+
+template_file = PATH+'/craterstats_config_files/default.plt'
 
 
 """

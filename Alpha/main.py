@@ -23,6 +23,8 @@ PATH = os.path.dirname(os.path.abspath(__file__))
 
 def main(page: ft.Page):
 
+    print(Globals.template_file)
+
     def loading_circle():
 
         loading = ft.AlertDialog(
@@ -98,7 +100,8 @@ def main(page: ft.Page):
             bgcolor=ft.colors.BLACK,
             color=ft.colors.WHITE,
             text_style=ft.TextStyle(font_family="Courier New"),
-            width=1500
+            width=1500,
+            max_lines=10,
         )
 
         plot_num = ft.Text(
@@ -191,7 +194,7 @@ def main(page: ft.Page):
             src=source_file_entry.value,
             style=style_options.value,
             subtitle=subtitle_entry.value if subtitle_checkbox.value else None,
-            template=None,
+            template=Globals.template_file if Globals.template_file != template else None,
             title=title_entry.value if title_checkbox.value else None,
             transparent=False,
             xrange=None,
@@ -201,6 +204,8 @@ def main(page: ft.Page):
         if arg.demo:
             toggle_demo(None)
             return
+
+        print("Template file", arg.template)
 
         settings = read_textstructure(
             template if arg.template is None else arg.template)
@@ -212,6 +217,8 @@ def main(page: ft.Page):
 
         functionStr = read_textstructure(systems, from_string=True)
 
+        print("Settings", settings)
+
         try:
             craterPlot = cli.construct_plot_dicts(arg, settings)
             defaultFilename = generate_output_file_name()
@@ -219,8 +226,8 @@ def main(page: ft.Page):
                 arg, settings, functionStr, defaultFilename)
         except SystemExit as err:
             print("Error couldn't create craterplotset")
-        except Exception as err:
-            print("Other Error", err)
+        # except Exception as err:
+        #     print("Other Error", err)
 
         if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
             craterPlotSet['legend'] += 'p'
@@ -330,6 +337,8 @@ def main(page: ft.Page):
 
         data = open(e.files[0].path)
 
+        setattr(Globals, 'template_file', e.files[0].path)
+
         # Reads through each line of data and sets data based off of line
         for line in data:
             specifics = line.split("=")
@@ -426,7 +435,6 @@ def main(page: ft.Page):
                     subtitle_checkbox.value = False
 
             if specifics[0] == "set.style":
-                print(specifics[1][1:-2])
                 style_options.value = specifics[1][1:-2]
 
             if specifics[0] == "set.title":
@@ -607,7 +615,7 @@ def main(page: ft.Page):
                 content_list.append(
                     ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: set_plot_info(e) or run_plot_async()))
 
-        print(plot_lists.controls)
+        # print(plot_lists.controls)
         plot_lists.controls = content_list
 
         page.update()
@@ -627,26 +635,26 @@ def main(page: ft.Page):
 
         correct_key = ''
 
-        print(e.control.label.value)
+        # print(e.control.label.value)
         for key, val in plots_dict.items():
-            print(val)
+            # print(val)
 
             try:
                 try:
                     if val["plot1.name"] == e.control.label.value:
-                        print("Plot1 Name Found")
+                        # print("Plot1 Name Found")
                         correct_key = key
                 except KeyError:
                     pass
                 try:
                     if val["plot2.name"] == e.control.label.value:
-                        print("Plot2 Name Found")
+                        # print("Plot2 Name Found")
                         correct_key = key
                 except KeyError:
                     pass
                 try:
                     if val["plot3.name"] == e.control.label.value:
-                        print("Plot3 Name Found")
+                        # print("Plot3 Name Found")
                         correct_key = key
                 except KeyError:
                     pass
