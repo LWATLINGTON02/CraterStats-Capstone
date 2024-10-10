@@ -27,7 +27,10 @@ def main(page: ft.Page):
 
         loading = ft.AlertDialog(
             title=ft.Text("Creating Demo Plots..."),
-            content=ft.ProgressRing()
+            content=ft.ProgressRing(
+                stroke_cap=ft.StrokeCap.BUTT,
+                stroke_width=5
+            )
         )
 
         page.dialog = loading
@@ -53,6 +56,8 @@ def main(page: ft.Page):
                     demo_dict[carousel_images[Globals.image_index]])
             cmd_str.value = Globals.demo_cmd_str
             demo_image.src = f"{PATH}/../demo/{carousel_images[Globals.image_index]}"
+            plot_num.value = f"Plot {Globals.image_index + 1} of {len(carousel_images)}"
+            plot_num.update()
             demo_image.update()
             page.update()
 
@@ -77,7 +82,7 @@ def main(page: ft.Page):
             if Globals.image_index < 0:
                 print("index < 0")
                 # Loop back to the last image
-                setattr(Globals, 'image_index', 24)
+                setattr(Globals, 'image_index', len(carousel_images) - 1)
                 print(Globals.image_index)
             update_image()
 
@@ -96,10 +101,14 @@ def main(page: ft.Page):
             width=1500
         )
 
+        plot_num = ft.Text(
+            f"Plot {Globals.image_index + 1} of {len(carousel_images)}", text_align=ft.TextAlign.CENTER)
+
         demo_modal = ft.AlertDialog(
             title=ft.Text("Demo Plots"),
             content=ft.Column(
                 controls=[
+                    plot_num,
                     demo_image,
                     ft.VerticalDivider(),
                     cmd_str
@@ -717,10 +726,12 @@ def main(page: ft.Page):
     page.window.top = 0
     # Fonts that can be used inside the application
     page.fonts = {
-        "Courier New": "DearPyGUI_Attempt\\Fonts\\Courier New.ttf",
-        "Nasa": "DearPyGUI_Attempt\\Fonts\\nasalization-rg.otf",
-        "Arial": "DearPyGUI_Attempt\\Fonts\\Arial Unicode.ttf"
+        "Courier New": "Fonts/Courier New.ttf",
+        "Nasa": "Fonts/nasalization-rg.otf",
+        "Arial": "Fonts/Arial Unicode.ttf"
     }
+    # Default font for the application
+    page.theme = ft.Theme(font_family="Arial")
     page.update()
 
     def set_chron_func(value, e):
