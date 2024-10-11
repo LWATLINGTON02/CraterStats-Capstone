@@ -191,10 +191,10 @@ def main(page: ft.Page):
             ref_diameter=ref_diam.value,
             show_isochrons=show_iso.value,
             sig_figs='3',
-            src=source_file_entry.value,
+            src=None,
             style=style_options.value,
             subtitle=subtitle_entry.value if subtitle_checkbox.value else None,
-            template=None,
+            template=Globals.template_dict if Globals.template_dict != None else template,
             title=title_entry.value if title_checkbox.value else None,
             transparent=False,
             xrange=None,
@@ -207,8 +207,11 @@ def main(page: ft.Page):
 
         print("Template file", arg.template)
 
-        settings = read_textstructure(
-            template if arg.template is None else arg.template)
+        if type(arg.template) == str:
+            settings = read_textstructure(
+                template if arg.template is None else arg.template)
+        else:
+            settings = arg.template
         systems = read_textfile(
             functions, ignore_hash=True, strip=';', as_string=True)
         if file_exists(functions_user):
@@ -224,43 +227,46 @@ def main(page: ft.Page):
             defaultFilename = generate_output_file_name()
             craterPlotSet = cli.construct_cps_dict(
                 arg, settings, functionStr, defaultFilename)
+
+            print(f"\n\nCPS: {craterPlotSet}\n\n")
+
+            if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
+                craterPlotSet['legend'] += 'p'
+
+            plot = [Craterplot(d) for d in craterPlot]
+
+            if craterPlotSet['ref_diameter'] == '':
+                craterPlotSet['ref_diameter'] = '1.0'
+
+            plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
+
+            if plot:
+                plotSettings.autoscale(craterPlotSet['xrange'] if 'xrange' in craterPlotSet else None,
+                                       craterPlotSet['yrange'] if 'yrange' in craterPlotSet else None)
+            newFileName = generate_output_file_name()
+
+            craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
+
+            drawn = False
+            for format in plotSettings.format:
+                if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
+                    if not drawn:
+                        plotSettings.draw()
+                        drawn = True
+                    plotSettings.fig.savefig(
+                        craterPlotSet['out'], dpi=500, transparent=arg.transparent)
+                    plot_image.src = craterPlotSet['out'] + '.png'
+                    plot_image.update()
+                if format in {'txt'}:
+                    plotSettings.create_summary_table()
+
+            set_cmd_line_str()
+            page.update()
+
         except SystemExit as err:
             print("Error couldn't create craterplotset")
-        # except Exception as err:
-        #     print("Other Error", err)
-
-        if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
-            craterPlotSet['legend'] += 'p'
-
-        plot = [Craterplot(d) for d in craterPlot]
-
-        if craterPlotSet['ref_diameter'] == '':
-            craterPlotSet['ref_diameter'] = '1.0'
-
-        plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
-
-        if plot:
-            plotSettings.autoscale(craterPlotSet['xrange'] if 'xrange' in craterPlotSet else None,
-                                   craterPlotSet['yrange'] if 'yrange' in craterPlotSet else None)
-        newFileName = generate_output_file_name()
-
-        craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
-
-        drawn = False
-        for format in plotSettings.format:
-            if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
-                if not drawn:
-                    plotSettings.draw()
-                    drawn = True
-                plotSettings.fig.savefig(
-                    craterPlotSet['out'], dpi=500, transparent=arg.transparent)
-                plot_image.src = craterPlotSet['out'] + '.png'
-                plot_image.update()
-            if format in {'txt'}:
-                plotSettings.create_summary_table()
-
-        set_cmd_line_str()
-        page.update()
+        except Exception as err:
+            print("Other Error", err)
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -336,229 +342,245 @@ def main(page: ft.Page):
         count = 0
 
         data = open(e.files[0].path)
+        print(data)
 
-        setattr(Globals, 'template_file', e.files[0].path)
+        # setattr(Globals, 'template_file', read_textstructure(e.files[0].path))
 
-        # Reads through each line of data and sets data based off of line
-        for line in data:
-            specifics = line.split("=")
-            if len(specifics) == 1:
-                count += 1
-                continue
+        """
+        NEED TO DO: ADD INVERT, XRANGE, YRANGE, AND NEW LEGEND OPTIONS
+                    CHANGE SIG FIGS TO TEXTFIELD INSTEAD OF CHECKBOX
 
-            if specifics[0] == 'set.body':
-                body_val = specifics[1][1:-2]
+        """
 
-            if specifics[0] == 'set.chronology':
-                chron_func_val = specifics[1][1:-2]
+        if e.files[0].path.endswith(".plt"):
+            # Reads through each line of data and sets data based off of line
+            for line in data:
+                specifics = line.split("=")
+                if len(specifics) == 1:
+                    count += 1
+                    continue
 
-            if specifics[0] == 'set.epochs':
-                epochs_val = specifics[1][1:-2]
+                if specifics[0] == 'set.body':
+                    body_val = specifics[1][1:-2]
+                    Globals.template_dict['set']['body'] = body_val
 
-            if specifics[0] == 'set.equilibrium':
-                equilibrium_val = specifics[1][1:-2]
+                if specifics[0] == 'set.chronology':
+                    chron_func_val = specifics[1][1:-2]
+                    Globals.template_dict['set']['chronology_system'] = chron_func_val
 
-            if specifics[0] == 'set.isochrons':
-                isochrons_val = specifics[1][1:-2]
-                if isochrons_val is not None:
-                    iso_label.value = True
+                if specifics[0] == 'set.epochs':
+                    epochs_val = specifics[1][1:-2]
+                    Globals.template_dict['set']['epochs'] = epochs_val
 
-            if specifics[0] == "set.legend_data":
-                if specifics[1] == '0':
-                    data_legend.value = False
-                else:
-                    data_legend.value = True
+                if specifics[0] == 'set.equilibrium':
+                    equilibrium_val = specifics[1][1:-2]
+                    Globals.template_dict['set']['equilibrium'] = equilibrium_val
 
-            if specifics[0] == "set.legend_fit":
-                if specifics[1] == '0':
-                    fit_legend.value = False
-                else:
-                    fit_legend.value = True
+                if specifics[0] == 'set.isochrons':
+                    isochrons_val = specifics[1][1:-2]
+                    if isochrons_val is not None:
+                        iso_label.value = True
+                        Globals.template_dict['set']['isochrons'] = isochrons_val
 
-            if specifics[0] == "set.mu":
-                if specifics[1] == '0':
-                    mu_legend.value = False
-                else:
-                    mu_legend.value = True
+                if specifics[0] == "set.legend_data":
+                    if specifics[1] == '0':
+                        data_legend.value = False
+                    else:
+                        data_legend.value = True
 
-            if specifics[0] == 'set.production':
-                prod_func_val = specifics[1][1:-2]
+                if specifics[0] == "set.legend_fit":
+                    if specifics[1] == '0':
+                        fit_legend.value = False
+                    else:
+                        fit_legend.value = True
 
-            if specifics[0] == 'set.presentation':
-                presentation_val = specifics[1][1:-
-                                                2].replace("'", "")
+                if specifics[0] == "set.mu":
+                    if specifics[1] == '0':
+                        mu_legend.value = False
+                        Globals.template_dict['set']['mu'] = '1'
+                    else:
+                        mu_legend.value = True
+                        Globals.template_dict['set']['mu'] = '1'
 
-            if specifics[0] == 'set.print_dimensions':
-                print_dimensions = (specifics[1].replace(
-                    "'", "").strip("[]\n").split(","))[0]
+                if specifics[0] == 'set.production':
+                    prod_func_val = specifics[1][1:-2]
+                    Globals.template_dict['set']['production'] = prod_func_val
 
-            if specifics[0] == 'set.pt_size':
-                pt_list = specifics[1].strip("[]\n").split(",")
-                pt_list = [eval(i) for i in pt_list]
-                font_pt = str(max(pt_list))
+                if specifics[0] == 'set.presentation':
+                    presentation_val = specifics[1][1:-
+                                                    2].replace("'", "")
+                    Globals.template_dict['set']['presentation'] = presentation_val
 
-            if specifics[0] == "set.randomness":
-                if specifics[1] == '0':
-                    rand_legend.value = False
-                else:
-                    rand_legend.value = True
+                if specifics[0] == 'set.print_dimensions':
+                    print_dimensions = (specifics[1].replace(
+                        "'", "").strip("[]\n").split(","))[0]
+                    Globals.template_dict['set']['print_dimensions'] = print_dimensions
 
-            if specifics[0] == "set.ref_diam":
-                ref_diam.value = specifics[1]
+                if specifics[0] == 'set.pt_size':
+                    pt_list = specifics[1].strip("[]\n").split(",")
+                    pt_list = [eval(i) for i in pt_list]
+                    font_pt = str(max(pt_list))
+                    Globals.template_dict['set']['pt_size'] = font_pt
 
-            if specifics[0] == "set.sf":
-                if specifics[1] == '3':
-                    sf_legend.value = True
-                else:
-                    sf_legend.value = False
+                if specifics[0] == "set.ref_diam":
+                    ref_diam.value = specifics[1]
+                    Globals.template_dict['set']['ref_diam'] = ref_diam.value
 
-            if specifics[0] == "set.show_isocrhons":
-                if specifics[1] == '0':
-                    show_iso.value = False
-                else:
-                    show_iso.value = True
+                if specifics[0] == "set.sf":
+                    if specifics[1] == '3':
+                        sf_legend.value = True
+                    else:
+                        sf_legend.value = False
 
-            if specifics[0] == "set.show_legend_area":
-                pass
+                if specifics[0] == "set.show_isocrhons":
+                    if specifics[1] == '0':
+                        show_iso.value = False
+                        Globals.template_dict['set']['show_isochrons'] = '0'
 
-            if specifics[0] == "set.show_title":
-                if int(specifics[1]) == 1:
-                    title_checkbox.value = True
-                else:
-                    title_checkbox.value = False
+                    else:
+                        show_iso.value = True
+                        Globals.template_dict['set']['show_isochrons'] = '1'
 
-            if specifics[0] == "set.show_subtitle":
-                if int(specifics[1]) == 1:
-                    subtitle_checkbox.value = True
+                if specifics[0] == "set.show_legend_area":
+                    pass
 
-                else:
-                    subtitle_checkbox.value = False
+                if specifics[0] == "set.show_title":
+                    if int(specifics[1]) == 1:
+                        title_checkbox.value = True
+                        Globals.template_dict['set']['show_title'] = '1'
+                    else:
+                        title_checkbox.value = False
+                        Globals.template_dict['set']['show_title'] = '0'
 
-            if specifics[0] == "set.style":
-                style_options.value = specifics[1][1:-2]
+                if specifics[0] == "set.show_subtitle":
+                    if int(specifics[1]) == 1:
+                        subtitle_checkbox.value = True
+                        Globals.template_dict['set']['show_subtitle'] = '1'
+                    else:
+                        subtitle_checkbox.value = False
+                        Globals.template_dict['set']['show_subtitle'] = '0'
 
-            if specifics[0] == "set.title":
-                title_entry.value = specifics[1][1:-2]
+                if specifics[0] == "set.style":
+                    style_options.value = specifics[1][1:-2]
+                    Globals.template_dict['set']['style'] = style_options.value
 
-            if specifics[0] == "set.subtitle":
-                subtitle_entry.value = specifics[1][1:-2]
+                if specifics[0] == "set.title":
+                    title_entry.value = specifics[1][1:-2]
+                    Globals.template_dict['set']['title'] = title_entry.value
 
-            if specifics[0] == f"plot{count}.source":
-                plots_dict[f"plot{count}"] = {}
-                plots_dict[f"plot{count}"][f"plot{count}.source"] = specifics[1][1:-2]
+                if specifics[0] == "set.subtitle":
+                    subtitle_entry.value = specifics[1][1:-2]
+                    Globals.template_dict['set']['subtitle'] = subtitle_entry.value
 
-            if specifics[0] == f"plot{count}.name":
-                plots_dict[f"plot{count}"][f"plot{count}.name"] = specifics[1][1:-2]
+                if specifics[0] == f"plot{count}.source":
+                    plots_dict[f"plot{count}"] = {}
+                    plots_dict[f"plot{count}"][f"plot{count}.source"] = specifics[1][1:-2]
+                    Globals.template_dict['plot']['source'] = specifics[1][1:-2]
 
-            if specifics[0] == f"plot{count}.range":
-                float_list = specifics[1].strip("[]\n").split(",")
-                float_list = [eval(i) for i in float_list]
-                plots_dict[f"plot{count}"][f"plot{count}.range"] = float_list
+                if specifics[0] == f"plot{count}.name":
+                    plots_dict[f"plot{count}"][f"plot{count}.name"] = specifics[1][1:-2]
+                    Globals.template_dict['plot']['name'] = specifics[1][1:-2]
 
-            if specifics[0] == f"plot{count}.type":
-                plots_dict[f"plot{count}"][f"plot{count}.type"] = specifics[1][1:-2]
+                if specifics[0] == f"plot{count}.range":
+                    float_list = specifics[1].strip("[]\n").split(",")
+                    float_list = [eval(i) for i in float_list]
+                    plots_dict[f"plot{count}"][f"plot{count}.range"] = float_list
+                    Globals.template_dict['plot']['range'] = float_list
 
-            if specifics[0] == f"plot{count}.error_bars":
+                if specifics[0] == f"plot{count}.type":
+                    plots_dict[f"plot{count}"][f"plot{count}.type"] = specifics[1][1:-2]
+                    Globals.template_dict['plot']['type'] = specifics[1][1:-2]
 
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.error_bars"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.error_bars"] = False
+                if specifics[0] == f"plot{count}.error_bars":
 
-            if specifics[0] == f"plot{count}.hide":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.hide"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.hide"] = False
+                    if int(specifics[1]) == 1:
+                        plots_dict[f"plot{count}"][f"plot{count}.error_bars"] = True
+                        Globals.template_dict['plot']['error_bars'] = '1'
+                    else:
+                        plots_dict[f"plot{count}"][f"plot{count}.error_bars"] = False
+                        Globals.template_dict['plot']['error_bars'] = '0'
 
-            if specifics[0] == f"plot{count}.linestyle":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.linestyle"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.linestyle"] = False
+                if specifics[0] == f"plot{count}.hide":
+                    if int(specifics[1]) == 1:
+                        plots_dict[f"plot{count}"][f"plot{count}.hide"] = True
+                        Globals.template_dict['plot']['hide'] = '1'
+                    else:
+                        plots_dict[f"plot{count}"][f"plot{count}.hide"] = False
+                        Globals.template_dict['plot']['hide'] = '0'
 
-            if specifics[0] == f"plot{count}.colour":
-                plots_dict[f"plot{count}"][f"plot{count}.colour"] = specifics[1]
+                if specifics[0] == f"plot{count}.colour":
+                    plots_dict[f"plot{count}"][f"plot{count}.colour"] = specifics[1]
+                    Globals.template_dict['plot']['colour'] = specifics[1]
 
-            if specifics[0] == f"plot{count}.psym":
-                plots_dict[f"plot{count}"][f"plot{count}.psym"] = specifics[1]
+                if specifics[0] == f"plot{count}.psym":
+                    plots_dict[f"plot{count}"][f"plot{count}.psym"] = specifics[1]
+                    Globals.template_dict['plot']['psym'] = specifics[1]
 
-            if specifics[0] == f"plot{count}.binning":
-                plots_dict[f"plot{count}"][f"plot{count}.binning"] = specifics[1][1:-2]
+                if specifics[0] == f"plot{count}.binning":
+                    plots_dict[f"plot{count}"][f"plot{count}.binning"] = specifics[1][1:-2]
+                    Globals.template_dict['plot']['binning'] = specifics[1][1:-2]
 
-            if specifics[0] == f"plot{count}.age_left":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.age_left"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.age_left"] = False
+                if specifics[0] == f"plot{count}.age_left":
+                    if int(specifics[1]) == 1:
+                        plots_dict[f"plot{count}"][f"plot{count}.age_left"] = True
+                        Globals.template_dict['plot']['age_left'] = '1'
+                    else:
+                        plots_dict[f"plot{count}"][f"plot{count}.age_left"] = False
+                        Globals.template_dict['plot']['age_left'] = '0'
 
-            if specifics[0] == f"plot{count}.display_age":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.display_age"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.display_age"] = False
+                if specifics[0] == f"plot{count}.display_age":
+                    if int(specifics[1]) == 1:
+                        plots_dict[f"plot{count}"][f"plot{count}.display_age"] = True
+                        Globals.template_dict['plot']['display_age'] = '1'
+                    else:
+                        plots_dict[f"plot{count}"][f"plot{count}.display_age"] = False
+                        Globals.template_dict['plot']['display_age'] = '0'
 
-            if specifics[0] == f"plot{count}.resurf":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.resurf"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.resurf"] = False
+                if specifics[0] == f"plot{count}.resurf":
+                    if int(specifics[1]) == 1:
+                        plots_dict[f"plot{count}"][f"plot{count}.resurf"] = True
+                        Globals.template_dict['plot']['resurf'] = '1'
+                    else:
+                        plots_dict[f"plot{count}"][f"plot{count}.resurf"] = False
+                        Globals.template_dict['plot']['resurf'] = '0'
 
-            if specifics[0] == f"plot{count}.resurf_showall":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.resurf"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.resurf"] = False
+                if specifics[0] == f"plot{count}.resurf_showall":
+                    if int(specifics[1]) == 1:
+                        plots_dict[f"plot{count}"][f"plot{count}.resurf_showall"] = True
+                        Globals.template_dict['plot']['resurf_showall'] = '1'
+                    else:
+                        plots_dict[f"plot{count}"][f"plot{count}.resurf_showall"] = False
+                        Globals.template_dict['plot']['resurf_showall'] = '0'
 
-            if specifics[0] == f"plot{count}.smooth":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.smooth"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.smooth"] = False
+                if specifics[0] == f"plot{count}.isochron":
+                    if int(specifics[1]) == 1:
+                        plots_dict[f"plot{count}"][f"plot{count}.isochron"] = True
+                        Globals.template_dict['plot']['isochron'] = '1'
+                    else:
+                        plots_dict[f"plot{count}"][f"plot{count}.isochron"] = False
+                        Globals.template_dict['plot']['isochron'] = '0'
 
-            if specifics[0] == f"plot{count}.width":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.width"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.width"] = False
-
-            if specifics[0] == f"plot{count}.fiterr":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.fiterr"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.fiterr"] = False
-
-            if specifics[0] == f"plot{count}.isochron":
-                if int(specifics[1]) == 1:
-                    plots_dict[f"plot{count}"][f"plot{count}.isochron"] = True
-                else:
-                    plots_dict[f"plot{count}"][f"plot{count}.isochron"] = False
-
-            if specifics[0] == f"plot{count}.offset":
-                int_list = specifics[1].strip("[]\n").split(",")
-                int_list = [eval(i) for i in int_list]
-                plots_dict[f"plot{count}"][f"plot{count}.offset"] = int_list
-
-            if specifics[0] == f"plot{count}.offset_age":
-                int_list = specifics[1].strip("[]\n").split(",")
-                int_list = [eval(i) for i in int_list]
-                plots_dict[f"plot{count}"][f"plot{count}.offset_age"] = int_list
+                if specifics[0] == f"plot{count}.offset_age":
+                    int_list = specifics[1].strip("[]\n").split(",")
+                    int_list = [eval(i) for i in int_list]
+                    plots_dict[f"plot{count}"][f"plot{count}.offset_age"] = int_list
+                    Globals.template_dict['plot']['offset_age'] = int_list
 
         # print_tree(plots_dict, 0)
-        body.value = body_val
-        set_chron_sys(body.value, None)
-        chron_sys.value = list(chron_systems.keys())[list(
-            chron_systems.values()).index([chron_func_val, prod_func_val])]
-        chron_func.value = chron_func_val
-        chron_func.options = [ft.dropdown.Option(chron_func_val)]
-        prod_func.value = prod_func_val
-        prod_func.options = [ft.dropdown.Option(prod_func_val)]
-        iso_text.value = isochrons_val
-        equil_func.value = equilibrium_val
-        epoch.value = epochs_val
-        plot_view.value = presentation_val
-        print_scale_entry.value = print_dimensions
-        text_size.value = font_pt
+            body.value = body_val
+            set_chron_sys(body.value, None)
+            chron_sys.value = list(chron_systems.keys())[list(
+                chron_systems.values()).index([chron_func_val, prod_func_val])]
+            chron_func.value = chron_func_val
+            chron_func.options = [ft.dropdown.Option(chron_func_val)]
+            prod_func.value = prod_func_val
+            prod_func.options = [ft.dropdown.Option(prod_func_val)]
+            iso_text.value = isochrons_val
+            equil_func.value = equilibrium_val
+            epoch.value = epochs_val
+            plot_view.value = presentation_val
+            print_scale_entry.value = print_dimensions
+            text_size.value = font_pt
 
         create_plot_lists()
         run_plot_async()
