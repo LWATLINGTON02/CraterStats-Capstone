@@ -1,10 +1,10 @@
 set = {
-   chronology_system-'Mars, Hartmann (2005) [Michael (2013)]'
+   chronology_system='Mars, Neukum-Ivanov (2001)'
    cite_functions=1
    epochs=''
    equilibrium='Hartmann (1984)'
    invert=0
-   isochrons=='.000000001s,.00000001s,.0000001s,.000001s,.00001s,.0001s,.001s,.01s,.1s,1s,3s,3.5sa,4s'
+   isochrons='.000000001s,.00000001s,.0000001s,.000001s,.00001s,.0001s,.001s,.01s,.1s,1s,3s,3.5sa,4s'
    legend='nacr'
    mu=1
    presentation='Hartmann'
