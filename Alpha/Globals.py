@@ -75,8 +75,8 @@ plots_dict = {}
 template_file = PATH +'/craterstats_config_files/default.plt'
 
 template_dict = {
-    "set": {},
-    "plot": {},
+    "set": [],
+    "plot": [],
 }
 
 """
