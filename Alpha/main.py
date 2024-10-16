@@ -28,8 +28,16 @@ def main(page: ft.Page):
     def create_plot_lists():
         """Creates a dictionary of plots.
 
+<<<<<<< HEAD
         A global dictionary of plots is filled out based off of the information
         in the file that is uploaded to make different subplots
+=======
+    def on_resize(e):
+        # Trigger UI update when window is resized
+        page.update()
+
+    def loading_circle():
+>>>>>>> main
 
         Args:
             none
@@ -563,6 +571,162 @@ def main(page: ft.Page):
                 shutil.copy(plot_image.src, export_path)
                 page.update()
 
+<<<<<<< HEAD
+=======
+    def create_plot_lists():
+        """Creates a dictionary of plots.
+
+        A global dictionary of plots is filled out based off of the information
+        in the file that is uploaded to make different subplots
+
+        Args:
+            none
+
+        Returns:
+            none
+        """
+        content_list = []
+
+        plot_names = {}
+
+        if plots_dict is not None:
+
+            for plots in plots_dict:
+                plot_names[plots] = plots_dict[plots][f"{plots}.name"]
+
+            for plots in plot_names:
+                content_list.append(
+                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: set_plot_info(e) or run_plot_async()))
+
+        # print(plot_lists.controls)
+        plot_lists.controls = content_list
+
+        page.update()
+
+    def set_plot_info(e):
+        """Sets plotsetting info for subplots
+
+        Changes the settings on the Plot Settings tab depending on which subplot is
+        selected
+
+        Args:
+            e: EventHandler
+
+        Returns:
+            none
+        """
+
+        correct_key = ''
+
+        # print(e.control.label.value)
+        for key, val in plots_dict.items():
+            # print(val)
+
+            try:
+                try:
+                    if val["plot1.name"] == e.control.label.value:
+                        # print("Plot1 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+                try:
+                    if val["plot2.name"] == e.control.label.value:
+                        # print("Plot2 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+                try:
+                    if val["plot3.name"] == e.control.label.value:
+                        # print("Plot3 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+            except KeyError:
+                print("No values")
+
+        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
+
+        range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
+        range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
+        range_val = ''
+
+        print(range_start, range_end, type(range_start), type(range_end))
+
+        if range_start < 1:
+
+            if range_end < 1:
+
+                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
+
+            else:
+                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
+
+        else:
+            range_val = f"[{int(range_start)} km, {int(range_end)} km]"
+
+        diam_range_entry.value = range_val.strip("[]")
+
+        plot_options = plots_dict[correct_key][f"{correct_key}.type"]
+
+        if plot_options == "data":
+            plot_fit_options.value = "crater count"
+
+        elif plot_options == "diff_fit":
+            plot_fit_options.value = "differential fit"
+
+        elif plot_options == "cumu_fit":
+            plot_fit_options.value = "cumulative fit"
+
+        elif plot_options == "poisson":
+            plot_fit_options.value = "Poisson pdf"
+
+        elif plot_options == "poisson_buffer":
+            plot_fit_options.value = "Poisson buffer pdf"
+
+        error_bars.value = plots_dict[correct_key][f"{correct_key}.error_bars"]
+
+        hide_button.value = plots_dict[correct_key][f"{correct_key}.hide"]
+
+        color_dropdown.value = colours[int(
+            plots_dict[correct_key][f"{correct_key}.colour"])]
+
+        symbol_dropdown.value = symbols[int(
+            plots_dict[correct_key][f"{correct_key}.psym"])]
+
+        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
+        binning_options.options = [ft.dropdown.Option(
+            plots_dict[correct_key][f"{correct_key}.binning"])]
+
+        align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
+
+        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
+
+        plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
+
+        page.update()
+
+    """
+    Default Settings for the application
+    """
+    page.title = 'Craterstats IV'  # Application title
+    page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
+    page.window.width = 1920  # Application width
+    page.window.height = 1080  # Application Height
+    page.window.resizable = True  # Application size is static
+    page.window.left = 0    # Set the window position to the leftmost side
+    page.window.top = 0
+    page.window.resizable = True
+    # Fonts that can be used inside the application
+    page.fonts = {
+        "Courier New": "Fonts/Courier New.ttf",
+        "Nasa": "Fonts/nasalization-rg.otf",
+        "Arial": "Fonts/Arial Unicode.ttf"
+    }
+    # Default font for the application
+    page.theme = ft.Theme(font_family="Arial")
+    page.update()
+
+>>>>>>> main
     def set_chron_func(value, e):
         """Sets chronology function.
 
@@ -1300,6 +1464,13 @@ def main(page: ft.Page):
     """
     Start of FLET GUI options
     """
+<<<<<<< HEAD
+=======
+
+    # This sets up an event listener for window resizing
+    page.on_resize = on_resize
+
+>>>>>>> main
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
@@ -1770,10 +1941,12 @@ def main(page: ft.Page):
     # plot image
     plot_image = ft.Image(
         src="/plots/blank_plot.png",
-        height=600,
-        width=600,
+        height=page.window.height * 0.55,
+        width=page.window.width * 0.55,
         fit=ft.ImageFit.CONTAIN
     )
+
+    plot_image.resizable = True
 
     # Plot Tab container
     plot = ft.Column(
@@ -2003,11 +2176,13 @@ def main(page: ft.Page):
         controls=[
             ft.Container(
                 content=tabs,
-                expand=2
+                expand=2,
+                width=page.window.width * 0.5
             ),
             ft.Container(
                 content=plot_image if not Globals.demo_mode else None,
-                expand=3
+                expand=2,
+                width=page.window.width * 0.5
             ),
         ],
         expand=True
