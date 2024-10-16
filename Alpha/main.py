@@ -8,7 +8,7 @@ from flet import FilePickerResultEvent
 import shutil
 
 from Globals import *
-from gm.file import file_exists, read_textstructure, read_textfile
+from gm.file import file_exists, read_textstructure, read_textfile, filename
 from helperFunctions import *
 import Globals
 
@@ -25,29 +25,32 @@ PATH = os.path.dirname(os.path.abspath(__file__))
 
 def main(page: ft.Page):
 
-    print(Globals.template_file)
+    def create_plot_lists():
+        """Creates a dictionary of plots.
 
-    def on_resize(e):
-        # Trigger UI update when window is resized
+        Args:
+            none
+
+        Returns:
+            none
+        """
+        content_list = []
+
+        plot_names = {}
+
+        if plots_dict is not None:
+
+            for plots in plots_dict:
+                plot_names[plots] = plots_dict[plots][f"{plots}.name"]
+
+            for plots in plot_names:
+                content_list.append(
+                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: (set_plot_info(e), update_config_dict(), run_plot_async())))
+
+        # print(plot_lists.controls)
+        plot_lists.controls = content_list
+
         page.update()
-
-    def loading_circle():
-
-        loading = ft.AlertDialog(
-            title=ft.Text("Creating Demo Plots..."),
-            content=ft.ProgressRing(
-                stroke_cap=ft.StrokeCap.BUTT,
-                stroke_width=5
-            )
-        )
-
-        page.dialog = loading
-        loading.open = True
-        page.update()
-
-        return loading
-
-    # Function to update the displayed image
 
     def demo_view(demo_dict):
         carousel_images = list(demo_dict.keys())
@@ -138,210 +141,6 @@ def main(page: ft.Page):
         page.update()
 
         return demo_view
-
-    def toggle_demo(e):
-
-        command_dict = {}
-
-        loading = loading_circle()
-
-        cli.demo()
-
-        command_dict = parse_demo_commands(PATH + "/../demo/")
-
-        loading.open = False
-        page.update()
-        demo = demo_view(command_dict)
-
-        Globals.demo_mode = False
-
-    def print_plot():
-        """ Creates plot images.
-
-        Craterstats plots are created either by using the functions that are selected in the GUI or by uploading
-        a .plt file. This function is mostly pulled from the craterstats cli.py main function with some modifications
-        to fit our GUI.
-
-        Args:
-            none
-
-        Returns:
-            none
-        """
-
-        template = PATH + "/craterstats_config_files/default.plt"
-        functions = PATH + "/craterstats_config_files/functions.txt"
-        functions_user = PATH + "/craterstats_config_files/functions_user.txt"
-
-        arg = Namespace(
-            about=False,
-            autoscale=False,
-            chronology_system=set_chron_str()[-2:].replace(' ', ''),
-            cite_function=func_legend.value,
-            demo=Globals.demo_mode,
-            epochs=set_epoch_str()[-2:].replace(' ',
-                                                '') if epoch.value != 'none' else None,
-            equilibrium=equil_func.value if equil_func.value != 'none' else None,
-            format=None,
-            input=None,
-            invert=None,
-            isochrons=iso_text.value,
-            lcs=False,
-            legend=None,
-            lpc=False,
-            mu=mu_legend.value,
-            out='',
-            plot=Globals.template_dict['plot'],
-            presentation=plot_view.value,
-            print_dim=print_scale_entry.value,
-            pt_size=text_size.value if text_size.value != '' else '8',
-            ref_diameter=ref_diam.value,
-            show_isochrons=show_iso.value,
-            sig_figs='3',
-            src=None,
-            style=style_options.value,
-            subtitle=subtitle_entry.value if subtitle_checkbox.value else None,
-            template=None,
-            title=title_entry.value if title_checkbox.value else None,
-            transparent=False,
-            xrange=None,
-            yrange=None
-        )
-
-        if arg.demo:
-            toggle_demo(None)
-            return
-
-        print("Template", template)
-
-        # if type(arg.template) == str:
-        settings = read_textstructure(
-            template if arg.template is None else arg.template)
-
-        print("Settings", settings)
-        # else:
-        #     settings = arg.template
-        # print(settings['plot']['source'])
-        systems = read_textfile(
-            functions, ignore_hash=True, strip=';', as_string=True)
-        if file_exists(functions_user):
-            systems += read_textfile(functions_user,
-                                     ignore_hash=True, strip=';', as_string=True)
-
-        functionStr = read_textstructure(systems, from_string=True)
-
-        try:
-            print(
-                f"\n\nPlot Source Argument: {arg.plot[0]['source']}\n\n")
-
-            for d in arg.plot:
-                print('True' if 'source' in d else 'False')
-
-            craterPlot = cli.construct_plot_dicts(arg, settings)
-            defaultFilename = generate_output_file_name()
-
-            craterPlotSet = cli.construct_cps_dict(
-                arg, settings, functionStr, defaultFilename)
-
-            print(f"\n\nCPS: {craterPlotSet}\n\n")
-
-            print(f"\n\nCraterPlot: {craterPlot}\n\n")
-
-            if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
-                craterPlotSet['legend'] += 'p'
-
-            plot = [Craterplot(d) for d in craterPlot]
-
-            if craterPlotSet['ref_diameter'] == '':
-                craterPlotSet['ref_diameter'] = '1.0'
-
-            plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
-
-            # if plot:
-            #     plotSettings.autoscale()
-            newFileName = generate_output_file_name()
-
-            craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
-
-            drawn = False
-            for format in plotSettings.format:
-                if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
-                    if not drawn:
-                        plotSettings.draw()
-                        drawn = True
-                    plotSettings.fig.savefig(
-                        craterPlotSet['out'], dpi=500, transparent=arg.transparent)
-                    plot_image.src = craterPlotSet['out'] + '.png'
-                    plot_image.update()
-                if format in {'txt'}:
-                    plotSettings.create_summary_table()
-
-            set_cmd_line_str()
-            page.update()
-
-        # except SystemExit as err:
-        #     print("Error couldn't create craterplotset")
-        #     print("Error:", err)
-        except Exception as err:
-            print("Other Error", err)
-            traceback.print_exc()
-
-    def open_about_dialog(e):
-        """ Opens and fills about text.
-
-        Opens about popup in application and fills out about section with the
-        information about craterstats taken from CraterstatsIII with additions
-        to include the Lunar Pit Patrol Team and contribution
-
-        Args:
-            none
-
-        Returns:
-            none
-        """
-        dlg = ft.AlertDialog(
-            title=ft.Text("CraterstatsIV"),
-            content=ft.Text(
-                '\n'.join(["GUI Developed by The Lunar Pit Patrol, Senior Capstone group for NAU",
-                           "Lunar Pit Patrol Team:",
-                           "Evan Palmisiano",
-                           "Ibrahim Hmood",
-                           "Alden Smith",
-                           "Caden Tedeschi",
-                           "Levi Watlington\n",
-                           "Craterstats Program developed by Greg Michael",
-                           "Version: 0.2",
-                           "",
-                           "Explanations of concepts and calculations used in the software are given in publications below:",
-                           "",
-                           "Standardisation of crater count data presentation",
-                           "Arvidson R.E., Boyce J., Chapman C., Cintala M., Fulchignoni M., Moore H., Neukum G., Schultz P., Soderblom L., Strom R., Woronow A., Young R. "
-                           "Standard techniques for presentation and analysis of crater size–frequency data. Icarus 37, 1979.",
-                           "",
-                           "Formulation of a planetary surface chronology model",
-                           "Neukum G., Meteorite bombardment and dating of planetary surfaces (English translation, 1984). Meteoritenbombardement und Datierung planetarer Oberflächen (German original, 1983).",
-                           "",
-                           "Resurfacing correction for cumulative fits; production function differential forms",
-                           "Michael G.G., Neukum G., Planetary surface dating from crater size-frequency distribution measurements: Partial resurfacing events and statistical age uncertainty. EPSL 294, 2010.",
-                           "",
-                           "Differential fitting; binning bias correction; revised Mars epoch boundaries",
-                           "Michael G.G., Planetary surface dating from crater size-frequency distribution measurements: Multiple resurfacing episodes and differential isochron fitting. Icarus, 2013.",
-                           "",
-                           "Poisson timing analysis; mu-notation",
-                           "Michael G.G., Kneissl T., Neesemann A., Planetary surface dating from crater size-frequency distribution measurements: Poisson timing analysis. Icarus, 2016.",
-                           "",
-                           "Poisson calculation for buffered crater count",
-                           "Michael G.G., Yue Z., Gou S., Di K., Dating individual several-km lunar impact craters from the rim annulus in "
-                           "region of planned Chang’E-5 landing Poisson age-likelihood calculation for a buffered crater counting area. EPSL 568, 2021.",
-                           "",
-                           "Full references for specific chronology or other functions are listed with the function definitions in `config/functions.txt`.",
-                           "",
-                           ])),
-            shape=ft.BeveledRectangleBorder(radius=5)
-        )
-        page.dialog = dlg
-        dlg.open = True
-        page.update()
 
     def file_picker_result(e: FilePickerResultEvent):
         """Fills out data based off of file.
@@ -459,7 +258,8 @@ def main(page: ft.Page):
                 if 'name' in dictionary:
                     plot_fit_text.value = config['plot'][index]['name']
                 if 'range' in dictionary:
-                    diam_range_entry.value = config['plot'][index]['range']
+                    diam_range_entry.value = (
+                        config['plot'][index]['range'][0]) + ", " + (config['plot'][index]['range'][1])
                 if 'type' in dictionary:
                     plot_fit_options.value = config['plot'][index]['type']
                 if 'error_bars' in dictionary:
@@ -530,6 +330,214 @@ def main(page: ft.Page):
 
         return body_val
 
+    def handle_keypress_events(e: ft.KeyboardEvent):
+        if (e.key == "O" and (e.ctrl or e.meta)):
+            print("Button is pressed")
+            pick_files_dialog.pick_files()
+
+    def loading_circle():
+
+        loading = ft.AlertDialog(
+            title=ft.Text("Creating Demo Plots..."),
+            content=ft.ProgressRing(
+                stroke_cap=ft.StrokeCap.BUTT,
+                stroke_width=5
+            )
+        )
+
+        page.dialog = loading
+        loading.open = True
+        page.update()
+
+        return loading
+      
+    def on_resize(e):
+        # Trigger UI update when window is resized
+        page.update() 
+
+    def open_about_dialog(e):
+        """ Opens and fills about text.
+
+        Opens about popup in application and fills out about section with the
+        information about craterstats taken from CraterstatsIII with additions
+        to include the Lunar Pit Patrol Team and contribution
+
+        Args:
+            none
+
+        Returns:
+            none
+        """
+        dlg = ft.AlertDialog(
+            title=ft.Text("CraterstatsIV"),
+            content=ft.Text(
+                '\n'.join(["GUI Developed by The Lunar Pit Patrol, Senior Capstone group for NAU",
+                           "Lunar Pit Patrol Team:",
+                           "Evan Palmisiano",
+                           "Ibrahim Hmood",
+                           "Alden Smith",
+                           "Caden Tedeschi",
+                           "Levi Watlington\n",
+                           "Craterstats Program developed by Greg Michael",
+                           "Version: 0.2",
+                           "",
+                           "Explanations of concepts and calculations used in the software are given in publications below:",
+                           "",
+                           "Standardisation of crater count data presentation",
+                           "Arvidson R.E., Boyce J., Chapman C., Cintala M., Fulchignoni M., Moore H., Neukum G., Schultz P., Soderblom L., Strom R., Woronow A., Young R. "
+                           "Standard techniques for presentation and analysis of crater size–frequency data. Icarus 37, 1979.",
+                           "",
+                           "Formulation of a planetary surface chronology model",
+                           "Neukum G., Meteorite bombardment and dating of planetary surfaces (English translation, 1984). Meteoritenbombardement und Datierung planetarer Oberflächen (German original, 1983).",
+                           "",
+                           "Resurfacing correction for cumulative fits; production function differential forms",
+                           "Michael G.G., Neukum G., Planetary surface dating from crater size-frequency distribution measurements: Partial resurfacing events and statistical age uncertainty. EPSL 294, 2010.",
+                           "",
+                           "Differential fitting; binning bias correction; revised Mars epoch boundaries",
+                           "Michael G.G., Planetary surface dating from crater size-frequency distribution measurements: Multiple resurfacing episodes and differential isochron fitting. Icarus, 2013.",
+                           "",
+                           "Poisson timing analysis; mu-notation",
+                           "Michael G.G., Kneissl T., Neesemann A., Planetary surface dating from crater size-frequency distribution measurements: Poisson timing analysis. Icarus, 2016.",
+                           "",
+                           "Poisson calculation for buffered crater count",
+                           "Michael G.G., Yue Z., Gou S., Di K., Dating individual several-km lunar impact craters from the rim annulus in "
+                           "region of planned Chang’E-5 landing Poisson age-likelihood calculation for a buffered crater counting area. EPSL 568, 2021.",
+                           "",
+                           "Full references for specific chronology or other functions are listed with the function definitions in `config/functions.txt`.",
+                           "",
+                           ])),
+            shape=ft.BeveledRectangleBorder(radius=5)
+        )
+        page.dialog = dlg
+        dlg.open = True
+        page.update()
+
+    # Function to update the displayed image
+    def print_plot():
+        """ Creates plot images.
+
+        Craterstats plots are created either by using the functions that are selected in the GUI or by uploading
+        a .plt file. This function is mostly pulled from the craterstats cli.py main function with some modifications
+        to fit our GUI.
+
+        Args:
+            none
+
+        Returns:
+            none
+        """
+
+        template = PATH + "/craterstats_config_files/default.plt"
+        functions = PATH + "/craterstats_config_files/functions.txt"
+        functions_user = PATH + "/craterstats_config_files/functions_user.txt"
+
+        arg = Namespace(
+            about=False,
+            autoscale=False,
+            chronology_system=set_chron_str()[-2:].replace(' ', ''),
+            cite_function=func_legend.value,
+            demo=Globals.demo_mode,
+            epochs=set_epoch_str()[-2:].replace(' ',
+                                                '') if epoch.value != 'none' else None,
+            equilibrium=equil_func.value if equil_func.value != 'none' else None,
+            format=None,
+            input=None,
+            invert=None,
+            isochrons=iso_text.value,
+            lcs=False,
+            legend=None,
+            lpc=False,
+            mu=mu_legend.value,
+            out='',
+            plot=Globals.template_dict['plot'],
+            presentation=plot_view.value,
+            print_dim=print_scale_entry.value,
+            pt_size=text_size.value if text_size.value != '' else '8',
+            ref_diameter=ref_diam.value,
+            show_isochrons=show_iso.value,
+            sig_figs='3',
+            src=None,
+            style=style_options.value,
+            subtitle=subtitle_entry.value if subtitle_checkbox.value else None,
+            template=None,
+            title=title_entry.value if title_checkbox.value else None,
+            transparent=False,
+            xrange=None,
+            yrange=None
+        )
+
+        if arg.demo:
+            toggle_demo(None)
+            return
+
+        print("Template", template)
+
+        # if type(arg.template) == str:
+        settings = read_textstructure(
+            template if arg.template is None else arg.template)
+
+        print("Settings", settings)
+        # else:
+        #     settings = arg.template
+        # print(settings['plot']['source'])
+        systems = read_textfile(
+            functions, ignore_hash=True, strip=';', as_string=True)
+        if file_exists(functions_user):
+            systems += read_textfile(functions_user,
+                                     ignore_hash=True, strip=';', as_string=True)
+
+        functionStr = read_textstructure(systems, from_string=True)
+
+        try:
+            craterPlot = cli.construct_plot_dicts(arg, settings)
+            defaultFilename = generate_output_file_name()
+
+            craterPlotSet = cli.construct_cps_dict(
+                arg, settings, functionStr, defaultFilename)
+
+            print(f"\n\nCraterplotSet format", craterPlotSet['format'])
+
+            if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
+                craterPlotSet['legend'] += 'p'
+
+            plot = [Craterplot(d) for d in craterPlot]
+
+            print(f"\n\nPlot {plot}\n\n")
+
+            if craterPlotSet['ref_diameter'] == '':
+                craterPlotSet['ref_diameter'] = '1.0'
+
+            plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
+
+            # if plot:
+            #     plotSettings.autoscale(self=plotSettings)
+            newFileName = generate_output_file_name()
+
+            craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
+
+            drawn = False
+            for format in plotSettings.format:
+                if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
+                    if not drawn:
+                        plotSettings.draw()
+                        drawn = True
+                    plotSettings.fig.savefig(
+                        craterPlotSet['out'], dpi=500, transparent=arg.transparent)
+                    plot_image.src = craterPlotSet['out'] + '.png'
+                    plot_image.update()
+                if format in {'txt'}:
+                    plotSettings.create_summary_table()
+
+            set_cmd_line_str()
+            page.update()
+
+        # except SystemExit as err:
+        #     print("Error couldn't create craterplotset")
+        #     print("Error:", err)
+        except Exception as err:
+            print("Other Error", err)
+            traceback.print_exc()
+
     def run_plot_async():
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(print_plot)
@@ -552,162 +560,9 @@ def main(page: ft.Page):
 
             if not export_path.lower().endswith(".png"):
                 export_path += ".png"
-
+                
                 shutil.copy(plot_image.src, export_path)
                 page.update()
-
-    def create_plot_lists():
-        """Creates a dictionary of plots.
-
-        A global dictionary of plots is filled out based off of the information
-        in the file that is uploaded to make different subplots
-
-        Args:
-            none
-
-        Returns:
-            none
-        """
-        content_list = []
-
-        plot_names = {}
-
-        if plots_dict is not None:
-
-            for plots in plots_dict:
-                plot_names[plots] = plots_dict[plots][f"{plots}.name"]
-
-            for plots in plot_names:
-                content_list.append(
-                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: set_plot_info(e) or run_plot_async()))
-
-        # print(plot_lists.controls)
-        plot_lists.controls = content_list
-
-        page.update()
-
-    def set_plot_info(e):
-        """Sets plotsetting info for subplots
-
-        Changes the settings on the Plot Settings tab depending on which subplot is
-        selected
-
-        Args:
-            e: EventHandler
-
-        Returns:
-            none
-        """
-
-        correct_key = ''
-
-        # print(e.control.label.value)
-        for key, val in plots_dict.items():
-            # print(val)
-
-            try:
-                try:
-                    if val["plot1.name"] == e.control.label.value:
-                        # print("Plot1 Name Found")
-                        correct_key = key
-                except KeyError:
-                    pass
-                try:
-                    if val["plot2.name"] == e.control.label.value:
-                        # print("Plot2 Name Found")
-                        correct_key = key
-                except KeyError:
-                    pass
-                try:
-                    if val["plot3.name"] == e.control.label.value:
-                        # print("Plot3 Name Found")
-                        correct_key = key
-                except KeyError:
-                    pass
-            except KeyError:
-                print("No values")
-
-        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
-
-        range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
-        range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
-        range_val = ''
-
-        print(range_start, range_end, type(range_start), type(range_end))
-
-        if range_start < 1:
-
-            if range_end < 1:
-
-                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
-
-            else:
-                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
-
-        else:
-            range_val = f"[{int(range_start)} km, {int(range_end)} km]"
-
-        diam_range_entry.value = range_val.strip("[]")
-
-        plot_options = plots_dict[correct_key][f"{correct_key}.type"]
-
-        if plot_options == "data":
-            plot_fit_options.value = "crater count"
-
-        elif plot_options == "diff_fit":
-            plot_fit_options.value = "differential fit"
-
-        elif plot_options == "cumu_fit":
-            plot_fit_options.value = "cumulative fit"
-
-        elif plot_options == "poisson":
-            plot_fit_options.value = "Poisson pdf"
-
-        elif plot_options == "poisson_buffer":
-            plot_fit_options.value = "Poisson buffer pdf"
-
-        error_bars.value = plots_dict[correct_key][f"{correct_key}.error_bars"]
-
-        hide_button.value = plots_dict[correct_key][f"{correct_key}.hide"]
-
-        color_dropdown.value = colours[int(
-            plots_dict[correct_key][f"{correct_key}.colour"])]
-
-        symbol_dropdown.value = symbols[int(
-            plots_dict[correct_key][f"{correct_key}.psym"])]
-
-        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
-        binning_options.options = [ft.dropdown.Option(
-            plots_dict[correct_key][f"{correct_key}.binning"])]
-
-        align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
-
-        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
-
-        plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
-
-        page.update()
-
-    """
-    Default Settings for the application
-    """
-    page.title = 'Craterstats IV'  # Application title
-    page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
-    page.window.width = 1920  # Application width
-    page.window.height = 1080  # Application Height
-    page.window.resizable = True  # Application size is static
-    page.window.left = 0    # Set the window position to the leftmost side
-    page.window.top = 0
-    page.window.resizable = True
-    # Fonts that can be used inside the application
-    page.fonts = {
-        "Courier New": "Fonts/Courier New.ttf",
-        "Nasa": "Fonts/nasalization-rg.otf",
-        "Arial": "Fonts/Arial Unicode.ttf"
-    }
-    # Default font for the application
-    page.theme = ft.Theme(font_family="Arial")
-    page.update()
 
     def set_chron_func(value, e):
         """Sets chronology function.
@@ -841,77 +696,6 @@ def main(page: ft.Page):
 
         page.update()
 
-    def set_cmd_line_str():
-        """Sets command line string.
-
-        Takes all of the different data in the current applicaiton and sets it
-        equal to its command line counterpart
-
-        Args:
-            none
-        Return:
-            none
-        """
-
-        chron_sys_str = ''
-        equil_func_str = ''
-        epoch_str = ''
-        title_str = ''
-        subtitle_str = ''
-        plot_view_str = ''
-        xrange_str = ''
-        yrange_str = ''
-        iso_str = ''
-        show_iso_str = ''
-        legend_str = ''
-        cite_function_str = ''
-        mu_str = ''
-        style_str = ''
-        print_dim_str = ''
-        pt_size_str = ''
-        p_str = ''
-
-        cmd_line_str = ''
-
-        chron_sys_str = set_chron_str()
-        equil_func_str = set_equil_str()
-        epoch_str = set_epoch_str()
-        title_str = set_title_str()
-        subtitle_str = set_subtitle_str()
-        plot_view_str = set_plot_view_str()
-        xrange_str = set_xrange_str()
-        yrange_str = set_yrange_str()
-        iso_str = set_isochron_str()
-        show_iso_str = set_show_isochron_str()
-        legend_str = set_legend_str()
-        cite_function_str = set_cite_function_str()
-        mu_str = set_mu_str()
-        style_str = set_style_str()
-        print_dim_str = set_print_dim_str()
-        pt_size_str = set_pt_size_str()
-        p_str = set_p_str()
-
-        cmd_line_str = (f'craterstats{chron_sys_str if chron_sys_str is not None else ""}'
-                        f'{equil_func_str if equil_func_str is not None else ""}'
-                        f'{epoch_str if epoch_str is not None else ""}'
-                        f'{title_str if title_str is not None else ""}'
-                        f'{subtitle_str if subtitle_str is not None else ""}'
-                        f'{plot_view_str if plot_view_str is not None else ""}'
-                        f'{xrange_str if xrange_str is not None else ""}'
-                        f'{yrange_str if yrange_str is not None else ""}'
-                        f'{iso_str if iso_str is not None else ""}'
-                        f'{show_iso_str if show_iso_str is not None else ""}'
-                        f'{legend_str if legend_str is not None else ""}'
-                        f'{cite_function_str if cite_function_str is not None else ""}'
-                        f'{mu_str if mu_str is not None else ""}'
-                        f'{style_str if style_str is not None else ""}'
-                        f'{print_dim_str if print_dim_str is not None else ""}'
-                        f'{pt_size_str if pt_size_str is not None else ""}'
-                        f'{p_str if p_str is not None else ""}')
-
-        cmd_str.value = cmd_line_str
-        page.update()
-
     def set_chron_str():
         """Sets Chronolgy System command line string.
 
@@ -974,28 +758,77 @@ def main(page: ft.Page):
 
         return new_str
 
-    def set_equil_str():
-        """Sets equilbrium function command line string.
+    def set_cite_function_str():
+        pass
 
-        Sets the command line string for the Equilibrium Function that is selected
-        in the application
+    def set_cmd_line_str():
+        """Sets command line string.
+
+        Takes all of the different data in the current applicaiton and sets it
+        equal to its command line counterpart
 
         Args:
             none
-        Returns:
-            A string corresponding to the command line applications equivalent option
-            Example:
-
-            '-ef 1'
+        Return:
+            none
         """
-        new_str = ''
 
-        if equil_func.value == 'Standard lunar equilibrium (Trask, 1966)':
-            new_str = ' -ef 1'
-        elif equil_func.value == 'Hartmann (1984)':
-            new_str = ' -ef 2'
+        chron_sys_str = ''
+        equil_func_str = ''
+        epoch_str = ''
+        title_str = ''
+        subtitle_str = ''
+        plot_view_str = ''
+        xrange_str = ''
+        yrange_str = ''
+        iso_str = ''
+        show_iso_str = ''
+        legend_str = ''
+        cite_function_str = ''
+        mu_str = ''
+        style_str = ''
+        print_dim_str = ''
+        pt_size_str = ''
+        p_str = ''
 
-        return new_str
+        cmd_line_str = ''
+
+        chron_sys_str = set_chron_str()
+        equil_func_str = set_equil_str()
+        epoch_str = set_epoch_str()
+        title_str = set_title_str()
+        subtitle_str = set_subtitle_str()
+        plot_view_str = set_plot_view_str()
+        iso_str = set_isochron_str()
+        show_iso_str = set_show_isochron_str()
+        legend_str = set_legend_str()
+        cite_function_str = set_cite_function_str()
+        mu_str = set_mu_str()
+        style_str = set_style_str()
+        print_dim_str = set_print_dim_str()
+        pt_size_str = set_pt_size_str()
+        p_str = set_p_str()
+
+        cmd_line_str = (f'craterstats{chron_sys_str if chron_sys_str is not None else ""}'
+                        f'{equil_func_str if equil_func_str is not None else ""}'
+                        f'{epoch_str if epoch_str is not None else ""}'
+                        f'{title_str if title_str is not None else ""}'
+                        f'{subtitle_str if subtitle_str is not None else ""}'
+                        f'{plot_view_str if plot_view_str is not None else ""}'
+                        f'{xrange_str if xrange_str is not None else ""}'
+                        f'{yrange_str if yrange_str is not None else ""}'
+                        f'{iso_str if iso_str is not None else ""}'
+                        f'{show_iso_str if show_iso_str is not None else ""}'
+                        f'{legend_str if legend_str is not None else ""}'
+                        f'{cite_function_str if cite_function_str is not None else ""}'
+                        f'{mu_str if mu_str is not None else ""}'
+                        f'{style_str if style_str is not None else ""}'
+                        f'{print_dim_str if print_dim_str is not None else ""}'
+                        f'{pt_size_str if pt_size_str is not None else ""}'
+                        f'{p_str if p_str is not None else ""}')
+
+        cmd_str.value = cmd_line_str
+        page.update()
 
     def set_epoch_str():
         """Sets epoch command line string.
@@ -1022,10 +855,10 @@ def main(page: ft.Page):
 
         return new_str
 
-    def set_title_str():
-        """Sets title command line string.
+    def set_equil_str():
+        """Sets equilbrium function command line string.
 
-        Sets the command line string for the title that is selected
+        Sets the command line string for the Equilibrium Function that is selected
         in the application
 
         Args:
@@ -1034,74 +867,16 @@ def main(page: ft.Page):
             A string corresponding to the command line applications equivalent option
             Example:
 
-            '-title Hartmann and Neukum isochrons'
-        """
-
-        new_str = f" -title {title_entry.value}"
-
-        if title_checkbox.value and title_entry.value != '':
-            return new_str
-
-        return None
-
-    def set_subtitle_str():
-        """Sets subtitle command line string.
-
-        Sets the command line string for the subtitle that is selected
-        in the application
-
-        Args:
-            none
-        Returns:
-            A string corresponding to the command line applications equivalent option
-            Example:
-
-            '-subtitle isochrons low'
-        """
-
-        new_str = f' -subtitle {subtitle_entry.value}'
-
-        if subtitle_checkbox.value and subtitle_entry.value != '':
-            return new_str
-
-        return None
-
-    def set_plot_view_str():
-        """Sets plot view command line string.
-
-        Sets the command line string for the plot view that is selected
-        in the application
-
-        Args:
-            none
-        Returns:
-            A string corresponding to the command line applications equivalent option
-            Example:
-
-            '-pr cumulative'
+            '-ef 1'
         """
         new_str = ''
 
-        if plot_view.value == "cumulative":
-            new_str = ' -pr cumulative'
-        elif plot_view.value == "differential":
-            new_str = ' -pr differential'
-        elif plot_view.value == "R-plot":
-            new_str = ' -pr R-plot'
-        elif plot_view.value == "Hartmann":
-            new_str = ' -pr Hartmann'
-        elif plot_view.value == "chronology":
-            new_str = ' -pr chronology'
-        elif plot_view.value == "rate":
-            new_str = ' -pr rate'
+        if equil_func.value == 'Standard lunar equilibrium (Trask, 1966)':
+            new_str = ' -ef 1'
+        elif equil_func.value == 'Hartmann (1984)':
+            new_str = ' -ef 2'
 
         return new_str
-
-    def set_xrange_str():
-        pass
-
-    def set_yrange_str():
-        pass
 
     def set_isochron_str():
         """Sets isochron command line string.
@@ -1121,29 +896,8 @@ def main(page: ft.Page):
 
         return new_str
 
-    def set_show_isochron_str():
-        """Sets show isochron command line string.
-
-        Sets the command line string if show isochrons is an option
-
-        Args:
-            none
-        Returns:
-            A string corresponding to the command line applications equivalent option
-            Example:
-
-            '-show_isochron 1'
-        """
-
-        new_str = f' -show_isochron {"1" if show_iso.value else "0"}'
-
-        return new_str
-
     def set_legend_str():
         return None
-
-    def set_cite_function_str():
-        pass
 
     def set_mu_str():
         """Sets mu command line string.
@@ -1162,65 +916,6 @@ def main(page: ft.Page):
         new_str = f' -mu {"1" if mu_legend.value else "0"}'
 
         return new_str
-
-    def set_style_str():
-        """Sets style command line string.
-
-        Sets the command line string for the style that is selected
-        in the application
-
-        Args:
-            none
-        Returns:
-            A string corresponding to the command line applications equivalent option
-            Example:
-
-            '-style decadel'
-        """
-
-        new_str = f' -style {style_options.value}'
-
-        return new_str
-
-    def set_print_dim_str():
-        """Sets print dimension command line string.
-
-        Sets the command line string for the print dimenstion that is selected
-        in the application
-
-        Args:
-            none
-        Returns:
-            A string corresponding to the command line applications equivalent option
-            Example:
-
-            '-print_dim {7.5x7.5}'
-        """
-        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
-
-        return new_str
-
-    def set_pt_size_str():
-        """Sets font size command line string.
-
-        Sets the command line string for the font size that is selected
-        in the application
-
-        Args:
-            none
-        Returns:
-            A string corresponding to the command line applications equivalent option
-            Example:
-
-            '-pt_size 8'
-        """
-
-        new_str = f' -pt_size {text_size.value}'
-
-        return new_str
-
-    def set_ref_diameter_str():
-        pass
 
     def set_p_str():
         """Sets overplot command line string.
@@ -1271,6 +966,338 @@ def main(page: ft.Page):
 
         return new_str
 
+    def set_plot_info(e):
+        """Sets plotsetting info for subplots
+
+        Changes the settings on the Plot Settings tab depending on which subplot is
+        selected
+
+        Args:
+            e: EventHandler
+
+        Returns:
+            none
+        """
+
+        correct_key = ''
+
+        # print(e.control.label.value)
+        for key, val in plots_dict.items():
+            # print(val)
+
+            try:
+                try:
+                    if val["plot1.name"] == e.control.label.value:
+                        # print("Plot1 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+                try:
+                    if val["plot2.name"] == e.control.label.value:
+                        # print("Plot2 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+                try:
+                    if val["plot3.name"] == e.control.label.value:
+                        # print("Plot3 Name Found")
+                        correct_key = key
+                except KeyError:
+                    pass
+            except KeyError:
+                print("No values")
+
+        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
+
+        range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
+        range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
+        range_val = ''
+
+        print(range_start, range_end, type(range_start), type(range_end))
+
+        if range_start < 1:
+
+            if range_end < 1:
+
+                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
+
+            else:
+                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
+
+        else:
+            range_val = f"[{int(range_start)} km, {int(range_end)} km]"
+
+        diam_range_entry.value = range_val.strip("[]")
+
+        plot_options = plots_dict[correct_key][f"{correct_key}.type"]
+
+        if plot_options == "data":
+            plot_fit_options.value = "crater count"
+
+        elif plot_options == "diff_fit":
+            plot_fit_options.value = "differential fit"
+
+        elif plot_options == "cumu_fit":
+            plot_fit_options.value = "cumulative fit"
+
+        elif plot_options == "poisson":
+            plot_fit_options.value = "Poisson pdf"
+
+        elif plot_options == "poisson_buffer":
+            plot_fit_options.value = "Poisson buffer pdf"
+
+        error_bars.value = plots_dict[correct_key][f"{correct_key}.error_bars"]
+
+        hide_button.value = plots_dict[correct_key][f"{correct_key}.hide"]
+
+        color_dropdown.value = colours[int(
+            plots_dict[correct_key][f"{correct_key}.colour"])]
+
+        symbol_dropdown.value = symbols[int(
+            plots_dict[correct_key][f"{correct_key}.psym"])]
+
+        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
+        binning_options.options = [ft.dropdown.Option(
+            plots_dict[correct_key][f"{correct_key}.binning"])]
+
+        align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
+
+        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
+
+        plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
+
+        page.update()
+
+    def set_plot_view_str():
+        """Sets plot view command line string.
+
+        Sets the command line string for the plot view that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-pr cumulative'
+        """
+        new_str = ''
+
+        if plot_view.value == "cumulative":
+            new_str = ' -pr cumulative'
+        elif plot_view.value == "differential":
+            new_str = ' -pr differential'
+        elif plot_view.value == "R-plot":
+            new_str = ' -pr R-plot'
+        elif plot_view.value == "Hartmann":
+            new_str = ' -pr Hartmann'
+        elif plot_view.value == "chronology":
+            new_str = ' -pr chronology'
+        elif plot_view.value == "rate":
+            new_str = ' -pr rate'
+
+        return new_str
+
+    def set_print_dim_str():
+        """Sets print dimension command line string.
+
+        Sets the command line string for the print dimenstion that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-print_dim {7.5x7.5}'
+        """
+        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
+
+        return new_str
+
+    def set_pt_size_str():
+        """Sets font size command line string.
+
+        Sets the command line string for the font size that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-pt_size 8'
+        """
+
+        new_str = f' -pt_size {text_size.value}'
+
+        return new_str
+
+    def set_ref_diameter_str():
+        pass
+
+    def set_show_isochron_str():
+        """Sets show isochron command line string.
+
+        Sets the command line string if show isochrons is an option
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-show_isochron 1'
+        """
+
+        new_str = f' -show_isochron {"1" if show_iso.value else "0"}'
+
+        return new_str
+
+    def set_style_str():
+        """Sets style command line string.
+
+        Sets the command line string for the style that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-style decadel'
+        """
+
+        new_str = f' -style {style_options.value}'
+
+        return new_str
+
+    def set_subtitle_str():
+        """Sets subtitle command line string.
+
+        Sets the command line string for the subtitle that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-subtitle isochrons low'
+        """
+
+        new_str = f' -subtitle {subtitle_entry.value}'
+
+        if subtitle_checkbox.value and subtitle_entry.value != '':
+            return new_str
+
+        return None
+
+    def set_title_str():
+        """Sets title command line string.
+
+        Sets the command line string for the title that is selected
+        in the application
+
+        Args:
+            none
+        Returns:
+            A string corresponding to the command line applications equivalent option
+            Example:
+
+            '-title Hartmann and Neukum isochrons'
+        """
+
+        new_str = f" -title {title_entry.value}"
+
+        if title_checkbox.value and title_entry.value != '':
+            return new_str
+
+        return None
+
+    def toggle_demo(e):
+
+        command_dict = {}
+
+        loading = loading_circle()
+
+        cli.demo()
+
+        command_dict = parse_demo_commands(PATH + "/../demo/")
+
+        loading.open = False
+        page.update()
+        demo = demo_view(command_dict)
+
+        Globals.demo_mode = False
+
+    def update_config_dict():
+        config = {
+            "set": [],
+            "plot": []
+        }
+
+        config["set"].append({
+            "chronology_system": chron_sys.value,
+            "epochs": epoch.value,
+            "equilibrium": equil_func.value,
+            "isochrons": iso_text.value,
+            "mu": mu_legend.value,
+            "presentation": plot_view.value,
+            "print_dimensions": print_scale_entry.value,
+            "pt_size": text_size.value,
+            "randomness": rand_legend.value,
+            "ref_diameter": ref_diam.value,
+            "sig_figs": sf_legend.value,
+            "show_isochrons": show_iso.value,
+            "show_subtitle": subtitle_checkbox.value,
+            "show_title": title_checkbox.value,
+            "style": style_options.value,
+            "subtitle": subtitle_entry.value,
+            "title": title_entry.value
+        })
+
+        config["plot"].append({
+            "source": source_file_entry.value,
+            "name": plot_fit_text.value,
+            "range": diam_range_entry.value.split(","),
+            "type": plot_fit_options.value,
+            "error_bars": error_bars.value,
+            "hide": hide_button.value,
+            "colour": color_dropdown.value,
+            "psym": symbol_dropdown.value,
+            "binning": binning_options.value,
+            "age_left": align_left.value,
+            "display_age": display_age.value
+        })
+
+        Globals.template_dict = config
+
+    """
+    Default Settings for the application
+    """
+    page.title = 'Craterstats IV'  # Application title
+    page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
+    page.window.width = 1920  # Application width
+    page.window.height = 1080  # Application Height
+    page.window.resizable = True  # Application size is static
+    page.window.left = 0    # Set the window position to the leftmost side
+    page.window.top = 0
+    # Fonts that can be used inside the application
+    page.fonts = {
+        "Courier New": "Fonts/Courier New.ttf",
+        "Nasa": "Fonts/nasalization-rg.otf",
+        "Arial": "Fonts/Arial Unicode.ttf"
+    }
+    # Default font for the application
+    page.theme = ft.Theme(font_family="Arial")
+    page.update()
+
     """
     Start of FLET GUI options
     """
@@ -1296,7 +1323,7 @@ def main(page: ft.Page):
         ft.Radio(value='rate', label="Rate")
     ]),
         value="differential",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e:  (update_config_dict(), run_plot_async())
     )
 
     # Celestial body fropdown options
@@ -1314,7 +1341,8 @@ def main(page: ft.Page):
         label="Body",
         value="Moon",
         dense=True,
-        on_change=lambda e: set_chron_sys(None, e) or run_plot_async()
+        on_change=lambda e: (set_chron_sys(None, e),
+                             update_config_dict(), run_plot_async())
     )
 
     # Chronolgy System dropdown options
@@ -1329,7 +1357,8 @@ def main(page: ft.Page):
         ],
         value="Moon, Neukum (1983)",
         dense=True,
-        on_change=lambda e: set_chron_func(None, e) or run_plot_async()
+        on_change=lambda e: (set_chron_func(None, e),
+                             update_config_dict(), run_plot_async())
     )
 
     # Chronology Function Dropdown options
@@ -1339,7 +1368,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Production function dropdown options
@@ -1349,7 +1378,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Epoch dropdown options
@@ -1363,7 +1392,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Mars, Michael (2013)"),
         ],
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Equilibrium function dropdown options
@@ -1378,7 +1407,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Hartmann (1984)"),
         ],
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Isochron text field
@@ -1386,73 +1415,73 @@ def main(page: ft.Page):
         width=150,
         dense=True,
         bgcolor=ft.colors.GREY_900,
-        on_blur=lambda e: run_plot_async()
+        on_blur=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Isochron Label
     iso_label = ft.Checkbox(
         label="Isochrons, Ga",
         value=False,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Data legend checkbox
     data_legend = ft.Checkbox(
         label="Data",
         value=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Fit legend checkbox
     fit_legend = ft.Checkbox(
         label="Fit",
         value=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Function legend checkbox
     func_legend = ft.Checkbox(
         label="Functions",
         value=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # 3sf legend checckbox
     sf_legend = ft.Checkbox(
         label="3sf",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # randomness legend checkbox
     rand_legend = ft.Checkbox(
         label="Randomness",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Mu legend checkbox
     mu_legend = ft.Checkbox(
         label="µ notation",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Reference Diameter text field
     ref_diam = ft.TextField(
-        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Reference Diameter label
     ref_diam_lbl = ft.Text("Ref diameter,km")
 
     # Axis Log D Textfield
     axis_d_input_box = ft.TextField(
-        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Axis y TextField
     axis_y_input_box = ft.TextField(
-        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Auto Axis button
     axis_auto_button = ft.ElevatedButton(
-        text="Auto", width=80, on_click=lambda e: run_plot_async())
+        text="Auto", width=80, on_click=lambda e: (update_config_dict(), run_plot_async()))
 
     # Style options dropdown
     style_options = ft.Dropdown(
@@ -1463,32 +1492,32 @@ def main(page: ft.Page):
         ],
         value="natural",
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Title entry textfield
     title_entry = ft.TextField(expand=True, dense=True, content_padding=ft.padding.all(8),
-                               bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+                               bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Title checkbox
     title_checkbox = ft.Checkbox(
-        label="Title", value=True, on_change=lambda e: run_plot_async())
+        label="Title", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     # Print scale textfield
     print_scale_entry = ft.TextField(dense=True, value="7.5x7.5", content_padding=ft.padding.all(8),
-                                     bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+                                     bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Subtitle entry textfield
     subtitle_entry = ft.TextField(dense=True, content_padding=ft.padding.all(8),
-                                  bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+                                  bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # subtitle checkbox
     subtitle_checkbox = ft.Checkbox(
-        label="Subtitle", value=True, on_change=lambda e: run_plot_async())
+        label="Subtitle", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     # Font size textfield
     text_size = ft.TextField(dense=True, value="8", bgcolor=ft.colors.GREY_900, content_padding=ft.padding.all(8),
-                             on_blur=lambda e: run_plot_async() or print(text_size.value) or print(type(text_size.value)))
+                             on_blur=lambda e: (update_config_dict(), run_plot_async()) or print(text_size.value) or print(type(text_size.value)))
 
     # Plot lists list view
     plot_lists = ft.ListView(
@@ -1498,7 +1527,7 @@ def main(page: ft.Page):
         spacing=10,
         padding=10,
         controls=[ft.Chip(ft.Text("default"),
-                          on_click=lambda e: run_plot_async())],
+                          on_click=lambda e: (update_config_dict(), run_plot_async()))],
         first_item_prototype=True,
     )
 
@@ -1522,21 +1551,21 @@ def main(page: ft.Page):
 
     # Plot fit text field
     plot_fit_text = ft.TextField(width=300, dense=True, value="Default",
-                                 bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+                                 bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Plot fit dropdown
     plot_fit_options = ft.Dropdown(
         width=200,
         dense=True,
         options=[
-            ft.dropdown.Option("crater count"),
-            ft.dropdown.Option("cumulative fit"),
-            ft.dropdown.Option("differential fit"),
-            ft.dropdown.Option("Poisson pdf"),
-            ft.dropdown.Option("Poisson buffer pdf"),
+            ft.dropdown.Option("data"),
+            ft.dropdown.Option("poisson"),
+            ft.dropdown.Option("b-poisson"),
+            ft.dropdown.Option("c-fit"),
+            ft.dropdown.Option("d-fit"),
         ],
-        value="crater count",
-        on_change=lambda e: run_plot_async()
+        value="data",
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Hide Button
@@ -1555,7 +1584,7 @@ def main(page: ft.Page):
 
     # Diameter Range textfield
     diam_range_entry = ft.TextField(
-        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
@@ -1576,7 +1605,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Teal"),
         ],
         value="Black",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Plot point color symbol
@@ -1599,31 +1628,31 @@ def main(page: ft.Page):
             ft.dropdown.Option("Filled inverted triangle"),
         ],
         value='Square',
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     """PLOT SETTINGS OPTIONS"""
     error_bars = ft.Checkbox(
-        label="Error bars", value=True, on_change=lambda e: run_plot_async())
+        label="Error bars", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     display_age = ft.Checkbox(
-        label="Display age", value=True, on_change=lambda e: run_plot_async())
+        label="Display age", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     align_left = ft.Checkbox(label="Align age left",
-                             on_change=lambda e: run_plot_async())
+                             on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     show_iso = ft.Checkbox(label="Show isochron", value=True,
-                           on_change=lambda e: run_plot_async())
+                           on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     plot_fit_error = ft.Checkbox(
-        label="Plot fit", value=True, on_change=lambda e: run_plot_async())
+        label="Plot fit", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     # Binning options dropdown
     binning_options = ft.Dropdown(
         width=150,
         dense=True,
         options=[
-            ft.dropdown.Option("psuedo-log"),
+            ft.dropdown.Option("pseudo-log"),
             ft.dropdown.Option("20/decade"),
             ft.dropdown.Option("10/decade"),
             ft.dropdown.Option("x2"),
@@ -1631,8 +1660,8 @@ def main(page: ft.Page):
             ft.dropdown.Option("4th root-2"),
             ft.dropdown.Option("none"),
         ],
-        value='psuedo-log',
-        on_change=lambda e: run_plot_async()
+        value='pseudo-log',
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Default command line string
@@ -1871,7 +1900,8 @@ def main(page: ft.Page):
             ),
         ],
         expand=1,
-        on_change=lambda _: set_cmd_line_str() or run_plot_async()
+        on_change=lambda _: (set_cmd_line_str(),
+                             update_config_dict(), run_plot_async())
     )
 
     # FILE|PLOT|EXPORT|UTILITIES Menu bar
@@ -1951,7 +1981,7 @@ def main(page: ft.Page):
                         content=ft.Text("Demo"),
                         leading=ft.Icon(ft.icons.PLAY_ARROW_ROUNDED),
                         on_click=lambda e: (setattr(
-                            Globals, 'demo_mode', True), run_plot_async())
+                            Globals, 'demo_mode', True), update_config_dict(), run_plot_async())
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("sum .stat files"),
@@ -2009,6 +2039,8 @@ def main(page: ft.Page):
 
     page.add(menubar)
     page.add(page_layout)
+
+    page.on_keyboard_event = handle_keypress_events
 
 
 ft.app(target=main, assets_dir="assets")
