@@ -28,9 +28,6 @@ def main(page: ft.Page):
     def create_plot_lists():
         """Creates a dictionary of plots.
 
-        A global dictionary of plots is filled out based off of the information
-        in the file that is uploaded to make different subplots
-
         Args:
             none
 
@@ -353,6 +350,10 @@ def main(page: ft.Page):
         page.update()
 
         return loading
+      
+    def on_resize(e):
+        # Trigger UI update when window is resized
+        page.update() 
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -559,7 +560,7 @@ def main(page: ft.Page):
 
             if not export_path.lower().endswith(".png"):
                 export_path += ".png"
-
+                
                 shutil.copy(plot_image.src, export_path)
                 page.update()
 
@@ -1300,6 +1301,10 @@ def main(page: ft.Page):
     """
     Start of FLET GUI options
     """
+
+    # This sets up an event listener for window resizing
+    page.on_resize = on_resize
+
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
@@ -1770,10 +1775,12 @@ def main(page: ft.Page):
     # plot image
     plot_image = ft.Image(
         src="/plots/blank_plot.png",
-        height=600,
-        width=600,
+        height=page.window.height * 0.55,
+        width=page.window.width * 0.55,
         fit=ft.ImageFit.CONTAIN
     )
+
+    plot_image.resizable = True
 
     # Plot Tab container
     plot = ft.Column(
@@ -2003,11 +2010,13 @@ def main(page: ft.Page):
         controls=[
             ft.Container(
                 content=tabs,
-                expand=2
+                expand=2,
+                width=page.window.width * 0.5
             ),
             ft.Container(
                 content=plot_image if not Globals.demo_mode else None,
-                expand=3
+                expand=2,
+                width=page.window.width * 0.5
             ),
         ],
         expand=True
