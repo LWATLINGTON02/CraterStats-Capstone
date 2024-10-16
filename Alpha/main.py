@@ -563,7 +563,7 @@ def main(page: ft.Page):
 
             if not export_path.lower().endswith(".png"):
                 export_path += ".png"
-
+                
                 shutil.copy(plot_image.src, export_path)
                 page.update()
 
