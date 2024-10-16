@@ -1,0 +1,7 @@
+- Seperate open and browse (.plt, data files)
+
+- Get correct data from data file
+
+- Change how files are read for new .plt format
+
+- Pulling from demo files if it exists and creating it if it does not

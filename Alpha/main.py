@@ -28,16 +28,8 @@ def main(page: ft.Page):
     def create_plot_lists():
         """Creates a dictionary of plots.
 
-<<<<<<< HEAD
         A global dictionary of plots is filled out based off of the information
         in the file that is uploaded to make different subplots
-=======
-    def on_resize(e):
-        # Trigger UI update when window is resized
-        page.update()
-
-    def loading_circle():
->>>>>>> main
 
         Args:
             none
@@ -361,6 +353,10 @@ def main(page: ft.Page):
         page.update()
 
         return loading
+    
+    def on_resize(e):
+        # Trigger UI update when window is resized
+        page.update()
 
     def open_about_dialog(e):
         """ Opens and fills about text.
@@ -571,8 +567,6 @@ def main(page: ft.Page):
                 shutil.copy(plot_image.src, export_path)
                 page.update()
 
-<<<<<<< HEAD
-=======
     def create_plot_lists():
         """Creates a dictionary of plots.
 
@@ -726,7 +720,6 @@ def main(page: ft.Page):
     page.theme = ft.Theme(font_family="Arial")
     page.update()
 
->>>>>>> main
     def set_chron_func(value, e):
         """Sets chronology function.
 
@@ -1464,13 +1457,9 @@ def main(page: ft.Page):
     """
     Start of FLET GUI options
     """
-<<<<<<< HEAD
-=======
-
     # This sets up an event listener for window resizing
     page.on_resize = on_resize
 
->>>>>>> main
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)

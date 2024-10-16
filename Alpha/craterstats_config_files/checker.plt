@@ -24,7 +24,7 @@ set = {
 }
 
 plot={
-   source='/Users/caden/Library/CloudStorage/OneDrive-Personal/Fall2024/CS486C/CraterStats-Capstone/Alpha/sample/ECHUS_CHAP_AR1_A.stat'
+   source='/Users/caden/Library/CloudStorage/OneDrive-Personal/Fall2024/CS486C/CraterStats-Capstone/Alpha/sample/c7_Michael-et-al-2021.scc'
    name='ECHUS_CHAP_AR1_A'
    range=[0.01,100]
    type='data'
