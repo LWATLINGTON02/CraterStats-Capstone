@@ -8,7 +8,7 @@ from flet import FilePickerResultEvent
 import shutil
 
 from Globals import *
-from gm.file import file_exists, read_textstructure, read_textfile
+from gm.file import file_exists, read_textstructure, read_textfile, filename
 from helperFunctions import *
 import Globals
 
@@ -25,7 +25,10 @@ PATH = os.path.dirname(os.path.abspath(__file__))
 
 def main(page: ft.Page):
 
-    print(Globals.template_file)
+    def handle_keypress_events(e: ft.KeyboardEvent):
+        if (e.key == "O" and (e.ctrl or e.meta)):
+            print("Button is pressed")
+            pick_files_dialog.pick_files()
 
     def loading_circle():
 
@@ -227,26 +230,20 @@ def main(page: ft.Page):
         functionStr = read_textstructure(systems, from_string=True)
 
         try:
-            print(
-                f"\n\nPlot Source Argument: {arg.plot[0]['source']}\n\n")
-
-            for d in arg.plot:
-                print('True' if 'source' in d else 'False')
-
             craterPlot = cli.construct_plot_dicts(arg, settings)
             defaultFilename = generate_output_file_name()
 
             craterPlotSet = cli.construct_cps_dict(
                 arg, settings, functionStr, defaultFilename)
 
-            print(f"\n\nCPS: {craterPlotSet}\n\n")
-
-            print(f"\n\nCraterPlot: {craterPlot}\n\n")
+            print(f"\n\nCraterplotSet format", craterPlotSet['format'])
 
             if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
                 craterPlotSet['legend'] += 'p'
 
             plot = [Craterplot(d) for d in craterPlot]
+
+            print(f"\n\nPlot {plot}\n\n")
 
             if craterPlotSet['ref_diameter'] == '':
                 craterPlotSet['ref_diameter'] = '1.0'
@@ -254,7 +251,7 @@ def main(page: ft.Page):
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
             # if plot:
-            #     plotSettings.autoscale()
+            #     plotSettings.autoscale(self=plotSettings)
             newFileName = generate_output_file_name()
 
             craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
@@ -455,7 +452,8 @@ def main(page: ft.Page):
                 if 'name' in dictionary:
                     plot_fit_text.value = config['plot'][index]['name']
                 if 'range' in dictionary:
-                    diam_range_entry.value = config['plot'][index]['range']
+                    diam_range_entry.value = (
+                        config['plot'][index]['range'][0]) + ", " + (config['plot'][index]['range'][1])
                 if 'type' in dictionary:
                     plot_fit_options.value = config['plot'][index]['type']
                 if 'error_bars' in dictionary:
@@ -575,7 +573,7 @@ def main(page: ft.Page):
 
             for plots in plot_names:
                 content_list.append(
-                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: set_plot_info(e) or run_plot_async()))
+                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: (set_plot_info(e), update_config_dict(), run_plot_async())))
 
         # print(plot_lists.controls)
         plot_lists.controls = content_list
@@ -1266,6 +1264,48 @@ def main(page: ft.Page):
 
         return new_str
 
+    def update_config_dict():
+        config = {
+            "set": [],
+            "plot": []
+        }
+
+        config["set"].append({
+            "chronology_system": chron_sys.value,
+            "epochs": epoch.value,
+            "equilibrium": equil_func.value,
+            "isochrons": iso_text.value,
+            "mu": mu_legend.value,
+            "presentation": plot_view.value,
+            "print_dimensions": print_scale_entry.value,
+            "pt_size": text_size.value,
+            "randomness": rand_legend.value,
+            "ref_diameter": ref_diam.value,
+            "sig_figs": sf_legend.value,
+            "show_isochrons": show_iso.value,
+            "show_subtitle": subtitle_checkbox.value,
+            "show_title": title_checkbox.value,
+            "style": style_options.value,
+            "subtitle": subtitle_entry.value,
+            "title": title_entry.value
+        })
+
+        config["plot"].append({
+            "source": source_file_entry.value,
+            "name": plot_fit_text.value,
+            "range": diam_range_entry.value.split(","),
+            "type": plot_fit_options.value,
+            "error_bars": error_bars.value,
+            "hide": hide_button.value,
+            "colour": color_dropdown.value,
+            "psym": symbol_dropdown.value,
+            "binning": binning_options.value,
+            "age_left": align_left.value,
+            "display_age": display_age.value
+        })
+
+        Globals.template_dict = config
+
     """
     Start of FLET GUI options
     """
@@ -1288,7 +1328,7 @@ def main(page: ft.Page):
         ft.Radio(value='rate', label="Rate")
     ]),
         value="differential",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e:  (update_config_dict(), run_plot_async())
     )
 
     # Celestial body fropdown options
@@ -1306,7 +1346,8 @@ def main(page: ft.Page):
         label="Body",
         value="Moon",
         dense=True,
-        on_change=lambda e: set_chron_sys(None, e) or run_plot_async()
+        on_change=lambda e: (set_chron_sys(None, e),
+                             update_config_dict(), run_plot_async())
     )
 
     # Chronolgy System dropdown options
@@ -1321,7 +1362,8 @@ def main(page: ft.Page):
         ],
         value="Moon, Neukum (1983)",
         dense=True,
-        on_change=lambda e: set_chron_func(None, e) or run_plot_async()
+        on_change=lambda e: (set_chron_func(None, e),
+                             update_config_dict(), run_plot_async())
     )
 
     # Chronology Function Dropdown options
@@ -1331,7 +1373,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Production function dropdown options
@@ -1341,7 +1383,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Epoch dropdown options
@@ -1355,7 +1397,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Mars, Michael (2013)"),
         ],
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Equilibrium function dropdown options
@@ -1370,7 +1412,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Hartmann (1984)"),
         ],
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Isochron text field
@@ -1378,73 +1420,73 @@ def main(page: ft.Page):
         width=150,
         dense=True,
         bgcolor=ft.colors.GREY_900,
-        on_blur=lambda e: run_plot_async()
+        on_blur=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Isochron Label
     iso_label = ft.Checkbox(
         label="Isochrons, Ga",
         value=False,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Data legend checkbox
     data_legend = ft.Checkbox(
         label="Data",
         value=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Fit legend checkbox
     fit_legend = ft.Checkbox(
         label="Fit",
         value=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Function legend checkbox
     func_legend = ft.Checkbox(
         label="Functions",
         value=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # 3sf legend checckbox
     sf_legend = ft.Checkbox(
         label="3sf",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # randomness legend checkbox
     rand_legend = ft.Checkbox(
         label="Randomness",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Mu legend checkbox
     mu_legend = ft.Checkbox(
         label="µ notation",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Reference Diameter text field
     ref_diam = ft.TextField(
-        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Reference Diameter label
     ref_diam_lbl = ft.Text("Ref diameter,km")
 
     # Axis Log D Textfield
     axis_d_input_box = ft.TextField(
-        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Axis y TextField
     axis_y_input_box = ft.TextField(
-        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Auto Axis button
     axis_auto_button = ft.ElevatedButton(
-        text="Auto", width=80, on_click=lambda e: run_plot_async())
+        text="Auto", width=80, on_click=lambda e: (update_config_dict(), run_plot_async()))
 
     # Style options dropdown
     style_options = ft.Dropdown(
@@ -1455,32 +1497,32 @@ def main(page: ft.Page):
         ],
         value="natural",
         dense=True,
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Title entry textfield
     title_entry = ft.TextField(expand=True, dense=True, content_padding=ft.padding.all(8),
-                               bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+                               bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Title checkbox
     title_checkbox = ft.Checkbox(
-        label="Title", value=True, on_change=lambda e: run_plot_async())
+        label="Title", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     # Print scale textfield
     print_scale_entry = ft.TextField(dense=True, value="7.5x7.5", content_padding=ft.padding.all(8),
-                                     bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+                                     bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Subtitle entry textfield
     subtitle_entry = ft.TextField(dense=True, content_padding=ft.padding.all(8),
-                                  bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+                                  bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # subtitle checkbox
     subtitle_checkbox = ft.Checkbox(
-        label="Subtitle", value=True, on_change=lambda e: run_plot_async())
+        label="Subtitle", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     # Font size textfield
     text_size = ft.TextField(dense=True, value="8", bgcolor=ft.colors.GREY_900, content_padding=ft.padding.all(8),
-                             on_blur=lambda e: run_plot_async() or print(text_size.value) or print(type(text_size.value)))
+                             on_blur=lambda e: (update_config_dict(), run_plot_async()) or print(text_size.value) or print(type(text_size.value)))
 
     # Plot lists list view
     plot_lists = ft.ListView(
@@ -1490,7 +1532,7 @@ def main(page: ft.Page):
         spacing=10,
         padding=10,
         controls=[ft.Chip(ft.Text("default"),
-                          on_click=lambda e: run_plot_async())],
+                          on_click=lambda e: (update_config_dict(), run_plot_async()))],
         first_item_prototype=True,
     )
 
@@ -1514,21 +1556,21 @@ def main(page: ft.Page):
 
     # Plot fit text field
     plot_fit_text = ft.TextField(width=300, dense=True, value="Default",
-                                 bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+                                 bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Plot fit dropdown
     plot_fit_options = ft.Dropdown(
         width=200,
         dense=True,
         options=[
-            ft.dropdown.Option("crater count"),
-            ft.dropdown.Option("cumulative fit"),
-            ft.dropdown.Option("differential fit"),
-            ft.dropdown.Option("Poisson pdf"),
-            ft.dropdown.Option("Poisson buffer pdf"),
+            ft.dropdown.Option("data"),
+            ft.dropdown.Option("poisson"),
+            ft.dropdown.Option("b-poisson"),
+            ft.dropdown.Option("c-fit"),
+            ft.dropdown.Option("d-fit"),
         ],
-        value="crater count",
-        on_change=lambda e: run_plot_async()
+        value="data",
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Hide Button
@@ -1547,7 +1589,7 @@ def main(page: ft.Page):
 
     # Diameter Range textfield
     diam_range_entry = ft.TextField(
-        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: run_plot_async())
+        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
 
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
@@ -1568,7 +1610,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Teal"),
         ],
         value="Black",
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Plot point color symbol
@@ -1591,31 +1633,31 @@ def main(page: ft.Page):
             ft.dropdown.Option("Filled inverted triangle"),
         ],
         value='Square',
-        on_change=lambda e: run_plot_async()
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     """PLOT SETTINGS OPTIONS"""
     error_bars = ft.Checkbox(
-        label="Error bars", value=True, on_change=lambda e: run_plot_async())
+        label="Error bars", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     display_age = ft.Checkbox(
-        label="Display age", value=True, on_change=lambda e: run_plot_async())
+        label="Display age", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     align_left = ft.Checkbox(label="Align age left",
-                             on_change=lambda e: run_plot_async())
+                             on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     show_iso = ft.Checkbox(label="Show isochron", value=True,
-                           on_change=lambda e: run_plot_async())
+                           on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     plot_fit_error = ft.Checkbox(
-        label="Plot fit", value=True, on_change=lambda e: run_plot_async())
+        label="Plot fit", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
 
     # Binning options dropdown
     binning_options = ft.Dropdown(
         width=150,
         dense=True,
         options=[
-            ft.dropdown.Option("psuedo-log"),
+            ft.dropdown.Option("pseudo-log"),
             ft.dropdown.Option("20/decade"),
             ft.dropdown.Option("10/decade"),
             ft.dropdown.Option("x2"),
@@ -1623,8 +1665,8 @@ def main(page: ft.Page):
             ft.dropdown.Option("4th root-2"),
             ft.dropdown.Option("none"),
         ],
-        value='psuedo-log',
-        on_change=lambda e: run_plot_async()
+        value='pseudo-log',
+        on_change=lambda e: (update_config_dict(), run_plot_async())
     )
 
     # Default command line string
@@ -1861,7 +1903,8 @@ def main(page: ft.Page):
             ),
         ],
         expand=1,
-        on_change=lambda _: set_cmd_line_str() or run_plot_async()
+        on_change=lambda _: (set_cmd_line_str(),
+                             update_config_dict(), run_plot_async())
     )
 
     # FILE|PLOT|EXPORT|UTILITIES Menu bar
@@ -1941,7 +1984,7 @@ def main(page: ft.Page):
                         content=ft.Text("Demo"),
                         leading=ft.Icon(ft.icons.PLAY_ARROW_ROUNDED),
                         on_click=lambda e: (setattr(
-                            Globals, 'demo_mode', True), run_plot_async())
+                            Globals, 'demo_mode', True), update_config_dict(), run_plot_async())
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("sum .stat files"),
@@ -1997,6 +2040,8 @@ def main(page: ft.Page):
 
     page.add(menubar)
     page.add(page_layout)
+
+    page.on_keyboard_event = handle_keypress_events
 
 
 ft.app(target=main, assets_dir="assets")
