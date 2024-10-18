@@ -48,7 +48,7 @@ def main(page: ft.Page):
             plot_name = Globals.template_dict['plot'][1]['name']
 
             content_list.append(
-                ft.Chip(ft.Text(plot_name), on_click=lambda e: (set_plot_info(e), update_config_dict(), )))
+                ft.Chip(ft.Text(plot_name), on_click=lambda e: (set_plot_info(e), update_config_dict())))
 
         plot_lists.controls = content_list
 
@@ -987,7 +987,7 @@ def main(page: ft.Page):
             new_str += ' -p '
 
             if source_file_entry.value:
-                new_str += f"source={source_file_entry.value},"
+                new_str += f"source={source_file_entry.value} -p "
 
             if plot_fit_options.value:
                 new_str += f"name={plot_fit_text.value},"
