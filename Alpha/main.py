@@ -212,8 +212,9 @@ def main(page: ft.Page):
                     cite_func.value = True if config['set'][index]['cite_functions'] else False
                 if 'epochs' in dictionary:
                     epoch.value = config['set'][index]['epochs'] if config['set'][index]['epochs'] != '' else 'none'
+                    print(f'\n\nEpoch Value: {epoch.value}')
                 if 'equilibrium' in dictionary:
-                    equil_func.value = config['set'][index]['equilibrium']
+                    equil_func.value = config['set'][index]['equilibrium'] if config['set'][index]['equilibrium'] != '' else 'none'
                 if 'isochrons' in dictionary:
                     iso_text.value = config['set'][index]['isochrons']
                 if 'mu' in dictionary:
@@ -221,8 +222,11 @@ def main(page: ft.Page):
                 if 'presentation' in dictionary:
                     plot_view.value = config['set'][index]['presentation']
                 if 'print_dimensions' in dictionary:
-                    config['set'][index]['print_dimensions'] = "x".join(
-                        config['set'][index]['print_dimensions'])
+
+                    if type(config['set'][index]['print_dimensions']) == list:
+                        config['set'][index]['print_dimensions'] = "x".join(
+                            config['set'][index]['print_dimensions'])
+
                     print_scale_entry.value = config['set'][index]['print_dimensions']
                 if 'pt_size' in dictionary:
                     text_size.value = max(config['set'][index]['pt_size'])
@@ -248,9 +252,17 @@ def main(page: ft.Page):
             # Plot settings
             for index, dictionary in enumerate(config['plot']):
 
+                if list(config['plot'][index].values())[0] == '':
+                    key = list(config['plot'][index].keys())[0]
+                    config['plot'][index][key] = None
+
                 if 'source' in dictionary:
                     source_file_entry.value = config['plot'][index]['source']
                 if 'name' in dictionary:
+
+                    if config['plot'][index]['name'] == None:
+                        config['plot'][index]['name'] = 'Default'
+
                     plot_fit_text.value = config['plot'][index]['name']
                 if 'range' in dictionary:
                     diam_range_entry.value = (
@@ -275,6 +287,8 @@ def main(page: ft.Page):
                     display_age.value = True if config['plot'][index]['display_age'] else False
 
             Globals.template_dict = config
+
+        print(Globals.template_dict)
 
         update_legend()
         create_plot_lists()
@@ -460,8 +474,7 @@ def main(page: ft.Page):
             chronology_system=set_chron_str()[-2:].replace(' ', ''),
             cite_function=cite_func.value,
             demo=Globals.demo_mode,
-            epochs=set_epoch_str()[-2:].replace(' ',
-                                                '') if epoch.value != 'none' else None,
+            epochs=epoch.value if epoch.value != 'none' else None,
             equilibrium=equil_func.value if equil_func.value != 'none' else None,
             format=None,
             input=None,
@@ -488,6 +501,11 @@ def main(page: ft.Page):
             xrange=None,
             yrange=None
         )
+
+        print("\nEpoch\n", arg.epochs)
+        print("\nEpoch\n", type(arg.epochs))
+        print("\nEquilibrium\n", arg.equilibrium)
+        print("\nEquilibrium\n", type(arg.equilibrium))
 
         if arg.demo:
             toggle_demo(None)
@@ -566,6 +584,7 @@ def main(page: ft.Page):
         except SystemExit as err:
             print("Error couldn't create craterplotset")
             print("Error:", err)
+            traceback.print_exc()
         except Exception as err:
             print("Other Error", err)
             traceback.print_exc()
