@@ -619,6 +619,10 @@ def main(page: ft.Page):
             print("\n\nCraterCount", craterPlot[0]['cratercount'])
             print("\n\nPlot", plot)
 
+            print("\n\nCraterPlotSet", craterPlotSet)
+            print("\n\nCraterPlot", craterPlot)
+            print("\n\nCraterCount", craterPlot[0]['cratercount'])
+
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
             print("\n\nCF", plotSettings.cf)
