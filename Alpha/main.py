@@ -14,6 +14,11 @@ import Globals
 
 import traceback
 
+"""
+IGNORE DEPRECATED WARNINGS
+"""
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # GM Folder from CraterstatsIII
 # Also from craterstats
@@ -39,18 +44,15 @@ def main(page: ft.Page):
         """
         content_list = []
 
-        plot_names = {}
+        plot_name = ""
 
-        if plots_dict is not None:
+        if Globals.template_dict:
 
-            for plots in plots_dict:
-                plot_names[plots] = plots_dict[plots][f"{plots}.name"]
+            plot_name = Globals.template_dict['plot'][1]['name']
 
-            for plots in plot_names:
-                content_list.append(
-                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: (set_plot_info(e), update_config_dict(), run_plot_async())))
+            content_list.append(
+                ft.Chip(ft.Text(plot_name), on_click=lambda e: (set_plot_info(e), update_config_dict())))
 
-        # print(plot_lists.controls)
         plot_lists.controls = content_list
 
         page.update()
@@ -61,43 +63,34 @@ def main(page: ft.Page):
                 demo_dict[carousel_images[Globals.image_index]])
 
         print_tree(demo_dict, 0)
-        print(len(demo_dict.keys()))
 
         def update_image():
             # Update the image based on the current index
-            print(demo_dict[carousel_images[Globals.image_index]])
             setattr(Globals, 'demo_cmd_str',
                     demo_dict[carousel_images[Globals.image_index]])
             cmd_str.value = Globals.demo_cmd_str
-            demo_image.src = f"{PATH}/../demo/{carousel_images[Globals.image_index]}"
-            plot_num.value = f"Plot {Globals.image_index + 1} of {len(carousel_images)}"
+            demo_image.src = f"{
+                PATH}/../demo/{carousel_images[Globals.image_index]}"
+            plot_num.value = f"Plot {
+                Globals.image_index + 1} of {len(carousel_images)}"
             plot_num.update()
             demo_image.update()
             page.update()
 
         # Function to go to the next image
         def next_image(e):
-            print(len(carousel_images))
             setattr(Globals, 'image_index', Globals.image_index + 1)
-            print(Globals.image_index)
-
             if Globals.image_index >= 24:
-                print("index >= 24")
                 # Loop back to the first image
                 setattr(Globals, 'image_index', 0)
             update_image()
 
         # Function to go to the previous image
         def prev_image(e):
-            print(len(carousel_images))
             setattr(Globals, 'image_index', Globals.image_index - 1)
-            print(Globals.image_index)
-
             if Globals.image_index < 0:
-                print("index < 0")
                 # Loop back to the last image
                 setattr(Globals, 'image_index', len(carousel_images) - 1)
-                print(Globals.image_index)
             update_image()
 
         demo_image = ft.Image(
@@ -220,10 +213,13 @@ def main(page: ft.Page):
                         config['set'][index]['chronology_system'])
                     set_chron_sys(body.value, None)
                     chron_sys.value = config['set'][index]['chronology_system']
+                if 'cite_functions' in dictionary:
+                    cite_func.value = True if config['set'][index]['cite_functions'] else False
                 if 'epochs' in dictionary:
                     epoch.value = config['set'][index]['epochs'] if config['set'][index]['epochs'] != '' else 'none'
+                    print(f'\n\nEpoch Value: {epoch.value}')
                 if 'equilibrium' in dictionary:
-                    equil_func.value = config['set'][index]['equilibrium']
+                    equil_func.value = config['set'][index]['equilibrium'] if config['set'][index]['equilibrium'] != '' else 'none'
                 if 'isochrons' in dictionary:
                     iso_text.value = config['set'][index]['isochrons']
                 if 'mu' in dictionary:
@@ -231,6 +227,11 @@ def main(page: ft.Page):
                 if 'presentation' in dictionary:
                     plot_view.value = config['set'][index]['presentation']
                 if 'print_dimensions' in dictionary:
+
+                    if type(config['set'][index]['print_dimensions']) == list:
+                        config['set'][index]['print_dimensions'] = "x".join(
+                            config['set'][index]['print_dimensions'])
+
                     print_scale_entry.value = config['set'][index]['print_dimensions']
                 if 'pt_size' in dictionary:
                     text_size.value = max(config['set'][index]['pt_size'])
@@ -239,7 +240,7 @@ def main(page: ft.Page):
                 if 'ref_diameter' in dictionary:
                     ref_diam.value = config['set'][index]['ref_diameter']
                 if 'sig_figs' in dictionary:
-                    sf_legend.value = True if config['set'][index]['sig_figs'] else False
+                    sf_entry.value = config['set'][index]['sig_figs']
                 if 'show_isochrons' in dictionary:
                     show_iso.value = True if config['set'][index]['show_isochrons'] else False
                 if 'show_subtitle' in dictionary:
@@ -256,9 +257,17 @@ def main(page: ft.Page):
             # Plot settings
             for index, dictionary in enumerate(config['plot']):
 
+                if list(config['plot'][index].values())[0] == '':
+                    key = list(config['plot'][index].keys())[0]
+                    config['plot'][index][key] = None
+
                 if 'source' in dictionary:
                     source_file_entry.value = config['plot'][index]['source']
                 if 'name' in dictionary:
+
+                    if config['plot'][index]['name'] == None:
+                        config['plot'][index]['name'] = 'Default'
+
                     plot_fit_text.value = config['plot'][index]['name']
                 if 'range' in dictionary:
                     diam_range_entry.value = (
@@ -284,6 +293,9 @@ def main(page: ft.Page):
 
             Globals.template_dict = config
 
+        print(Globals.template_dict)
+
+        update_legend()
         create_plot_lists()
         run_plot_async()
 
@@ -333,10 +345,37 @@ def main(page: ft.Page):
 
         return body_val
 
+    def get_legend_value():
+
+        value = ''
+
+        if legend_name.value:
+
+            value += 'n'
+        if legend_area.value:
+
+            value += 'a'
+        if legend_perimeter.value:
+
+            value += 'p'
+        if legend_cratercount.value:
+
+            value += 'c'
+        if legend_range.value:
+
+            value += 'r'
+        if legend_n_dref.value:
+
+            value += 'N'
+
+        return value
+
     def handle_keypress_events(e: ft.KeyboardEvent):
         if (e.key == "O" and (e.ctrl or e.meta)):
-            print("Button is pressed")
             pick_files_dialog.pick_files()
+
+        if (e.key == "E" and (e.ctrl or e.meta)):
+            save_file_dialog.save_file()
 
     def loading_circle():
 
@@ -353,7 +392,7 @@ def main(page: ft.Page):
         page.update()
 
         return loading
-    
+
     def on_resize(e):
         # Trigger UI update when window is resized
         page.update()
@@ -438,17 +477,16 @@ def main(page: ft.Page):
             about=False,
             autoscale=False,
             chronology_system=set_chron_str()[-2:].replace(' ', ''),
-            cite_function=func_legend.value,
+            cite_function=cite_func.value,
             demo=Globals.demo_mode,
-            epochs=set_epoch_str()[-2:].replace(' ',
-                                                '') if epoch.value != 'none' else None,
+            epochs=epoch.value if epoch.value != 'none' else None,
             equilibrium=equil_func.value if equil_func.value != 'none' else None,
             format=None,
             input=None,
             invert=None,
             isochrons=iso_text.value,
             lcs=False,
-            legend=None,
+            legend=get_legend_value(),
             lpc=False,
             mu=mu_legend.value,
             out='',
@@ -462,27 +500,41 @@ def main(page: ft.Page):
             src=None,
             style=style_options.value,
             subtitle=subtitle_entry.value if subtitle_checkbox.value else None,
-            template=None,
+            template=Globals.template_dict if Globals.template_dict else None,
             title=title_entry.value if title_checkbox.value else None,
             transparent=False,
             xrange=None,
             yrange=None
         )
 
+        print("\nEpoch\n", arg.epochs)
+        print("\nEpoch\n", type(arg.epochs))
+        print("\nEquilibrium\n", arg.equilibrium)
+        print("\nEquilibrium\n", type(arg.equilibrium))
+
         if arg.demo:
             toggle_demo(None)
             return
 
-        print("Template", template)
+        if type(arg.template) == str:
+            settings = read_textstructure(
+                template if arg.template is None else arg.template)
 
-        # if type(arg.template) == str:
-        settings = read_textstructure(
-            template if arg.template is None else arg.template)
+        else:
+            settings = arg.template
 
-        print("Settings", settings)
-        # else:
-        #     settings = arg.template
-        # print(settings['plot']['source'])
+            if isinstance(settings['plot'], list) and settings['plot']:
+                plot_data = {}
+                for item in settings['plot']:
+                    if isinstance(item, dict):
+                        plot_data.update(item)
+
+            if isinstance(settings['set'], list) and settings['set']:
+                set_data = {}
+                for item in settings['set']:
+                    if isinstance(item, dict):
+                        set_data.update(item)
+
         systems = read_textfile(
             functions, ignore_hash=True, strip=';', as_string=True)
         if file_exists(functions_user):
@@ -492,20 +544,16 @@ def main(page: ft.Page):
         functionStr = read_textstructure(systems, from_string=True)
 
         try:
-            craterPlot = cli.construct_plot_dicts(arg, settings)
+            craterPlot = cli.construct_plot_dicts(arg, {'plot': plot_data})
             defaultFilename = generate_output_file_name()
 
             craterPlotSet = cli.construct_cps_dict(
-                arg, settings, functionStr, defaultFilename)
-
-            print(f"\n\nCraterplotSet format", craterPlotSet['format'])
+                arg, {'set': set_data}, functionStr, defaultFilename)
 
             if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
                 craterPlotSet['legend'] += 'p'
 
             plot = [Craterplot(d) for d in craterPlot]
-
-            print(f"\n\nPlot {plot}\n\n")
 
             if craterPlotSet['ref_diameter'] == '':
                 craterPlotSet['ref_diameter'] = '1.0'
@@ -519,7 +567,10 @@ def main(page: ft.Page):
             craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
 
             drawn = False
+            print("\n\nPre Format")
+            print("\n\nFormat settings", plotSettings.format)
             for format in plotSettings.format:
+                print("\n\nFormat", format)
                 if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
                     if not drawn:
                         plotSettings.draw()
@@ -528,15 +579,17 @@ def main(page: ft.Page):
                         craterPlotSet['out'], dpi=500, transparent=arg.transparent)
                     plot_image.src = craterPlotSet['out'] + '.png'
                     plot_image.update()
+                    print("Plot updated")
                 if format in {'txt'}:
                     plotSettings.create_summary_table()
 
             set_cmd_line_str()
             page.update()
 
-        # except SystemExit as err:
-        #     print("Error couldn't create craterplotset")
-        #     print("Error:", err)
+        except SystemExit as err:
+            print("Error couldn't create craterplotset")
+            print("Error:", err)
+            traceback.print_exc()
         except Exception as err:
             print("Other Error", err)
             traceback.print_exc()
@@ -545,16 +598,14 @@ def main(page: ft.Page):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(print_plot)
 
-            result = future.result()
+            try:
+                result = future.result()
+            except SystemExit as e:
+                print(f"Caught {e}")
 
-            # try:
-            #     result = future.result()
-            # except SystemExit as e:
-            #     print(f"Caught {e}")
-
-            # except Exception as e:
-            #     print(f"Caught Unexpected: {e}")
-            #     print(f"{chron_sys.value}")
+            except Exception as e:
+                print(f"Caught Unexpected: {e}")
+                print(f"{chron_sys.value}")
 
     def save_image(e):
 
@@ -563,7 +614,7 @@ def main(page: ft.Page):
 
             if not export_path.lower().endswith(".png"):
                 export_path += ".png"
-                
+
                 shutil.copy(plot_image.src, export_path)
                 page.update()
 
@@ -1094,7 +1145,7 @@ def main(page: ft.Page):
             new_str += ' -p '
 
             if source_file_entry.value:
-                new_str += f"source={source_file_entry.value},"
+                new_str += f"source={source_file_entry.value} -p "
 
             if plot_fit_options.value:
                 new_str += f"name={plot_fit_text.value},"
@@ -1137,48 +1188,47 @@ def main(page: ft.Page):
 
         correct_key = ''
 
-        # print(e.control.label.value)
         for key, val in plots_dict.items():
-            # print(val)
 
             try:
                 try:
                     if val["plot1.name"] == e.control.label.value:
-                        # print("Plot1 Name Found")
+
                         correct_key = key
                 except KeyError:
                     pass
                 try:
                     if val["plot2.name"] == e.control.label.value:
-                        # print("Plot2 Name Found")
+
                         correct_key = key
                 except KeyError:
                     pass
                 try:
                     if val["plot3.name"] == e.control.label.value:
-                        # print("Plot3 Name Found")
+
                         correct_key = key
                 except KeyError:
                     pass
             except KeyError:
-                print("No values")
+                pass
 
-        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
+        source_file_entry.value = plots_dict[correct_key][f"{
+            correct_key}.source"]
 
         range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
         range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
         range_val = ''
 
-        print(range_start, range_end, type(range_start), type(range_end))
-
         if range_start < 1:
 
             if range_end < 1:
 
-                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
+                range_val = f"[{int(range_start * 100)
+                                } m, {int(range_end * 100)} m]"
 
             else:
-                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
+                range_val = f"[{int(range_start * 100)
+                                } m, {int(range_end)} km]"
 
         else:
             range_val = f"[{int(range_start)} km, {int(range_end)} km]"
@@ -1212,13 +1262,15 @@ def main(page: ft.Page):
         symbol_dropdown.value = symbols[int(
             plots_dict[correct_key][f"{correct_key}.psym"])]
 
-        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
+        binning_options.value = plots_dict[correct_key][f"{
+            correct_key}.binning"]
         binning_options.options = [ft.dropdown.Option(
             plots_dict[correct_key][f"{correct_key}.binning"])]
 
         align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
 
-        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
+        display_age.value = plots_dict[correct_key][f"{
+            correct_key}.display_age"]
 
         plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
 
@@ -1269,7 +1321,8 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
+        new_str = f' -print_dim {print_scale_entry.value if len(
+            print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
 
         return new_str
 
@@ -1393,46 +1446,104 @@ def main(page: ft.Page):
         Globals.demo_mode = False
 
     def update_config_dict():
+
+        print(Globals.template_dict)
+
         config = {
             "set": [],
             "plot": []
         }
 
-        config["set"].append({
-            "chronology_system": chron_sys.value,
-            "epochs": epoch.value,
-            "equilibrium": equil_func.value,
-            "isochrons": iso_text.value,
-            "mu": mu_legend.value,
-            "presentation": plot_view.value,
-            "print_dimensions": print_scale_entry.value,
-            "pt_size": text_size.value,
-            "randomness": rand_legend.value,
-            "ref_diameter": ref_diam.value,
-            "sig_figs": sf_legend.value,
-            "show_isochrons": show_iso.value,
-            "show_subtitle": subtitle_checkbox.value,
-            "show_title": title_checkbox.value,
-            "style": style_options.value,
-            "subtitle": subtitle_entry.value,
-            "title": title_entry.value
-        })
+        config["set"].append({"chronology_system": chron_sys.value})
+        config['set'].append({"cite_functions": cite_func.value})
+        config['set'].append({"epochs": epoch.value})
+        config['set'].append({"equilibrium": equil_func.value})
+        config['set'].append({"isochrons": iso_text.value})
+        config['set'].append({"legend": get_legend_value()})
+        config['set'].append({"mu": mu_legend.value})
+        config['set'].append({"presentation": plot_view.value})
+        config['set'].append({"print_dimensions": print_scale_entry.value})
+        config['set'].append({"pt_size": text_size.value})
+        config['set'].append({"randomness": rand_legend.value})
+        config['set'].append({"ref_diameter": ref_diam.value})
+        config['set'].append({"sig_figs": sf_entry.value})
+        config['set'].append({"show_isochrons": show_iso.value})
+        config['set'].append({"show_subtitle": subtitle_checkbox.value})
+        config['set'].append({"show_title": title_checkbox.value})
+        config['set'].append({"style": style_options.value})
+        config['set'].append({"subtitle": subtitle_entry.value})
+        config['set'].append({"title": title_entry.value})
+        config['set'].append(
+            {"format": Globals.template_dict['set'][-1]['format']})
 
-        config["plot"].append({
-            "source": source_file_entry.value,
-            "name": plot_fit_text.value,
-            "range": diam_range_entry.value.split(","),
-            "type": plot_fit_options.value,
-            "error_bars": error_bars.value,
-            "hide": hide_button.value,
-            "colour": color_dropdown.value,
-            "psym": symbol_dropdown.value,
-            "binning": binning_options.value,
-            "age_left": align_left.value,
-            "display_age": display_age.value
-        })
+        config["plot"].append({"source": source_file_entry.value})
+        config['plot'].append({"name": plot_fit_text.value})
+        config['plot'].append({"range": diam_range_entry.value.split(",")})
+        config['plot'].append({"type": plot_fit_options.value})
+        config['plot'].append({"error_bars": error_bars.value})
+        config['plot'].append({"hide": hide_button.value})
+        config['plot'].append(
+            {"colour": Globals.colours.index(color_dropdown.value)})
+        config['plot'].append(
+            {"psym": Globals.symbols.index(symbol_dropdown.value)})
+        config['plot'].append({"binning": binning_options.value})
+        config['plot'].append({"age_left": align_left.value})
+        config['plot'].append({"display_age": display_age.value})
+        config['plot'].append({'isochron': show_iso.value})
 
         Globals.template_dict = config
+
+        run_plot_async()
+
+    def update_legend():
+
+        for index, dictionary in enumerate(Globals.template_dict['set']):
+
+            if 'legend' in dictionary:
+
+                if 'n' in Globals.template_dict['set'][index]['legend']:
+
+                    legend_name.value = True
+                else:
+
+                    legend_name.value = False
+
+                if 'a' in Globals.template_dict['set'][index]['legend']:
+
+                    legend_area.value = True
+                else:
+
+                    legend_area.value = False
+
+                if 'p' in Globals.template_dict['set'][index]['legend']:
+
+                    legend_perimeter.value = True
+                else:
+
+                    legend_perimeter.value = False
+
+                if 'c' in Globals.template_dict['set'][index]['legend']:
+
+                    legend_cratercount.value = True
+                else:
+
+                    legend_cratercount.value = False
+
+                if 'r' in Globals.template_dict['set'][index]['legend']:
+
+                    legend_range.value = True
+                else:
+
+                    legend_range.value = False
+
+                if 'N' in Globals.template_dict['set'][index]['legend']:
+
+                    legend_n_dref.value = True
+                else:
+
+                    legend_n_dref.value = False
+
+        page.update()
 
     """
     Default Settings for the application
@@ -1478,7 +1589,7 @@ def main(page: ft.Page):
         ft.Radio(value='rate', label="Rate")
     ]),
         value="differential",
-        on_change=lambda e:  (update_config_dict(), run_plot_async())
+        on_change=lambda e:  (update_config_dict(), )
     )
 
     # Celestial body fropdown options
@@ -1497,7 +1608,7 @@ def main(page: ft.Page):
         value="Moon",
         dense=True,
         on_change=lambda e: (set_chron_sys(None, e),
-                             update_config_dict(), run_plot_async())
+                             update_config_dict(), )
     )
 
     # Chronolgy System dropdown options
@@ -1513,7 +1624,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         dense=True,
         on_change=lambda e: (set_chron_func(None, e),
-                             update_config_dict(), run_plot_async())
+                             update_config_dict(), )
     )
 
     # Chronology Function Dropdown options
@@ -1523,7 +1634,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
         dense=True,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Production function dropdown options
@@ -1533,7 +1644,7 @@ def main(page: ft.Page):
         value="Moon, Neukum (1983)",
         options=[ft.dropdown.Option("Moon, Neukum (1983)"), ],
         dense=True,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Epoch dropdown options
@@ -1547,7 +1658,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Mars, Michael (2013)"),
         ],
         dense=True,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Equilibrium function dropdown options
@@ -1562,7 +1673,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Hartmann (1984)"),
         ],
         dense=True,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Isochron text field
@@ -1570,73 +1681,106 @@ def main(page: ft.Page):
         width=150,
         dense=True,
         bgcolor=ft.colors.GREY_900,
-        on_blur=lambda e: (update_config_dict(), run_plot_async())
+        on_blur=lambda e: (update_config_dict(), )
     )
 
     # Isochron Label
     iso_label = ft.Checkbox(
         label="Isochrons, Ga",
         value=False,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Data legend checkbox
-    data_legend = ft.Checkbox(
-        label="Data",
-        value=True,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+    legend_name = ft.Checkbox(
+        label="Name",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Fit legend checkbox
-    fit_legend = ft.Checkbox(
-        label="Fit",
-        value=True,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+    legend_area = ft.Checkbox(
+        label="Area",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Function legend checkbox
-    func_legend = ft.Checkbox(
-        label="Functions",
-        value=True,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+    legend_perimeter = ft.Checkbox(
+        label="Perimeter",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
     )
 
-    # 3sf legend checckbox
-    sf_legend = ft.Checkbox(
-        label="3sf",
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+    # Crater Count Legend
+    legend_cratercount = ft.Checkbox(
+        label="Crater Count",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
     )
+
+    # Range Legend
+    legend_range = ft.Checkbox(
+        label="Range",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
+    )
+
+    # N(d_ref) legend
+    legend_n_dref = ft.Checkbox(
+        label="N(d_ref)",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
+    )
+
+    # Sig Fig entry
+    sf_entry = ft.TextField(
+        width=50,
+        dense=True,
+        bgcolor=ft.colors.GREY_900,
+        on_blur=lambda e: (update_config_dict(), )
+    )
+
+    # Sig Fig label
+    sf_label = ft.Text("Sig Figs")
 
     # randomness legend checkbox
     rand_legend = ft.Checkbox(
         label="Randomness",
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Mu legend checkbox
     mu_legend = ft.Checkbox(
         label="µ notation",
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
+    )
+
+    # Cite functions checkbox
+    cite_func = ft.Checkbox(
+        label="Cite Functions",
+        value=True,
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Reference Diameter text field
     ref_diam = ft.TextField(
-        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
+        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Reference Diameter label
     ref_diam_lbl = ft.Text("Ref diameter,km")
 
     # Axis Log D Textfield
     axis_d_input_box = ft.TextField(
-        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
+        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Axis y TextField
     axis_y_input_box = ft.TextField(
-        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
+        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Auto Axis button
     axis_auto_button = ft.ElevatedButton(
-        text="Auto", width=80, on_click=lambda e: (update_config_dict(), run_plot_async()))
+        text="Auto", width=80, on_click=lambda e: (update_config_dict(), ))
 
     # Style options dropdown
     style_options = ft.Dropdown(
@@ -1647,32 +1791,32 @@ def main(page: ft.Page):
         ],
         value="natural",
         dense=True,
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Title entry textfield
     title_entry = ft.TextField(expand=True, dense=True, content_padding=ft.padding.all(8),
-                               bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
+                               bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Title checkbox
     title_checkbox = ft.Checkbox(
-        label="Title", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
+        label="Title", value=True, on_change=lambda e: (update_config_dict(), ))
 
     # Print scale textfield
     print_scale_entry = ft.TextField(dense=True, value="7.5x7.5", content_padding=ft.padding.all(8),
-                                     bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
+                                     bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Subtitle entry textfield
     subtitle_entry = ft.TextField(dense=True, content_padding=ft.padding.all(8),
-                                  bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
+                                  bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # subtitle checkbox
     subtitle_checkbox = ft.Checkbox(
-        label="Subtitle", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
+        label="Subtitle", value=True, on_change=lambda e: (update_config_dict(), ))
 
     # Font size textfield
     text_size = ft.TextField(dense=True, value="8", bgcolor=ft.colors.GREY_900, content_padding=ft.padding.all(8),
-                             on_blur=lambda e: (update_config_dict(), run_plot_async()) or print(text_size.value) or print(type(text_size.value)))
+                             on_blur=lambda e: (update_config_dict(), ) or print(text_size.value) or print(type(text_size.value)))
 
     # Plot lists list view
     plot_lists = ft.ListView(
@@ -1682,7 +1826,7 @@ def main(page: ft.Page):
         spacing=10,
         padding=10,
         controls=[ft.Chip(ft.Text("default"),
-                          on_click=lambda e: (update_config_dict(), run_plot_async()))],
+                          on_click=lambda e: (update_config_dict(), ))],
         first_item_prototype=True,
     )
 
@@ -1706,7 +1850,7 @@ def main(page: ft.Page):
 
     # Plot fit text field
     plot_fit_text = ft.TextField(width=300, dense=True, value="Default",
-                                 bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
+                                 bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Plot fit dropdown
     plot_fit_options = ft.Dropdown(
@@ -1720,7 +1864,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("d-fit"),
         ],
         value="data",
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Hide Button
@@ -1739,7 +1883,7 @@ def main(page: ft.Page):
 
     # Diameter Range textfield
     diam_range_entry = ft.TextField(
-        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), run_plot_async()))
+        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
@@ -1752,7 +1896,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Blue"),
             ft.dropdown.Option("Yellow"),
             ft.dropdown.Option("Violet"),
-            ft.dropdown.Option("GREY_900"),
+            ft.dropdown.Option("Grey"),
             ft.dropdown.Option("Brown"),
             ft.dropdown.Option("Orange"),
             ft.dropdown.Option("Pink"),
@@ -1760,7 +1904,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("Teal"),
         ],
         value="Black",
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Plot point color symbol
@@ -1783,24 +1927,24 @@ def main(page: ft.Page):
             ft.dropdown.Option("Filled inverted triangle"),
         ],
         value='Square',
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     """PLOT SETTINGS OPTIONS"""
     error_bars = ft.Checkbox(
-        label="Error bars", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
+        label="Error bars", value=True, on_change=lambda e: (update_config_dict(), ))
 
     display_age = ft.Checkbox(
-        label="Display age", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
+        label="Display age", value=True, on_change=lambda e: (update_config_dict(), ))
 
     align_left = ft.Checkbox(label="Align age left",
-                             on_change=lambda e: (update_config_dict(), run_plot_async()))
+                             on_change=lambda e: (update_config_dict(), ))
 
     show_iso = ft.Checkbox(label="Show isochron", value=True,
-                           on_change=lambda e: (update_config_dict(), run_plot_async()))
+                           on_change=lambda e: (update_config_dict(), ))
 
     plot_fit_error = ft.Checkbox(
-        label="Plot fit", value=True, on_change=lambda e: (update_config_dict(), run_plot_async()))
+        label="Plot fit", value=True, on_change=lambda e: (update_config_dict(), ))
 
     # Binning options dropdown
     binning_options = ft.Dropdown(
@@ -1816,7 +1960,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("none"),
         ],
         value='pseudo-log',
-        on_change=lambda e: (update_config_dict(), run_plot_async())
+        on_change=lambda e: (update_config_dict(), )
     )
 
     # Default command line string
@@ -1843,8 +1987,10 @@ def main(page: ft.Page):
             equil_func,
             ft.Divider(),
             ft.Row([iso_text, iso_label]),
-            ft.Row([data_legend, fit_legend, func_legend,
-                    sf_legend, rand_legend, mu_legend, ref_diam, ref_diam_lbl]),
+            ft.Row([legend_name, legend_area, legend_perimeter,
+                    legend_cratercount, legend_range, legend_n_dref]),
+            ft.Row([rand_legend, mu_legend, cite_func,
+                   sf_entry, sf_label, ref_diam, ref_diam_lbl]),
             ft.Row([
                 ft.Text("Axes. log D:"),
                 axis_d_input_box,
@@ -2040,7 +2186,7 @@ def main(page: ft.Page):
 
     # Tabs
     tabs = ft.Tabs(
-        selected_index=1,
+        selected_index=0,
         animation_duration=150,
         tabs=[
             ft.Tab(
@@ -2056,7 +2202,7 @@ def main(page: ft.Page):
         ],
         expand=1,
         on_change=lambda _: (set_cmd_line_str(),
-                             update_config_dict(), run_plot_async())
+                             update_config_dict(), )
     )
 
     # FILE|PLOT|EXPORT|UTILITIES Menu bar
@@ -2136,7 +2282,7 @@ def main(page: ft.Page):
                         content=ft.Text("Demo"),
                         leading=ft.Icon(ft.icons.PLAY_ARROW_ROUNDED),
                         on_click=lambda e: (setattr(
-                            Globals, 'demo_mode', True), update_config_dict(), run_plot_async())
+                            Globals, 'demo_mode', True), update_config_dict(), )
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("sum .stat files"),
@@ -2158,8 +2304,6 @@ def main(page: ft.Page):
             )
         ]
     )
-
-    print(Globals.demo_mode)
 
     two_column_layout = ft.Row(
         controls=[

@@ -72,10 +72,10 @@ symbols = ['Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
 plots_dict = {}
 
 
-template_file = PATH +'/craterstats_config_files/default.plt'
+template_file = PATH + '/craterstats_config_files/default.plt'
 
 template_dict = {
-    "set": [],
+    "set": [{"format": "png"}],
     "plot": [],
 }
 
