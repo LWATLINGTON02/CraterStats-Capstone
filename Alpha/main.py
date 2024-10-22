@@ -175,9 +175,16 @@ def main(page: ft.Page):
                     # Detect start of a new section
                     if line.endswith("{"):  # Start of a new block (e.g., set = {)
                         current_dict_name = line.split("=")[0].strip()
-                        # List to store the dictionaries
-                        config[current_dict_name] = []
-                        current_item_list = config[current_dict_name]
+
+                        # Initialize the config entry for 'plot'
+                        if current_dict_name == "plot":
+                            # Create a list for plot items
+                            config[current_dict_name] = []
+                            current_item_list = config[current_dict_name]
+                        else:
+                            # For other sections, we can initialize as usual
+                            config[current_dict_name] = []
+                            current_item_list = config[current_dict_name]
 
                     elif "=" in line:  # Key-value pair inside the block
                         key, value = line.split('=', 1)
@@ -194,7 +201,27 @@ def main(page: ft.Page):
                             value = value[1:-1]
 
                         # Convert to a dictionary and add to the list for the current block
-                        current_item_list.append({key: value})
+                        if current_dict_name == "plot":
+                            if key == "source":
+                                # If 'source' is encountered, create a new dictionary entry
+                                # Add source as a new dict
+                                current_item_list.append({key: value})
+                            else:
+                                # If the last item in the list is a dict, append other key-value pairs
+                                if current_item_list and isinstance(current_item_list[-1], dict):
+                                    # Check if we have already added an entry for other keys
+                                    last_item = current_item_list[-1]
+                                    if len(last_item) == 1 and "source" in last_item:
+                                        # If the last item is the source, start a new dictionary for other keys
+                                        current_item_list.append({key: value})
+                                    else:
+                                        # Otherwise, just update the last item
+                                        last_item[key] = value
+                                else:
+                                    # Create a new entry if current_item_list is empty
+                                    current_item_list.append({key: value})
+                        else:
+                            current_item_list.append({key: value})
 
                     elif line == "}":  # End of the block
                         current_dict_name = None
@@ -204,6 +231,8 @@ def main(page: ft.Page):
             TODO HERE: ADD CITE_FUNCTIONS, INVERT, LEGEND, SHOW_LEGEND_AREA TO SET SETTINGS
                        ADD RESURF, RESURF_ALL, ISOCHRON, OFFSET_AGE TO PLOT SETTINGS
             """
+
+            print(f"\n\nConfig: {config}")
 
             # Set settings
             for index, dictionary in enumerate(config['set']):
@@ -234,7 +263,10 @@ def main(page: ft.Page):
 
                     print_scale_entry.value = config['set'][index]['print_dimensions']
                 if 'pt_size' in dictionary:
-                    text_size.value = max(config['set'][index]['pt_size'])
+                    if type(config['set'][index]['pt_size']) == list:
+                        text_size.value = max(config['set'][index]['pt_size'])
+                    else:
+                        text_size.value = config['set'][index]['pt_size']
                 if 'randomness' in dictionary:
                     rand_legend.value = config['set'][index]['randomness']
                 if 'ref_diameter' in dictionary:
@@ -507,11 +539,6 @@ def main(page: ft.Page):
             yrange=None
         )
 
-        print("\nEpoch\n", arg.epochs)
-        print("\nEpoch\n", type(arg.epochs))
-        print("\nEquilibrium\n", arg.equilibrium)
-        print("\nEquilibrium\n", type(arg.equilibrium))
-
         if arg.demo:
             toggle_demo(None)
             return
@@ -534,6 +561,11 @@ def main(page: ft.Page):
                 for item in settings['set']:
                     if isinstance(item, dict):
                         set_data.update(item)
+
+                if set_data['epochs'] == 'none':
+                    set_data['epochs'] = None
+                if set_data['equilibrium'] == 'none':
+                    set_data['equilibrium'] = None
 
         systems = read_textfile(
             functions, ignore_hash=True, strip=';', as_string=True)
@@ -558,7 +590,18 @@ def main(page: ft.Page):
             if craterPlotSet['ref_diameter'] == '':
                 craterPlotSet['ref_diameter'] = '1.0'
 
+            print("\n\nCraterPlotSet", craterPlotSet)
+            print("\n\nCraterPlot", craterPlot)
+            print("\n\nCraterCount", craterPlot[0]['cratercount'])
+
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
+
+            print("\n\nCF", plotSettings.cf)
+            print("\n\nPF", plotSettings.pf)
+            print("\n\nEF", plotSettings.ef)
+            print("\n\nEp", plotSettings.ep)
+            print("\n\nCraterplot", plotSettings.craterplot)
+            plotSettings.craterplot = plot
 
             # if plot:
             #     plotSettings.autoscale(self=plotSettings)
@@ -570,7 +613,6 @@ def main(page: ft.Page):
             print("\n\nPre Format")
             print("\n\nFormat settings", plotSettings.format)
             for format in plotSettings.format:
-                print("\n\nFormat", format)
                 if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
                     if not drawn:
                         plotSettings.draw()
@@ -605,7 +647,7 @@ def main(page: ft.Page):
 
             except Exception as e:
                 print(f"Caught Unexpected: {e}")
-                print(f"{chron_sys.value}")
+                traceback.print_exc()
 
     def save_image(e):
 
@@ -689,7 +731,8 @@ def main(page: ft.Page):
             except KeyError:
                 print("No values")
 
-        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
+        source_file_entry.value = plots_dict[correct_key][f"{
+            correct_key}.source"]
 
         range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
         range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
@@ -701,10 +744,12 @@ def main(page: ft.Page):
 
             if range_end < 1:
 
-                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
+                range_val = f"[{int(range_start * 100)
+                                } m, {int(range_end * 100)} m]"
 
             else:
-                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
+                range_val = f"[{int(range_start * 100)
+                                } m, {int(range_end)} km]"
 
         else:
             range_val = f"[{int(range_start)} km, {int(range_end)} km]"
@@ -738,13 +783,15 @@ def main(page: ft.Page):
         symbol_dropdown.value = symbols[int(
             plots_dict[correct_key][f"{correct_key}.psym"])]
 
-        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
+        binning_options.value = plots_dict[correct_key][f"{
+            correct_key}.binning"]
         binning_options.options = [ft.dropdown.Option(
             plots_dict[correct_key][f"{correct_key}.binning"])]
 
         align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
 
-        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
+        display_age.value = plots_dict[correct_key][f"{
+            correct_key}.display_age"]
 
         plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
 
@@ -1171,7 +1218,7 @@ def main(page: ft.Page):
             if display_age.value:
                 new_str += "display_age=1,"
 
-        return new_str
+        return new_str[:-1]
 
     def set_plot_info(e):
         """Sets plotsetting info for subplots
