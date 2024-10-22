@@ -175,9 +175,16 @@ def main(page: ft.Page):
                     # Detect start of a new section
                     if line.endswith("{"):  # Start of a new block (e.g., set = {)
                         current_dict_name = line.split("=")[0].strip()
-                        # List to store the dictionaries
-                        config[current_dict_name] = []
-                        current_item_list = config[current_dict_name]
+
+                        # Initialize the config entry for 'plot'
+                        if current_dict_name == "plot":
+                            # Create a list for plot items
+                            config[current_dict_name] = []
+                            current_item_list = config[current_dict_name]
+                        else:
+                            # For other sections, we can initialize as usual
+                            config[current_dict_name] = []
+                            current_item_list = config[current_dict_name]
 
                     elif "=" in line:  # Key-value pair inside the block
                         key, value = line.split('=', 1)
@@ -194,7 +201,27 @@ def main(page: ft.Page):
                             value = value[1:-1]
 
                         # Convert to a dictionary and add to the list for the current block
-                        current_item_list.append({key: value})
+                        if current_dict_name == "plot":
+                            if key == "source":
+                                # If 'source' is encountered, create a new dictionary entry
+                                # Add source as a new dict
+                                current_item_list.append({key: value})
+                            else:
+                                # If the last item in the list is a dict, append other key-value pairs
+                                if current_item_list and isinstance(current_item_list[-1], dict):
+                                    # Check if we have already added an entry for other keys
+                                    last_item = current_item_list[-1]
+                                    if len(last_item) == 1 and "source" in last_item:
+                                        # If the last item is the source, start a new dictionary for other keys
+                                        current_item_list.append({key: value})
+                                    else:
+                                        # Otherwise, just update the last item
+                                        last_item[key] = value
+                                else:
+                                    # Create a new entry if current_item_list is empty
+                                    current_item_list.append({key: value})
+                        else:
+                            current_item_list.append({key: value})
 
                     elif line == "}":  # End of the block
                         current_dict_name = None
@@ -204,6 +231,8 @@ def main(page: ft.Page):
             TODO HERE: ADD CITE_FUNCTIONS, INVERT, LEGEND, SHOW_LEGEND_AREA TO SET SETTINGS
                        ADD RESURF, RESURF_ALL, ISOCHRON, OFFSET_AGE TO PLOT SETTINGS
             """
+
+            print(f"\n\nConfig: {config}")
 
             # Set settings
             for index, dictionary in enumerate(config['set']):
@@ -234,11 +263,14 @@ def main(page: ft.Page):
 
                     print_scale_entry.value = config['set'][index]['print_dimensions']
                 if 'pt_size' in dictionary:
-                    text_size.value = max(config['set'][index]['pt_size'])
+                    if type(config['set'][index]['pt_size']) == list:
+                        text_size.value = max(config['set'][index]['pt_size'])
+                    else:
+                        text_size.value = config['set'][index]['pt_size']
                 if 'randomness' in dictionary:
                     rand_legend.value = config['set'][index]['randomness']
                 if 'ref_diameter' in dictionary:
-                    ref_diam.value = config['set'][index]['ref_diameter']
+                    ref_diam.value = True if config['set'][index]['ref_diameter'] else False
                 if 'sig_figs' in dictionary:
                     sf_entry.value = config['set'][index]['sig_figs']
                 if 'show_isochrons' in dictionary:
@@ -290,6 +322,13 @@ def main(page: ft.Page):
                     align_left.value = True if config['plot'][index]['age_left'] else False
                 if 'display_age' in dictionary:
                     display_age.value = True if config['plot'][index]['display_age'] else False
+                if 'resurf' in dictionary:
+                    resurf.value = True if config['plot'][index]['resurf'] else False
+                if 'resurf_all' in dictionary:
+                    resurf_all.value = True if config['plot'][index]['resurf_all'] else False
+                if "offset_age" in dictionary:
+                    offset_age.value = (
+                        config['plot'][index]['offset_age'][0] + ", " + config['plot'][index]['offset_age'][1])
 
             Globals.template_dict = config
 
@@ -300,6 +339,20 @@ def main(page: ft.Page):
         run_plot_async()
 
         page.update()
+
+    def filter_crater_plot(crater_plot):
+        seen = set()
+        unique_crater_plot = []
+
+        for plot in crater_plot:
+            # You can define what makes a plot "unique". In this case, let's assume 'source' and 'name'
+            identifier = (plot['source'], plot['name'])
+
+            if identifier not in seen:
+                seen.add(identifier)
+                unique_crater_plot.append(plot)
+
+        return unique_crater_plot
 
     def get_body(chron_sys):
 
@@ -472,6 +525,9 @@ def main(page: ft.Page):
         template = PATH + "/craterstats_config_files/default.plt"
         functions = PATH + "/craterstats_config_files/functions.txt"
         functions_user = PATH + "/craterstats_config_files/functions_user.txt"
+        plot = []
+        craterPlot = None
+        craterPlotSet = None
 
         arg = Namespace(
             about=False,
@@ -507,11 +563,6 @@ def main(page: ft.Page):
             yrange=None
         )
 
-        print("\nEpoch\n", arg.epochs)
-        print("\nEpoch\n", type(arg.epochs))
-        print("\nEquilibrium\n", arg.equilibrium)
-        print("\nEquilibrium\n", type(arg.equilibrium))
-
         if arg.demo:
             toggle_demo(None)
             return
@@ -529,11 +580,18 @@ def main(page: ft.Page):
                     if isinstance(item, dict):
                         plot_data.update(item)
 
+            print("\n\nPlot Data", plot_data)
+
             if isinstance(settings['set'], list) and settings['set']:
                 set_data = {}
                 for item in settings['set']:
                     if isinstance(item, dict):
                         set_data.update(item)
+
+                if set_data['epochs'] == 'none':
+                    set_data['epochs'] = None
+                if set_data['equilibrium'] == 'none':
+                    set_data['equilibrium'] = None
 
         systems = read_textfile(
             functions, ignore_hash=True, strip=';', as_string=True)
@@ -545,6 +603,7 @@ def main(page: ft.Page):
 
         try:
             craterPlot = cli.construct_plot_dicts(arg, {'plot': plot_data})
+            craterPlot = filter_crater_plot(craterPlot)
             defaultFilename = generate_output_file_name()
 
             craterPlotSet = cli.construct_cps_dict(
@@ -555,10 +614,19 @@ def main(page: ft.Page):
 
             plot = [Craterplot(d) for d in craterPlot]
 
-            if craterPlotSet['ref_diameter'] == '':
-                craterPlotSet['ref_diameter'] = '1.0'
+            print("\n\nCraterPlotSet", craterPlotSet)
+            print("\n\nCraterPlot", craterPlot)
+            print("\n\nCraterCount", craterPlot[0]['cratercount'])
+            print("\n\nPlot", plot)
 
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
+
+            print("\n\nCF", plotSettings.cf)
+            print("\n\nPF", plotSettings.pf)
+            print("\n\nEF", plotSettings.ef)
+            print("\n\nEp", plotSettings.ep)
+            print("\n\nCraterplot", plotSettings.craterplot)
+            plotSettings.craterplot = plot
 
             # if plot:
             #     plotSettings.autoscale(self=plotSettings)
@@ -570,7 +638,6 @@ def main(page: ft.Page):
             print("\n\nPre Format")
             print("\n\nFormat settings", plotSettings.format)
             for format in plotSettings.format:
-                print("\n\nFormat", format)
                 if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
                     if not drawn:
                         plotSettings.draw()
@@ -605,7 +672,7 @@ def main(page: ft.Page):
 
             except Exception as e:
                 print(f"Caught Unexpected: {e}")
-                print(f"{chron_sys.value}")
+                traceback.print_exc()
 
     def save_image(e):
 
@@ -617,36 +684,6 @@ def main(page: ft.Page):
 
                 shutil.copy(plot_image.src, export_path)
                 page.update()
-
-    def create_plot_lists():
-        """Creates a dictionary of plots.
-
-        A global dictionary of plots is filled out based off of the information
-        in the file that is uploaded to make different subplots
-
-        Args:
-            none
-
-        Returns:
-            none
-        """
-        content_list = []
-
-        plot_names = {}
-
-        if plots_dict is not None:
-
-            for plots in plots_dict:
-                plot_names[plots] = plots_dict[plots][f"{plots}.name"]
-
-            for plots in plot_names:
-                content_list.append(
-                    ft.Chip(ft.Text(plot_names[plots]), on_click=lambda e: set_plot_info(e) or run_plot_async()))
-
-        # print(plot_lists.controls)
-        plot_lists.controls = content_list
-
-        page.update()
 
     def set_plot_info(e):
         """Sets plotsetting info for subplots
@@ -689,7 +726,8 @@ def main(page: ft.Page):
             except KeyError:
                 print("No values")
 
-        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
+        source_file_entry.value = plots_dict[correct_key][f"{
+            correct_key}.source"]
 
         range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
         range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
@@ -701,10 +739,12 @@ def main(page: ft.Page):
 
             if range_end < 1:
 
-                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
+                range_val = f"[{int(range_start * 100)
+                                } m, {int(range_end * 100)} m]"
 
             else:
-                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
+                range_val = f"[{int(range_start * 100)
+                                } m, {int(range_end)} km]"
 
         else:
             range_val = f"[{int(range_start)} km, {int(range_end)} km]"
@@ -738,13 +778,15 @@ def main(page: ft.Page):
         symbol_dropdown.value = symbols[int(
             plots_dict[correct_key][f"{correct_key}.psym"])]
 
-        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
+        binning_options.value = plots_dict[correct_key][f"{
+            correct_key}.binning"]
         binning_options.options = [ft.dropdown.Option(
             plots_dict[correct_key][f"{correct_key}.binning"])]
 
         align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
 
-        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
+        display_age.value = plots_dict[correct_key][f"{
+            correct_key}.display_age"]
 
         plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
 
@@ -1171,7 +1213,7 @@ def main(page: ft.Page):
             if display_age.value:
                 new_str += "display_age=1,"
 
-        return new_str
+        return new_str[:-1]
 
     def set_plot_info(e):
         """Sets plotsetting info for subplots
@@ -1455,21 +1497,25 @@ def main(page: ft.Page):
         }
 
         config["set"].append({"chronology_system": chron_sys.value})
-        config['set'].append({"cite_functions": cite_func.value})
+        config['set'].append(
+            {"cite_functions": '1' if cite_func.value else '0'})
         config['set'].append({"epochs": epoch.value})
         config['set'].append({"equilibrium": equil_func.value})
         config['set'].append({"isochrons": iso_text.value})
         config['set'].append({"legend": get_legend_value()})
-        config['set'].append({"mu": mu_legend.value})
+        config['set'].append({"mu": '1' if mu_legend.value else '0'})
         config['set'].append({"presentation": plot_view.value})
         config['set'].append({"print_dimensions": print_scale_entry.value})
         config['set'].append({"pt_size": text_size.value})
-        config['set'].append({"randomness": rand_legend.value})
-        config['set'].append({"ref_diameter": ref_diam.value})
+        config['set'].append({"randomness": '1' if rand_legend.value else '0'})
+        config['set'].append({"ref_diam": '1' if ref_diam.value else '0'})
         config['set'].append({"sig_figs": sf_entry.value})
-        config['set'].append({"show_isochrons": show_iso.value})
-        config['set'].append({"show_subtitle": subtitle_checkbox.value})
-        config['set'].append({"show_title": title_checkbox.value})
+        config['set'].append(
+            {"show_isochrons": '1' if show_iso.value else '0'})
+        config['set'].append(
+            {"show_subtitle": '1' if subtitle_checkbox.value else '0'})
+        config['set'].append(
+            {"show_title": '1' if title_checkbox.value else '0'})
         config['set'].append({"style": style_options.value})
         config['set'].append({"subtitle": subtitle_entry.value})
         config['set'].append({"title": title_entry.value})
@@ -1478,18 +1524,20 @@ def main(page: ft.Page):
 
         config["plot"].append({"source": source_file_entry.value})
         config['plot'].append({"name": plot_fit_text.value})
-        config['plot'].append({"range": diam_range_entry.value.split(",")})
+        config['plot'].append(
+            {"range": diam_range_entry.value.replace(" ", "").split(",")})
         config['plot'].append({"type": plot_fit_options.value})
-        config['plot'].append({"error_bars": error_bars.value})
-        config['plot'].append({"hide": hide_button.value})
+        config['plot'].append({"error_bars": '1' if error_bars.value else '0'})
+        config['plot'].append({"hide": '1' if hide_button.value else '0'})
         config['plot'].append(
-            {"colour": Globals.colours.index(color_dropdown.value)})
+            {"colour": str(Globals.colours.index(color_dropdown.value))})
         config['plot'].append(
-            {"psym": Globals.symbols.index(symbol_dropdown.value)})
+            {"psym": str(Globals.symbols.index(symbol_dropdown.value))})
         config['plot'].append({"binning": binning_options.value})
-        config['plot'].append({"age_left": align_left.value})
-        config['plot'].append({"display_age": display_age.value})
-        config['plot'].append({'isochron': show_iso.value})
+        config['plot'].append({"age_left": '1' if align_left.value else '0'})
+        config['plot'].append(
+            {"display_age": '1' if display_age.value else '0'})
+        config['plot'].append({'isochron': '1' if show_iso.value else '0'})
 
         Globals.template_dict = config
 
@@ -1676,19 +1724,14 @@ def main(page: ft.Page):
         on_change=lambda e: (update_config_dict(), )
     )
 
+    iso_label = ft.Text("Isochrons")
+
     # Isochron text field
     iso_text = ft.TextField(
         width=150,
         dense=True,
         bgcolor=ft.colors.GREY_900,
         on_blur=lambda e: (update_config_dict(), )
-    )
-
-    # Isochron Label
-    iso_label = ft.Checkbox(
-        label="Isochrons, Ga",
-        value=False,
-        on_change=lambda e: (update_config_dict(), )
     )
 
     # Data legend checkbox
@@ -1764,11 +1807,10 @@ def main(page: ft.Page):
     )
 
     # Reference Diameter text field
-    ref_diam = ft.TextField(
-        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
-
-    # Reference Diameter label
-    ref_diam_lbl = ft.Text("Ref diameter,km")
+    ref_diam = ft.Checkbox(
+        label="Ref diameter, km",
+        value=True,
+        on_change=lambda e: (update_config_dict(), ))
 
     # Axis Log D Textfield
     axis_d_input_box = ft.TextField(
@@ -1946,6 +1988,26 @@ def main(page: ft.Page):
     plot_fit_error = ft.Checkbox(
         label="Plot fit", value=True, on_change=lambda e: (update_config_dict(), ))
 
+    resurf = ft.Checkbox(
+        label="Resurf",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
+    )
+
+    resurf_all = ft.Checkbox(
+        label="Resurf all",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
+    )
+
+    offset_age = ft.TextField(
+        width=150,
+        dense=True,
+        value="0, 0",
+        bgcolor=ft.colors.GREY_900,
+        on_blur=lambda e: (update_config_dict(), )
+    )
+
     # Binning options dropdown
     binning_options = ft.Dropdown(
         width=150,
@@ -1986,11 +2048,11 @@ def main(page: ft.Page):
             epoch,
             equil_func,
             ft.Divider(),
-            ft.Row([iso_text, iso_label]),
+            ft.Row([iso_label, iso_text]),
             ft.Row([legend_name, legend_area, legend_perimeter,
                     legend_cratercount, legend_range, legend_n_dref]),
             ft.Row([rand_legend, mu_legend, cite_func,
-                   sf_entry, sf_label, ref_diam, ref_diam_lbl]),
+                   ref_diam, sf_entry, sf_label]),
             ft.Row([
                 ft.Text("Axes. log D:"),
                 axis_d_input_box,
@@ -2070,6 +2132,12 @@ def main(page: ft.Page):
                 show_iso,
                 plot_fit_error,
             ]),
+            ft.Row([
+                resurf,
+                resurf_all,
+                ft.Text("Offset age:"),
+                offset_age
+            ])
         ])
     ])
 

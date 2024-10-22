@@ -8,8 +8,8 @@ set = {
    legend='nacr'
    mu=1
    presentation='Hartmann'
-   print_dimensions=['2.5','2.5','2.5','2.5','2.5','2.5']
-   pt_size=[8,8,8,14,8,8]
+   print_dimensions=7.5x7.5
+   pt_size=12
    randomness=0
    ref_diam=1
    sig_figs=3
@@ -24,7 +24,7 @@ set = {
 }
 
 plot={
-   source='/Users/caden/Library/CloudStorage/OneDrive-Personal/Fall2024/CS486C/CraterStats-Capstone/Alpha/sample/Pickering.scc'
+   source='/Users/caden/Library/Mobile Documents/com~apple~CloudDocs/Fall2024/CS486C/CraterStats-Capstone/Alpha/sample/Pickering.scc'
    name='ECHUS_CHAP_AR1_A'
    range=[0.01,100]
    type='data'

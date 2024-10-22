@@ -24,7 +24,6 @@ def delete_temp_plots(folder_path, extensions):
 
     if folder_path.endswith("demo/"):
 
-        print(f"Path: {folder_path}")
         try:
             if os.path.exists(folder_path):
                 shutil.rmtree(folder_path)
