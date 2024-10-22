@@ -1542,6 +1542,10 @@ def main(page: ft.Page):
         config['plot'].append(
             {"display_age": '1' if display_age.value else '0'})
         config['plot'].append({'isochron': '1' if show_iso.value else '0'})
+        config['plot'].append({'resurf': '1' if resurf.value else '0'})
+        config['plot'].append({'resurf_all': '1' if resurf_all.value else '0'})
+        config['plot'].append(
+            {'offset_age': offset_age.value.replace(" ", "").split(",")})
 
         Globals.template_dict = config
 
