@@ -20,6 +20,8 @@ set = {
    style='natural'
    subtitle=''
    title=''
+   xrange=[0.01,100]
+   yrange=[0.01,1000]
    format=['png']
 }
 
