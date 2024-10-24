@@ -836,7 +836,7 @@ def main(page: ft.Page):
 
         elif check_value == "Mars":
             items = [ft.dropdown.Option('Mars, Neukum-Ivanov (2001)'),
-                     ft.dropdown.Option('Mars, Ivanov 2001'),
+                     ft.dropdown.Option('Mars, Ivanov (2001)'),
                      ft.dropdown.Option('Mars, Hartmann 2004 iteration'),
                      ft.dropdown.Option('Mars, Hartmann & Daubar (2016)')]
             chron_func_str = 'Mars, Hartmann & Neukum (2001)'
