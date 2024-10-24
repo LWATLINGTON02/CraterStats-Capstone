@@ -134,6 +134,44 @@ def main(page: ft.Page):
 
         return demo_view
 
+    def error_view(error_message):
+        """Displays pop up at bottom of screen when error occurs
+
+        A Flet bottom sheet is displayed when an error occurs on the application
+        when an option is changed
+
+        Args:
+            none
+
+        Returns:
+            none        
+        """
+        error_sheet = ft.BottomSheet(
+            bgcolor=ft.colors.RED,
+            content=ft.Container(
+                content=ft.Column(
+                    controls=[
+                        ft.Row(
+                            controls=[
+                                ft.Text(error_message, expand=1),
+                                ft.IconButton(
+                                    icon=ft.icons.CLOSE,
+                                    on_click=lambda e: page.close(error_sheet),
+                                ),
+                            ],
+                            alignment="spaceBetween",  # Align the message and close button
+                        ),
+                    ],
+                    tight=True,
+                ),
+                padding=10,
+            ),
+        )
+
+        page.dialog = error_sheet
+        error_sheet.open = True
+        page.update()
+
     def file_picker_result(e: FilePickerResultEvent):
         """Fills out data based off of file.
 
@@ -148,12 +186,6 @@ def main(page: ft.Page):
         Returns:
             none
         """
-        """
-        NEED TO DO: ADD INVERT, XRANGE, YRANGE, AND NEW LEGEND OPTIONS
-                    CHANGE SIG FIGS TO TEXTFIELD INSTEAD OF CHECKBOX
-
-        """
-
         if e.files[0].path.endswith(".plt") and len(e.files) >= 1:
             # Reads through each line of data and sets data based off of line
             config = {}
@@ -625,13 +657,8 @@ def main(page: ft.Page):
             set_cmd_line_str()
             page.update()
 
-        except SystemExit as err:
-            print("Error couldn't create craterplotset")
-            print("Error:", err)
-            traceback.print_exc()
-        except Exception as err:
-            print("Other Error", err)
-            traceback.print_exc()
+        except BaseException as err:
+            error_view(err)
 
     def run_plot_async():
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -639,12 +666,8 @@ def main(page: ft.Page):
 
             try:
                 result = future.result()
-            except SystemExit as e:
-                print(f"Caught {e}")
-
-            except Exception as e:
-                print(f"Caught Unexpected: {e}")
-                traceback.print_exc()
+            except BaseException as e:
+                error_view(e)
 
     def save_image(e):
 
@@ -1548,6 +1571,10 @@ def main(page: ft.Page):
     page.theme = ft.Theme(font_family="Arial")
     page.update()
 
+    def toggle_sublist(sublist):
+        sublist.visible = not sublist.visible  # Toggle visibility
+        page.update()
+
     """
     Start of FLET GUI options
     """
@@ -1717,6 +1744,8 @@ def main(page: ft.Page):
         on_change=lambda e: (update_config_dict(), )
     )
 
+    sf_label = ft.Text("Sig Figs")
+
     # Sig Fig entry
     sf_entry = ft.TextField(
         width=50,
@@ -1724,9 +1753,6 @@ def main(page: ft.Page):
         bgcolor=ft.colors.GREY_900,
         on_blur=lambda e: (update_config_dict(), )
     )
-
-    # Sig Fig label
-    sf_label = ft.Text("Sig Figs")
 
     # randomness legend checkbox
     rand_legend = ft.Checkbox(
@@ -1983,6 +2009,52 @@ def main(page: ft.Page):
         width=1500,
     )
 
+    legend_options_container = ft.Container(
+        content=ft.Column([
+            ft.Row([
+                legend_name,
+                legend_area,
+                legend_perimeter,
+                legend_cratercount,
+                legend_range,
+                legend_n_dref
+            ]),
+            ft.Row([
+                rand_legend,
+                mu_legend,
+                cite_func,
+                ref_diam,
+                invert,
+                sf_label,
+                sf_entry
+            ])
+        ]),
+        padding=10,
+        visible=False,
+    )
+
+    legend_options = ft.Column(
+        controls=[
+            ft.Container(
+                content=ft.Row([
+                    ft.Text(
+                        "Legend Options",
+                        style=ft.TextStyle(size=16, weight="bold")),
+                    ft.IconButton(
+                        icon="expand_more",
+                        on_click=lambda e: toggle_sublist(legend_options_container)),
+                ]),
+            ),
+            legend_options_container
+        ]
+    )
+
+    list_view = ft.ListView(
+        expand=True,
+        spacing=10,
+        controls=[legend_options]
+    )
+
     # Global Settings Tab Container
     global_settings = ft.Column(
         [
@@ -1996,10 +2068,7 @@ def main(page: ft.Page):
             equil_func,
             ft.Divider(),
             ft.Row([iso_label, iso_text, show_legends]),
-            ft.Row([legend_name, legend_area, legend_perimeter,
-                    legend_cratercount, legend_range, legend_n_dref]),
-            ft.Row([rand_legend, mu_legend, cite_func,
-                   ref_diam, invert, sf_entry, sf_label]),
+            ft.Row([list_view]),
             ft.Row([
                 ft.Text("X Range"),
                 x_range,
@@ -2011,7 +2080,8 @@ def main(page: ft.Page):
                 ft.Text("Style:"),
                 style_options
             ])
-        ]
+        ],
+        scroll="auto"
     )
 
     # Plot settings tab container
