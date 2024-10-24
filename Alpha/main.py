@@ -134,6 +134,60 @@ def main(page: ft.Page):
 
         return demo_view
 
+    def dev_notes():
+        """Displays developer notes.
+
+        Developer notes are displayed in an alert dialog when the application is started
+        Things shown are known issues and future features
+
+        Args:
+            none
+
+        Returns:
+            none
+        """
+        show_popup = page.client_storage.get("show_notes")
+
+        notes = ft.AlertDialog(
+            title=ft.Text("Welcome to Craterstats IV"),
+            content=ft.Column(
+                controls=[
+                    ft.Text(
+                        "This is an alpha version of the Craterstats IV GUI. Known issues and future features are listed below:"),
+                    ft.Text("Known Issues:"),
+                    ft.Text(
+                        "1. After data is uploaded, rate and chronology plot presentation settings are not functioning."),
+                    ft.Text(
+                        "2. Currently a .plt file needs to be uploaded for the GUI to function."),
+                    ft.Text(
+                        "3. The color and symbol options aren't correctly linked to the right options (e.g. Point options shows cross symbol)."),
+                    ft.Text(
+                        "4. The GUI is not fully functional and may have bugs."),
+                    ft.Text("Future Features:"),
+                    ft.Text("1. Add the ability to create multiple subplots."),
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Checkbox(
+                                label="Don't show this message again",
+                                on_change=lambda e: page.client_storage.set(
+                                    "show_notes", False),
+                            ),
+                            ft.FilledButton(
+                                text="Start Graphing!",
+                                on_click=lambda e: page.close(notes)
+                            )]),
+                        alignment=ft.alignment.center,  # Center the button
+                        padding=10,  # Add some padding if needed
+                    )
+                ]
+            ),
+            shape=ft.RoundedRectangleBorder(radius=5),
+        )
+        if show_popup:
+            page.dialog = notes
+            notes.open = True
+            page.update()
+
     def error_view(error_message):
         """Displays pop up at bottom of screen when error occurs
 
@@ -555,7 +609,7 @@ def main(page: ft.Page):
 
         arg = Namespace(
             about=False,
-            autoscale=False,
+            autoscale=axis_auto_button.value,
             chronology_system=set_chron_str()[-2:].replace(' ', ''),
             cite_function=cite_func.value,
             demo=Globals.demo_mode,
@@ -583,8 +637,8 @@ def main(page: ft.Page):
             template=Globals.template_dict if Globals.template_dict else None,
             title=title_entry.value if title_checkbox.value else None,
             transparent=False,
-            xrange=None,
-            yrange=None
+            xrange=x_range.value.replace(" ", "").join(","),
+            yrange=y_range.value.replace(" ", "").join(",")
         )
 
         if arg.demo:
@@ -634,7 +688,9 @@ def main(page: ft.Page):
 
             plotSettings.craterplot = plot
 
-            if plot:
+            if plot and arg.autoscale:
+                x_range.value = ", ".join(map(str, plotSettings.xrange))
+                y_range.value = ", ".join(map(str, plotSettings.yrange))
                 plotSettings.autoscale()
 
             newFileName = generate_output_file_name()
@@ -659,6 +715,7 @@ def main(page: ft.Page):
 
         except BaseException as err:
             error_view(err)
+            traceback.print_exc()
 
     def run_plot_async():
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -668,6 +725,7 @@ def main(page: ft.Page):
                 result = future.result()
             except BaseException as e:
                 error_view(e)
+                traceback.print_exc()
 
     def save_image(e):
 
@@ -1453,6 +1511,8 @@ def main(page: ft.Page):
             "plot": []
         }
 
+        print(Globals.template_dict)
+
         config["set"] = {
             "chronology_system": chron_sys.value,
             "cite_functions": '1' if cite_func.value else '0',
@@ -1787,15 +1847,15 @@ def main(page: ft.Page):
 
     # Axis Log D Textfield
     x_range = ft.TextField(
-        width=150, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+        width=150, dense=True, value="0.01, 100", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Axis y TextField
     y_range = ft.TextField(
-        width=150, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+        width=150, dense=True, value="0.01, 100", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Auto Axis button
-    axis_auto_button = ft.ElevatedButton(
-        text="Auto", width=80, on_click=lambda e: (update_config_dict(), ))
+    axis_auto_button = ft.Checkbox(
+        label="Auto", on_change=lambda e: (update_config_dict(), ))
 
     # Style options dropdown
     style_options = ft.Dropdown(
@@ -2041,7 +2101,7 @@ def main(page: ft.Page):
                         "Legend Options",
                         style=ft.TextStyle(size=16, weight="bold")),
                     ft.IconButton(
-                        icon="expand_more",
+                        icon=ft.icons.EXPAND_MORE,
                         on_click=lambda e: toggle_sublist(legend_options_container)),
                 ]),
             ),
@@ -2370,17 +2430,11 @@ def main(page: ft.Page):
                             Globals, 'demo_mode', True), update_config_dict(), )
                     ),
                     ft.MenuItemButton(
-                        content=ft.Text("sum .stat files"),
-                        leading=ft.Icon(ft.icons.ADD)
+                        content=ft.Text("Show dev notes"),
+                        leading=ft.Icon(ft.icons.NOTES),
+                        on_click=lambda e: (page.client_storage.set(
+                            "show_note", True), dev_notes())
                     ),
-                    ft.MenuItemButton(
-                        content=ft.Text("merge .diam files"),
-                        leading=ft.Icon(ft.icons.MERGE)
-                    ),
-                    ft.MenuItemButton(
-                        content=ft.Text("randomness analysis"),
-                        leading=ft.Icon(ft.icons.ANALYTICS)
-                    )
                 ]
             ),
             ft.MenuItemButton(
@@ -2420,6 +2474,8 @@ def main(page: ft.Page):
         ],
         expand=True
     )
+
+    dev_notes()
 
     page.add(menubar)
     page.add(page_layout)
