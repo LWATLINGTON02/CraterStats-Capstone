@@ -67,10 +67,8 @@ def main(page: ft.Page):
             setattr(Globals, 'demo_cmd_str',
                     demo_dict[carousel_images[Globals.image_index]])
             cmd_str.value = Globals.demo_cmd_str
-            demo_image.src = f"{
-                PATH}/../demo/{carousel_images[Globals.image_index]}"
-            plot_num.value = f"Plot {
-                Globals.image_index + 1} of {len(carousel_images)}"
+            demo_image.src = f"{PATH}/../demo/{carousel_images[Globals.image_index]}"
+            plot_num.value = f"Plot {Globals.image_index + 1} of {len(carousel_images)}"
             plot_num.update()
             demo_image.update()
             page.update()
@@ -92,7 +90,7 @@ def main(page: ft.Page):
             update_image()
 
         demo_image = ft.Image(
-            src=f"{PATH}/../demo/{carousel_images[Globals.image_index]}",
+            src=f'{PATH}/../demo/{carousel_images[Globals.image_index]}',
             width=600,
             height=600,
         )
@@ -698,8 +696,7 @@ def main(page: ft.Page):
             except KeyError:
                 print("No values")
 
-        source_file_entry.value = plots_dict[correct_key][f"{
-            correct_key}.source"]
+        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
 
         range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
         range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
@@ -709,12 +706,10 @@ def main(page: ft.Page):
 
             if range_end < 1:
 
-                range_val = f"[{int(range_start * 100)
-                                } m, {int(range_end * 100)} m]"
+                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
 
             else:
-                range_val = f"[{int(range_start * 100)
-                                } m, {int(range_end)} km]"
+                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
 
         else:
             range_val = f"[{int(range_start)} km, {int(range_end)} km]"
@@ -748,15 +743,13 @@ def main(page: ft.Page):
         symbol_dropdown.value = symbols[int(
             plots_dict[correct_key][f"{correct_key}.psym"])]
 
-        binning_options.value = plots_dict[correct_key][f"{
-            correct_key}.binning"]
+        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
         binning_options.options = [ft.dropdown.Option(
             plots_dict[correct_key][f"{correct_key}.binning"])]
 
         align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
 
-        display_age.value = plots_dict[correct_key][f"{
-            correct_key}.display_age"]
+        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
 
         plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
 
@@ -1203,8 +1196,7 @@ def main(page: ft.Page):
             except KeyError:
                 pass
 
-        source_file_entry.value = plots_dict[correct_key][f"{
-            correct_key}.source"]
+        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
 
         range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
         range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
@@ -1214,12 +1206,10 @@ def main(page: ft.Page):
 
             if range_end < 1:
 
-                range_val = f"[{int(range_start * 100)
-                                } m, {int(range_end * 100)} m]"
+                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
 
             else:
-                range_val = f"[{int(range_start * 100)
-                                } m, {int(range_end)} km]"
+                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
 
         else:
             range_val = f"[{int(range_start)} km, {int(range_end)} km]"
@@ -1253,15 +1243,13 @@ def main(page: ft.Page):
         symbol_dropdown.value = symbols[int(
             plots_dict[correct_key][f"{correct_key}.psym"])]
 
-        binning_options.value = plots_dict[correct_key][f"{
-            correct_key}.binning"]
+        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
         binning_options.options = [ft.dropdown.Option(
             plots_dict[correct_key][f"{correct_key}.binning"])]
 
         align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
 
-        display_age.value = plots_dict[correct_key][f"{
-            correct_key}.display_age"]
+        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
 
         plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
 
@@ -1301,7 +1289,7 @@ def main(page: ft.Page):
     def set_print_dim_str():
         """Sets print dimension command line string.
 
-        Sets the command line string for the print dimenstion that is selected
+        Sets the command line string for the  dimenstion that is selected
         in the application
 
         Args:
@@ -1312,8 +1300,7 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        new_str = f' -print_dim {print_scale_entry.value if len(
-            print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
+        new_str = f' - print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
 
         return new_str
 
