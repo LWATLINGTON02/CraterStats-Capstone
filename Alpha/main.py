@@ -62,8 +62,6 @@ def main(page: ft.Page):
         setattr(Globals, 'demo_cmd_str',
                 demo_dict[carousel_images[Globals.image_index]])
 
-        print_tree(demo_dict, 0)
-
         def update_image():
             # Update the image based on the current index
             setattr(Globals, 'demo_cmd_str',
@@ -158,7 +156,7 @@ def main(page: ft.Page):
 
         """
 
-        if e.files[0].path.endswith(".plt"):
+        if e.files[0].path.endswith(".plt") and len(e.files) >= 1:
             # Reads through each line of data and sets data based off of line
             config = {}
             current_dict_name = None
@@ -229,8 +227,6 @@ def main(page: ft.Page):
                        ADD RESURF, RESURF_ALL, ISOCHRON, OFFSET_AGE TO PLOT SETTINGS
             """
 
-            print(f"\n\nConfig: {config}")
-
             if 'chronology_system' in config['set']:
                 body.value = get_body(
                     config['set']['chronology_system'])
@@ -240,7 +236,6 @@ def main(page: ft.Page):
                 cite_func.value = True if config['set']['cite_functions'] == '1' else False
             if 'epochs' in config['set']:
                 epoch.value = config['set']['epochs'] if config['set']['epochs'] != '' else 'none'
-                print(f'\n\nEpoch Value: {epoch.value}')
             if 'equilibrium' in config['set']:
                 equil_func.value = config['set']['equilibrium'] if config['set']['equilibrium'] != '' else 'none'
             if 'isochrons' in config['set']:
@@ -347,8 +342,8 @@ def main(page: ft.Page):
         unique_crater_plot = []
 
         for plot in crater_plot:
-            # You can define what makes a plot "unique". In this case, let's assume 'source' and 'name'
-            identifier = (plot['source'], plot['name'])
+
+            identifier = (plot['source'])
 
             if identifier not in seen:
                 seen.add(identifier)
@@ -592,9 +587,6 @@ def main(page: ft.Page):
 
         functionStr = read_textstructure(systems, from_string=True)
 
-        print("\n\nPlot Data", plot_data)
-        print("\n\nSet Data", settings['set'])
-
         try:
             craterPlot = cli.construct_plot_dicts(arg, {'plot': plot_data})
             craterPlot = filter_crater_plot(craterPlot)
@@ -689,19 +681,17 @@ def main(page: ft.Page):
             try:
                 try:
                     if val["plot1.name"] == e.control.label.value:
-                        # print("Plot1 Name Found")
                         correct_key = key
                 except KeyError:
                     pass
                 try:
                     if val["plot2.name"] == e.control.label.value:
-                        # print("Plot2 Name Found")
                         correct_key = key
                 except KeyError:
                     pass
                 try:
                     if val["plot3.name"] == e.control.label.value:
-                        # print("Plot3 Name Found")
+
                         correct_key = key
                 except KeyError:
                     pass
@@ -714,8 +704,6 @@ def main(page: ft.Page):
         range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
         range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
         range_val = ''
-
-        print(range_start, range_end, type(range_start), type(range_end))
 
         if range_start < 1:
 
@@ -836,7 +824,7 @@ def main(page: ft.Page):
 
         elif check_value == "Mars":
             items = [ft.dropdown.Option('Mars, Neukum-Ivanov (2001)'),
-                     ft.dropdown.Option('Mars, Ivanov 2001'),
+                     ft.dropdown.Option('Mars, Ivanov (2001)'),
                      ft.dropdown.Option('Mars, Hartmann 2004 iteration'),
                      ft.dropdown.Option('Mars, Hartmann & Daubar (2016)')]
             chron_func_str = 'Mars, Hartmann & Neukum (2001)'
@@ -1450,8 +1438,6 @@ def main(page: ft.Page):
 
     def update_config_dict():
 
-        print(Globals.template_dict)
-
         config = {
             "set": {},
             "plot": []
@@ -1832,7 +1818,7 @@ def main(page: ft.Page):
 
     # Font size textfield
     text_size = ft.TextField(dense=True, value="8", bgcolor=ft.colors.GREY_900, content_padding=ft.padding.all(8),
-                             on_blur=lambda e: (update_config_dict(), ) or print(text_size.value) or print(type(text_size.value)))
+                             on_blur=lambda e: (update_config_dict(), ))
 
     # Plot lists list view
     plot_lists = ft.ListView(
