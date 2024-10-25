@@ -738,6 +738,66 @@ def main(page: ft.Page):
                 shutil.copy(plot_image.src, export_path)
                 page.update()
 
+    def save_plot_file(e):
+
+        print("save_plot_file", save_plot_dialog.result)
+        print("save_plot_file", save_plot_dialog.result.path)
+
+        if save_plot_dialog.result and save_plot_dialog.result.path:
+            export_path = save_plot_dialog.result.path
+
+            print("passed first check")
+
+            if not export_path.lower().endswith(".plt"):
+                export_path += ".plt"
+
+                print("passed second check")
+
+            with open(export_path, 'w') as file:
+                file.write(
+                    f"""set = {{
+  chronology_system={chron_sys.value}
+  cite_functions= {1 if cite_func.value else 0}
+  epochs= {epoch.value}
+  equilibrium= {equil_func.value}
+  isochrons= {iso_text.value}
+  mu= {mu_legend.value}
+  presentation= {plot_view.value}
+  print_dimensions= {print_scale_entry.value}
+  pt_size= {text_size.value}
+  randomness= {rand_legend.value}
+  ref_diameter= {1 if ref_diam.value else 0}
+  sig_figs= {sf_entry.value}
+  show_isochrons= {1 if show_iso.value else 0}
+  show_subtitle= {1 if subtitle_checkbox.value else 0}
+  show_title= {1 if title_checkbox.value else 0}
+  style= {style_options.value}
+  subtitle= {subtitle_entry.value}
+  title= {title_entry.value}
+  invert= {1 if invert.value else 0}
+  show_legend_area= {1 if legend_name.value else 0}
+  xrange= {x_range.value.replace(" ","").split(",")}
+  yrange= {y_range.value.replace(" ","").split(",")}
+}}
+
+plot = {{
+  source={source_file_entry.value},
+  name={plot_fit_text.value},
+  range={diam_range_entry.value.replace(" ","").split(",")}
+  type={plot_fit_options.value}
+  error_bars={1 if error_bars.value else 0}
+  hide={1 if hide_button.value else 0}
+  colour={colours.index(color_dropdown.value)}
+  psym={symbols.index(symbol_dropdown.value)}
+  binning={binning_options.value}
+  age_left={1 if align_left.value else 0}
+  display_age={1 if display_age.value else 0}
+  resurf={1 if resurf.value else 0}
+  resurf_showall={1 if resurf_all.value else 0}
+  offset_age={offset_age.value.replace(" ","").split(",")}
+}}"""
+                )
+
     def set_plot_info(e):
         """Sets plotsetting info for subplots
 
@@ -1647,7 +1707,11 @@ def main(page: ft.Page):
 
     save_file_dialog = ft.FilePicker(on_result=save_image)
 
+    save_plot_dialog = ft.FilePicker(on_result=save_plot_file)
+
     page.overlay.append(save_file_dialog)
+
+    page.overlay.append(save_plot_dialog)
 
     # Plot view Radio options
     plot_view = ft.RadioGroup(ft.Row([
@@ -2366,6 +2430,10 @@ def main(page: ft.Page):
                         leading=ft.Icon(ft.icons.SAVE),
                         style=ft.ButtonStyle(
                             bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
+                        on_click=lambda _: save_plot_dialog.save_file(
+                            dialog_title="Save the plot",
+                            file_type=ft.FilePickerFileType.ANY
+                        )
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Open"),
