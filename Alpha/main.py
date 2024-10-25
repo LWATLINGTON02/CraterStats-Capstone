@@ -33,6 +33,9 @@ def main(page: ft.Page):
     def create_plot_lists():
         """Creates a dictionary of plots.
 
+        A global dictionary of plots is filled out based off of the information
+        in the file that is uploaded to make different subplots
+
         Args:
             none
 
@@ -59,17 +62,13 @@ def main(page: ft.Page):
         setattr(Globals, 'demo_cmd_str',
                 demo_dict[carousel_images[Globals.image_index]])
 
-        print_tree(demo_dict, 0)
-
         def update_image():
             # Update the image based on the current index
             setattr(Globals, 'demo_cmd_str',
                     demo_dict[carousel_images[Globals.image_index]])
             cmd_str.value = Globals.demo_cmd_str
-            demo_image.src = f"{
-                PATH}/../demo/{carousel_images[Globals.image_index]}"
-            plot_num.value = f"Plot {
-                Globals.image_index + 1} of {len(carousel_images)}"
+            demo_image.src = f"{PATH}/../demo/{carousel_images[Globals.image_index]}"
+            plot_num.value = f"Plot {Globals.image_index + 1} of {len(carousel_images)}"
             plot_num.update()
             demo_image.update()
             page.update()
@@ -91,7 +90,7 @@ def main(page: ft.Page):
             update_image()
 
         demo_image = ft.Image(
-            src=f"{PATH}/../demo/{carousel_images[Globals.image_index]}",
+            src=f'{PATH}/../demo/{carousel_images[Globals.image_index]}',
             width=600,
             height=600,
         )
@@ -135,6 +134,98 @@ def main(page: ft.Page):
 
         return demo_view
 
+    def dev_notes():
+        """Displays developer notes.
+
+        Developer notes are displayed in an alert dialog when the application is started
+        Things shown are known issues and future features
+
+        Args:
+            none
+
+        Returns:
+            none
+        """
+        show_popup = page.client_storage.get("show_notes")
+
+        notes = ft.AlertDialog(
+            title=ft.Text("Welcome to Craterstats IV"),
+            content=ft.Column(
+                controls=[
+                    ft.Text(
+                        "This is an alpha version of the Craterstats IV GUI. Known issues and future features are listed below:"),
+                    ft.Text("Known Issues:"),
+                    ft.Text(
+                        "1. After data is uploaded, rate and chronology plot presentation settings are not functioning."),
+                    ft.Text(
+                        "2. Currently a .plt file needs to be uploaded for the GUI to function."),
+                    ft.Text(
+                        "3. The color and symbol options aren't correctly linked to the right options (e.g. Point options shows cross symbol)."),
+                    ft.Text(
+                        "4. The GUI is not fully functional and may have bugs."),
+                    ft.Text("Future Features:"),
+                    ft.Text("1. Add the ability to create multiple subplots."),
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Checkbox(
+                                label="Don't show this message again",
+                                on_change=lambda e: page.client_storage.set(
+                                    "show_notes", False),
+                            ),
+                            ft.FilledButton(
+                                text="Start Graphing!",
+                                on_click=lambda e: page.close(notes)
+                            )]),
+                        alignment=ft.alignment.center,  # Center the button
+                        padding=10,  # Add some padding if needed
+                    )
+                ]
+            ),
+            shape=ft.RoundedRectangleBorder(radius=5),
+        )
+        if show_popup:
+            page.dialog = notes
+            notes.open = True
+            page.update()
+
+    def error_view(error_message):
+        """Displays pop up at bottom of screen when error occurs
+
+        A Flet bottom sheet is displayed when an error occurs on the application
+        when an option is changed
+
+        Args:
+            none
+
+        Returns:
+            none        
+        """
+        error_sheet = ft.BottomSheet(
+            bgcolor=ft.colors.RED,
+            content=ft.Container(
+                content=ft.Column(
+                    controls=[
+                        ft.Row(
+                            controls=[
+                                ft.Text(error_message, expand=1),
+                                ft.IconButton(
+                                    icon=ft.icons.CLOSE,
+                                    on_click=lambda e: page.close(error_sheet),
+                                ),
+                            ],
+                            alignment="spaceBetween",  # Align the message and close button
+                        ),
+                    ],
+                    tight=True,
+                ),
+                padding=10,
+            ),
+        )
+
+        page.dialog = error_sheet
+        error_sheet.open = True
+        page.update()
+
     def file_picker_result(e: FilePickerResultEvent):
         """Fills out data based off of file.
 
@@ -149,19 +240,17 @@ def main(page: ft.Page):
         Returns:
             none
         """
-        """
-        NEED TO DO: ADD INVERT, XRANGE, YRANGE, AND NEW LEGEND OPTIONS
-                    CHANGE SIG FIGS TO TEXTFIELD INSTEAD OF CHECKBOX
-
-        """
-
-        if e.files[0].path.endswith(".plt"):
+        if e.files[0].path.endswith(".plt") and len(e.files) >= 1:
             # Reads through each line of data and sets data based off of line
             config = {}
             current_dict_name = None
             current_item_list = None
 
             with open(e.files[0].path, 'r') as file:
+                config = {}
+                current_dict_name = None
+                current_item_dict = None  # Dictionary for 'set' or other sections
+
                 for line in file:
                     line = line.strip()
 
@@ -172,9 +261,15 @@ def main(page: ft.Page):
                     # Detect start of a new section
                     if line.endswith("{"):  # Start of a new block (e.g., set = {)
                         current_dict_name = line.split("=")[0].strip()
-                        # List to store the dictionaries
-                        config[current_dict_name] = []
-                        current_item_list = config[current_dict_name]
+
+                        if current_dict_name == "plot":
+                            # Create a list for plot items
+                            config[current_dict_name] = []
+                            current_item_list = config[current_dict_name]
+                        else:
+                            # For other sections (including 'set'), initialize as a dictionary
+                            config[current_dict_name] = {}
+                            current_item_dict = config[current_dict_name]
 
                     elif "=" in line:  # Key-value pair inside the block
                         key, value = line.split('=', 1)
@@ -190,66 +285,89 @@ def main(page: ft.Page):
                         elif value.startswith("'") and value.endswith("'"):
                             value = value[1:-1]
 
-                        # Convert to a dictionary and add to the list for the current block
-                        current_item_list.append({key: value})
+                        # For 'plot', append the dictionary to the list
+                        if current_dict_name == "plot":
+                            if key == "source":
+                                current_item_list.append({key: value})
+                            else:
+                                if current_item_list and isinstance(current_item_list[-1], dict):
+                                    last_item = current_item_list[-1]
+                                    if len(last_item) == 1 and "source" in last_item:
+                                        current_item_list.append({key: value})
+                                    else:
+                                        last_item[key] = value
+                                else:
+                                    current_item_list.append({key: value})
+                        else:
+                            # For 'set' or other sections, update the dictionary directly
+                            current_item_dict[key] = value
 
                     elif line == "}":  # End of the block
                         current_dict_name = None
-                        current_item_list = None
+                        current_item_dict = None
 
             """
             TODO HERE: ADD CITE_FUNCTIONS, INVERT, LEGEND, SHOW_LEGEND_AREA TO SET SETTINGS
                        ADD RESURF, RESURF_ALL, ISOCHRON, OFFSET_AGE TO PLOT SETTINGS
             """
 
-            # Set settings
-            for index, dictionary in enumerate(config['set']):
+            if 'chronology_system' in config['set']:
+                body.value = get_body(
+                    config['set']['chronology_system'])
+                set_chron_sys(body.value, None)
+                chron_sys.value = config['set']['chronology_system']
+            if 'cite_functions' in config['set']:
+                cite_func.value = True if config['set']['cite_functions'] == '1' else False
+            if 'epochs' in config['set']:
+                epoch.value = config['set']['epochs'] if config['set']['epochs'] != '' else 'none'
+            if 'equilibrium' in config['set']:
+                equil_func.value = config['set']['equilibrium'] if config['set']['equilibrium'] != '' else 'none'
+            if 'isochrons' in config['set']:
+                iso_text.value = config['set']['isochrons']
+            if 'mu' in config['set']:
+                mu_legend.value = config['set']['mu']
+            if 'presentation' in config['set']:
+                plot_view.value = config['set']['presentation']
+            if 'print_dimensions' in config['set']:
 
-                if 'chronology_system' in dictionary:
-                    body.value = get_body(
-                        config['set'][index]['chronology_system'])
-                    set_chron_sys(body.value, None)
-                    chron_sys.value = config['set'][index]['chronology_system']
-                if 'cite_functions' in dictionary:
-                    cite_func.value = True if config['set'][index]['cite_functions'] else False
-                if 'epochs' in dictionary:
-                    epoch.value = config['set'][index]['epochs'] if config['set'][index]['epochs'] != '' else 'none'
-                    print(f'\n\nEpoch Value: {epoch.value}')
-                if 'equilibrium' in dictionary:
-                    equil_func.value = config['set'][index]['equilibrium'] if config['set'][index]['equilibrium'] != '' else 'none'
-                if 'isochrons' in dictionary:
-                    iso_text.value = config['set'][index]['isochrons']
-                if 'mu' in dictionary:
-                    mu_legend.value = config['set'][index]['mu']
-                if 'presentation' in dictionary:
-                    plot_view.value = config['set'][index]['presentation']
-                if 'print_dimensions' in dictionary:
+                if type(config['set']['print_dimensions']) == list:
+                    config['set']['print_dimensions'] = "x".join(
+                        config['set']['print_dimensions'])
 
-                    if type(config['set'][index]['print_dimensions']) == list:
-                        config['set'][index]['print_dimensions'] = "x".join(
-                            config['set'][index]['print_dimensions'])
-
-                    print_scale_entry.value = config['set'][index]['print_dimensions']
-                if 'pt_size' in dictionary:
-                    text_size.value = max(config['set'][index]['pt_size'])
-                if 'randomness' in dictionary:
-                    rand_legend.value = config['set'][index]['randomness']
-                if 'ref_diameter' in dictionary:
-                    ref_diam.value = config['set'][index]['ref_diameter']
-                if 'sig_figs' in dictionary:
-                    sf_entry.value = config['set'][index]['sig_figs']
-                if 'show_isochrons' in dictionary:
-                    show_iso.value = True if config['set'][index]['show_isochrons'] else False
-                if 'show_subtitle' in dictionary:
-                    subtitle_checkbox.value = True if config['set'][index]['show_subtitle'] else False
-                if 'show_title' in dictionary:
-                    title_checkbox.value = True if config['set'][index]['show_title'] else False
-                if 'style' in dictionary:
-                    style_options.value = config['set'][index]['style']
-                if 'subtitle' in dictionary:
-                    subtitle_entry.value = config['set'][index]['subtitle'] if config['set'][index]['subtitle'] != '' else None
-                if 'title' in dictionary:
-                    title_entry.value = config['set'][index]['title'] if config['set'][index]['title'] != '' else None
+                print_scale_entry.value = config['set']['print_dimensions']
+            if 'pt_size' in config['set']:
+                if type(config['set']['pt_size']) == list:
+                    text_size.value = max(config['set']['pt_size'])
+                else:
+                    text_size.value = config['set']['pt_size']
+            if 'randomness' in config['set']:
+                rand_legend.value = config['set']['randomness']
+            if 'ref_diameter' in config['set']:
+                ref_diam.value = True if config['set']['ref_diameter'] == '1' else False
+            if 'sig_figs' in config['set']:
+                sf_entry.value = config['set']['sig_figs']
+            if 'show_isochrons' in config['set']:
+                show_iso.value = True if config['set']['show_isochrons'] == '1' else False
+            if 'show_subtitle' in config['set']:
+                subtitle_checkbox.value = True if config['set']['show_subtitle'] == '1' else False
+            if 'show_title' in config['set']:
+                title_checkbox.value = True if config['set']['show_title'] == '1' else False
+            if 'style' in config['set']:
+                style_options.value = config['set']['style']
+            if 'subtitle' in config['set']:
+                subtitle_entry.value = config['set']['subtitle'] if config['set']['subtitle'] != '' else None
+            if 'title' in config['set']:
+                title_entry.value = config['set']['title'] if config['set']['title'] != '' else None
+            if 'invert' in config['set']:
+                invert.value = True if config['set']['invert'] == '1' else False
+            if 'show_legned_area' in config['set']:
+                legend_name.value = True if config['set']['show_legend_area'] == '1' else False
+            if 'xrange' in config['set']:
+                x_range.value = (
+                    config['set']['xrange'][0]) + ", " + (config['set']['xrange'][1])
+            if 'yrange' in config['set']:
+                y_range.value = (
+                    config['set']['yrange'][0]) + ", " + (config['set']['yrange'][1])
 
             # Plot settings
             for index, dictionary in enumerate(config['plot']):
@@ -272,9 +390,9 @@ def main(page: ft.Page):
                 if 'type' in dictionary:
                     plot_fit_options.value = config['plot'][index]['type']
                 if 'error_bars' in dictionary:
-                    error_bars.value = True if config['plot'][index]['error_bars'] else False
+                    error_bars.value = True if config['plot'][index]['error_bars'] == '1' else False
                 if 'hide' in dictionary:
-                    hide_button.value = True if config['plot'][index]['hide'] else False
+                    hide_button.value = True if config['plot'][index]['hide'] == '1' else False
                 if 'colour' in dictionary:
                     color_dropdown.value = Globals.colours[int(
                         config['plot'][index]['colour'])]
@@ -284,19 +402,38 @@ def main(page: ft.Page):
                 if 'binning' in dictionary:
                     binning_options.value = config['plot'][index]['binning']
                 if 'age_left' in dictionary:
-                    align_left.value = True if config['plot'][index]['age_left'] else False
+                    align_left.value = True if config['plot'][index]['age_left'] == '1' else False
                 if 'display_age' in dictionary:
-                    display_age.value = True if config['plot'][index]['display_age'] else False
+                    display_age.value = True if config['plot'][index]['display_age'] == '1' else False
+                if 'resurf' in dictionary:
+                    resurf.value = True if config['plot'][index]['resurf'] == '1' else False
+                if 'resurf_all' in dictionary:
+                    resurf_all.value = True if config['plot'][index]['resurf_all'] == '1' else False
+                if "offset_age" in dictionary:
+                    offset_age.value = (
+                        config['plot'][index]['offset_age'][0] + ", " + config['plot'][index]['offset_age'][1])
 
             Globals.template_dict = config
-
-        print(Globals.template_dict)
 
         update_legend()
         create_plot_lists()
         run_plot_async()
 
         page.update()
+
+    def filter_crater_plot(crater_plot):
+        seen = set()
+        unique_crater_plot = []
+
+        for plot in crater_plot:
+
+            identifier = (plot['source'])
+
+            if identifier not in seen:
+                seen.add(identifier)
+                unique_crater_plot.append(plot)
+
+        return unique_crater_plot
 
     def get_body(chron_sys):
 
@@ -472,7 +609,7 @@ def main(page: ft.Page):
 
         arg = Namespace(
             about=False,
-            autoscale=False,
+            autoscale=axis_auto_button.value,
             chronology_system=set_chron_str()[-2:].replace(' ', ''),
             cite_function=cite_func.value,
             demo=Globals.demo_mode,
@@ -480,7 +617,7 @@ def main(page: ft.Page):
             equilibrium=equil_func.value if equil_func.value != 'none' else None,
             format=None,
             input=None,
-            invert=None,
+            invert=invert.value,
             isochrons=iso_text.value,
             lcs=False,
             legend=get_legend_value(),
@@ -500,14 +637,9 @@ def main(page: ft.Page):
             template=Globals.template_dict if Globals.template_dict else None,
             title=title_entry.value if title_checkbox.value else None,
             transparent=False,
-            xrange=None,
-            yrange=None
+            xrange=x_range.value.replace(" ", "").join(","),
+            yrange=y_range.value.replace(" ", "").join(",")
         )
-
-        print("\nEpoch\n", arg.epochs)
-        print("\nEpoch\n", type(arg.epochs))
-        print("\nEquilibrium\n", arg.equilibrium)
-        print("\nEquilibrium\n", type(arg.equilibrium))
 
         if arg.demo:
             toggle_demo(None)
@@ -526,11 +658,10 @@ def main(page: ft.Page):
                     if isinstance(item, dict):
                         plot_data.update(item)
 
-            if isinstance(settings['set'], list) and settings['set']:
-                set_data = {}
-                for item in settings['set']:
-                    if isinstance(item, dict):
-                        set_data.update(item)
+        if settings['set']['epochs'] == 'none':
+            settings['set']['epochs'] = ''
+        if settings['set']['equilibrium'] == 'none':
+            settings['set']['equilibrium'] = ''
 
         systems = read_textfile(
             functions, ignore_hash=True, strip=';', as_string=True)
@@ -542,32 +673,32 @@ def main(page: ft.Page):
 
         try:
             craterPlot = cli.construct_plot_dicts(arg, {'plot': plot_data})
+            craterPlot = filter_crater_plot(craterPlot)
             defaultFilename = generate_output_file_name()
 
             craterPlotSet = cli.construct_cps_dict(
-                arg, {'set': set_data}, functionStr, defaultFilename)
+                arg, settings, functionStr, defaultFilename)
 
             if 'a' in craterPlotSet['legend'] and 'b-poisson' in [d['type'] for d in craterPlot]:
                 craterPlotSet['legend'] += 'p'
 
             plot = [Craterplot(d) for d in craterPlot]
 
-            if craterPlotSet['ref_diameter'] == '':
-                craterPlotSet['ref_diameter'] = '1.0'
-
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
-            # if plot:
-            #     plotSettings.autoscale(self=plotSettings)
+            plotSettings.craterplot = plot
+
+            if plot and arg.autoscale:
+                x_range.value = ", ".join(map(str, plotSettings.xrange))
+                y_range.value = ", ".join(map(str, plotSettings.yrange))
+                plotSettings.autoscale()
+
             newFileName = generate_output_file_name()
 
             craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
 
             drawn = False
-            print("\n\nPre Format")
-            print("\n\nFormat settings", plotSettings.format)
             for format in plotSettings.format:
-                print("\n\nFormat", format)
                 if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
                     if not drawn:
                         plotSettings.draw()
@@ -576,19 +707,14 @@ def main(page: ft.Page):
                         craterPlotSet['out'], dpi=500, transparent=arg.transparent)
                     plot_image.src = craterPlotSet['out'] + '.png'
                     plot_image.update()
-                    print("Plot updated")
                 if format in {'txt'}:
                     plotSettings.create_summary_table()
 
             set_cmd_line_str()
             page.update()
 
-        except SystemExit as err:
-            print("Error couldn't create craterplotset")
-            print("Error:", err)
-            traceback.print_exc()
-        except Exception as err:
-            print("Other Error", err)
+        except BaseException as err:
+            error_view(err)
             traceback.print_exc()
 
     def run_plot_async():
@@ -597,12 +723,9 @@ def main(page: ft.Page):
 
             try:
                 result = future.result()
-            except SystemExit as e:
-                print(f"Caught {e}")
-
-            except Exception as e:
-                print(f"Caught Unexpected: {e}")
-                print(f"{chron_sys.value}")
+            except BaseException as e:
+                error_view(e)
+                traceback.print_exc()
 
     def save_image(e):
 
@@ -614,6 +737,164 @@ def main(page: ft.Page):
 
                 shutil.copy(plot_image.src, export_path)
                 page.update()
+
+    def save_plot_file(e):
+
+        print("save_plot_file", save_plot_dialog.result)
+        print("save_plot_file", save_plot_dialog.result.path)
+
+        if save_plot_dialog.result and save_plot_dialog.result.path:
+            export_path = save_plot_dialog.result.path
+
+            print("passed first check")
+
+            if not export_path.lower().endswith(".plt"):
+                export_path += ".plt"
+
+                print("passed second check")
+
+            with open(export_path, 'w') as file:
+                file.write(
+                    f"""set = {{
+  chronology_system={chron_sys.value}
+  cite_functions= {1 if cite_func.value else 0}
+  epochs= {epoch.value}
+  equilibrium= {equil_func.value}
+  isochrons= {iso_text.value}
+  mu= {mu_legend.value}
+  presentation= {plot_view.value}
+  print_dimensions= {print_scale_entry.value}
+  pt_size= {text_size.value}
+  randomness= {rand_legend.value}
+  ref_diameter= {1 if ref_diam.value else 0}
+  sig_figs= {sf_entry.value}
+  show_isochrons= {1 if show_iso.value else 0}
+  show_subtitle= {1 if subtitle_checkbox.value else 0}
+  show_title= {1 if title_checkbox.value else 0}
+  style= {style_options.value}
+  subtitle= {subtitle_entry.value}
+  title= {title_entry.value}
+  invert= {1 if invert.value else 0}
+  show_legend_area= {1 if legend_name.value else 0}
+  xrange= {x_range.value.replace(" ","").split(",")}
+  yrange= {y_range.value.replace(" ","").split(",")}
+}}
+
+plot = {{
+  source={source_file_entry.value},
+  name={plot_fit_text.value},
+  range={diam_range_entry.value.replace(" ","").split(",")}
+  type={plot_fit_options.value}
+  error_bars={1 if error_bars.value else 0}
+  hide={1 if hide_button.value else 0}
+  colour={colours.index(color_dropdown.value)}
+  psym={symbols.index(symbol_dropdown.value)}
+  binning={binning_options.value}
+  age_left={1 if align_left.value else 0}
+  display_age={1 if display_age.value else 0}
+  resurf={1 if resurf.value else 0}
+  resurf_showall={1 if resurf_all.value else 0}
+  offset_age={offset_age.value.replace(" ","").split(",")}
+}}"""
+                )
+
+    def set_plot_info(e):
+        """Sets plotsetting info for subplots
+
+        Changes the settings on the Plot Settings tab depending on which subplot is
+        selected
+
+        Args:
+            e: EventHandler
+
+        Returns:
+            none
+        """
+
+        correct_key = ''
+
+        # print(e.control.label.value)
+        for key, val in plots_dict.items():
+            # print(val)
+
+            try:
+                try:
+                    if val["plot1.name"] == e.control.label.value:
+                        correct_key = key
+                except KeyError:
+                    pass
+                try:
+                    if val["plot2.name"] == e.control.label.value:
+                        correct_key = key
+                except KeyError:
+                    pass
+                try:
+                    if val["plot3.name"] == e.control.label.value:
+
+                        correct_key = key
+                except KeyError:
+                    pass
+            except KeyError:
+                print("No values")
+
+        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
+
+        range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
+        range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
+        range_val = ''
+
+        if range_start < 1:
+
+            if range_end < 1:
+
+                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
+
+            else:
+                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
+
+        else:
+            range_val = f"[{int(range_start)} km, {int(range_end)} km]"
+
+        diam_range_entry.value = range_val.strip("[]")
+
+        plot_options = plots_dict[correct_key][f"{correct_key}.type"]
+
+        if plot_options == "data":
+            plot_fit_options.value = "crater count"
+
+        elif plot_options == "diff_fit":
+            plot_fit_options.value = "differential fit"
+
+        elif plot_options == "cumu_fit":
+            plot_fit_options.value = "cumulative fit"
+
+        elif plot_options == "poisson":
+            plot_fit_options.value = "Poisson pdf"
+
+        elif plot_options == "poisson_buffer":
+            plot_fit_options.value = "Poisson buffer pdf"
+
+        error_bars.value = plots_dict[correct_key][f"{correct_key}.error_bars"]
+
+        hide_button.value = plots_dict[correct_key][f"{correct_key}.hide"]
+
+        color_dropdown.value = colours[int(
+            plots_dict[correct_key][f"{correct_key}.colour"])]
+
+        symbol_dropdown.value = symbols[int(
+            plots_dict[correct_key][f"{correct_key}.psym"])]
+
+        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
+        binning_options.options = [ft.dropdown.Option(
+            plots_dict[correct_key][f"{correct_key}.binning"])]
+
+        align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
+
+        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
+
+        plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
+
+        page.update()
 
     def set_chron_func(value, e):
         """Sets chronology function.
@@ -677,7 +958,7 @@ def main(page: ft.Page):
 
         elif check_value == "Mars":
             items = [ft.dropdown.Option('Mars, Neukum-Ivanov (2001)'),
-                     ft.dropdown.Option('Mars, Ivanov 2001'),
+                     ft.dropdown.Option('Mars, Ivanov (2001)'),
                      ft.dropdown.Option('Mars, Hartmann 2004 iteration'),
                      ft.dropdown.Option('Mars, Hartmann & Daubar (2016)')]
             chron_func_str = 'Mars, Hartmann & Neukum (2001)'
@@ -1015,7 +1296,7 @@ def main(page: ft.Page):
             if display_age.value:
                 new_str += "display_age=1,"
 
-        return new_str
+        return new_str[:-1]
 
     def set_plot_info(e):
         """Sets plotsetting info for subplots
@@ -1056,8 +1337,7 @@ def main(page: ft.Page):
             except KeyError:
                 pass
 
-        source_file_entry.value = plots_dict[correct_key][f"{
-            correct_key}.source"]
+        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
 
         range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
         range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
@@ -1067,12 +1347,10 @@ def main(page: ft.Page):
 
             if range_end < 1:
 
-                range_val = f"[{int(range_start * 100)
-                                } m, {int(range_end * 100)} m]"
+                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
 
             else:
-                range_val = f"[{int(range_start * 100)
-                                } m, {int(range_end)} km]"
+                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
 
         else:
             range_val = f"[{int(range_start)} km, {int(range_end)} km]"
@@ -1106,15 +1384,13 @@ def main(page: ft.Page):
         symbol_dropdown.value = symbols[int(
             plots_dict[correct_key][f"{correct_key}.psym"])]
 
-        binning_options.value = plots_dict[correct_key][f"{
-            correct_key}.binning"]
+        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
         binning_options.options = [ft.dropdown.Option(
             plots_dict[correct_key][f"{correct_key}.binning"])]
 
         align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
 
-        display_age.value = plots_dict[correct_key][f"{
-            correct_key}.display_age"]
+        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
 
         plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
 
@@ -1154,7 +1430,7 @@ def main(page: ft.Page):
     def set_print_dim_str():
         """Sets print dimension command line string.
 
-        Sets the command line string for the print dimenstion that is selected
+        Sets the command line string for the  dimenstion that is selected
         in the application
 
         Args:
@@ -1165,8 +1441,7 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        new_str = f' -print_dim {print_scale_entry.value if len(
-            print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
+        new_str = f' - print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
 
         return new_str
 
@@ -1291,49 +1566,55 @@ def main(page: ft.Page):
 
     def update_config_dict():
 
-        print(Globals.template_dict)
-
         config = {
-            "set": [],
+            "set": {},
             "plot": []
         }
 
-        config["set"].append({"chronology_system": chron_sys.value})
-        config['set'].append({"cite_functions": cite_func.value})
-        config['set'].append({"epochs": epoch.value})
-        config['set'].append({"equilibrium": equil_func.value})
-        config['set'].append({"isochrons": iso_text.value})
-        config['set'].append({"legend": get_legend_value()})
-        config['set'].append({"mu": mu_legend.value})
-        config['set'].append({"presentation": plot_view.value})
-        config['set'].append({"print_dimensions": print_scale_entry.value})
-        config['set'].append({"pt_size": text_size.value})
-        config['set'].append({"randomness": rand_legend.value})
-        config['set'].append({"ref_diameter": ref_diam.value})
-        config['set'].append({"sig_figs": sf_entry.value})
-        config['set'].append({"show_isochrons": show_iso.value})
-        config['set'].append({"show_subtitle": subtitle_checkbox.value})
-        config['set'].append({"show_title": title_checkbox.value})
-        config['set'].append({"style": style_options.value})
-        config['set'].append({"subtitle": subtitle_entry.value})
-        config['set'].append({"title": title_entry.value})
-        config['set'].append(
-            {"format": Globals.template_dict['set'][-1]['format']})
+        print(Globals.template_dict)
 
+        config["set"] = {
+            "chronology_system": chron_sys.value,
+            "cite_functions": '1' if cite_func.value else '0',
+            "epochs": epoch.value,
+            "equilibrium": equil_func.value,
+            "invert": '1' if invert.value else '0',
+            "isochrons": iso_text.value,
+            "legend": get_legend_value(),
+            "mu": '1' if mu_legend.value else '0',
+            "presentation": plot_view.value,
+            "print_dimensions": print_scale_entry.value,
+            "pt_size": text_size.value,
+            "randomness": '1' if rand_legend.value else '0',
+            "ref_diam": '1' if ref_diam.value else '0',
+            "sig_figs": sf_entry.value,
+            "show_isochrons": '1' if show_iso.value else '0',
+            "show_legend_area": '1' if legend_area.value else '0',
+            "show_subtitle": '1' if subtitle_checkbox.value else '0',
+            "show_title": '1' if title_checkbox.value else '0',
+            "style": style_options.value,
+            "subtitle": subtitle_entry.value,
+            "title": title_entry.value,
+            "xrange": x_range.value.replace(" ", "").split(","),
+            "yrange": y_range.value.replace(" ", "").split(","),
+            "format": list(Globals.template_dict['set']['format'])
+        }
         config["plot"].append({"source": source_file_entry.value})
-        config['plot'].append({"name": plot_fit_text.value})
-        config['plot'].append({"range": diam_range_entry.value.split(",")})
-        config['plot'].append({"type": plot_fit_options.value})
-        config['plot'].append({"error_bars": error_bars.value})
-        config['plot'].append({"hide": hide_button.value})
-        config['plot'].append(
-            {"colour": Globals.colours.index(color_dropdown.value)})
-        config['plot'].append(
-            {"psym": Globals.symbols.index(symbol_dropdown.value)})
-        config['plot'].append({"binning": binning_options.value})
-        config['plot'].append({"age_left": align_left.value})
-        config['plot'].append({"display_age": display_age.value})
-        config['plot'].append({'isochron': show_iso.value})
+        config['plot'].append({"name": plot_fit_text.value,
+                               "range": diam_range_entry.value.replace(" ", "").split(","),
+                               "type": plot_fit_options.value,
+                               "error_bars": '1' if error_bars.value else '0',
+                               "hide": '1' if hide_button.value else '0',
+                               "colour": str(Globals.colours.index(color_dropdown.value)),
+                               "psym": str(Globals.symbols.index(symbol_dropdown.value)),
+                               "binning": binning_options.value,
+                               "age_left": '1' if align_left.value else '0',
+                               "display_age": '1' if display_age.value else '0',
+                               'resurf': '1' if resurf.value else '0',
+                               'resurf_showall': '1' if resurf_all.value else '0',
+                               'isochron': '1' if show_iso.value else '0',
+                               'offset_age': offset_age.value.replace(" ", "").split(",")
+                               })
 
         Globals.template_dict = config
 
@@ -1345,42 +1626,42 @@ def main(page: ft.Page):
 
             if 'legend' in dictionary:
 
-                if 'n' in Globals.template_dict['set'][index]['legend']:
+                if 'n' in Globals.template_dict['set']['legend']:
 
                     legend_name.value = True
                 else:
 
                     legend_name.value = False
 
-                if 'a' in Globals.template_dict['set'][index]['legend']:
+                if 'a' in Globals.template_dict['set']['legend']:
 
                     legend_area.value = True
                 else:
 
                     legend_area.value = False
 
-                if 'p' in Globals.template_dict['set'][index]['legend']:
+                if 'p' in Globals.template_dict['set']['legend']:
 
                     legend_perimeter.value = True
                 else:
 
                     legend_perimeter.value = False
 
-                if 'c' in Globals.template_dict['set'][index]['legend']:
+                if 'c' in Globals.template_dict['set']['legend']:
 
                     legend_cratercount.value = True
                 else:
 
                     legend_cratercount.value = False
 
-                if 'r' in Globals.template_dict['set'][index]['legend']:
+                if 'r' in Globals.template_dict['set']['legend']:
 
                     legend_range.value = True
                 else:
 
                     legend_range.value = False
 
-                if 'N' in Globals.template_dict['set'][index]['legend']:
+                if 'N' in Globals.template_dict['set']['legend']:
 
                     legend_n_dref.value = True
                 else:
@@ -1399,6 +1680,7 @@ def main(page: ft.Page):
     page.window.resizable = True  # Application size is static
     page.window.left = 0    # Set the window position to the leftmost side
     page.window.top = 0
+    page.window.resizable = True
     # Fonts that can be used inside the application
     page.fonts = {
         "Courier New": "Fonts/Courier New.ttf",
@@ -1409,10 +1691,13 @@ def main(page: ft.Page):
     page.theme = ft.Theme(font_family="Arial")
     page.update()
 
+    def toggle_sublist(sublist):
+        sublist.visible = not sublist.visible  # Toggle visibility
+        page.update()
+
     """
     Start of FLET GUI options
     """
-
     # This sets up an event listener for window resizing
     page.on_resize = on_resize
 
@@ -1422,7 +1707,11 @@ def main(page: ft.Page):
 
     save_file_dialog = ft.FilePicker(on_result=save_image)
 
+    save_plot_dialog = ft.FilePicker(on_result=save_plot_file)
+
     page.overlay.append(save_file_dialog)
+
+    page.overlay.append(save_plot_dialog)
 
     # Plot view Radio options
     plot_view = ft.RadioGroup(ft.Row([
@@ -1521,6 +1810,8 @@ def main(page: ft.Page):
         on_change=lambda e: (update_config_dict(), )
     )
 
+    iso_label = ft.Text("Isochrons")
+
     # Isochron text field
     iso_text = ft.TextField(
         width=150,
@@ -1529,10 +1820,9 @@ def main(page: ft.Page):
         on_blur=lambda e: (update_config_dict(), )
     )
 
-    # Isochron Label
-    iso_label = ft.Checkbox(
-        label="Isochrons, Ga",
-        value=False,
+    show_legends = ft.Checkbox(
+        label="Show Legends",
+        value=True,
         on_change=lambda e: (update_config_dict(), )
     )
 
@@ -1578,6 +1868,8 @@ def main(page: ft.Page):
         on_change=lambda e: (update_config_dict(), )
     )
 
+    sf_label = ft.Text("Sig Figs")
+
     # Sig Fig entry
     sf_entry = ft.TextField(
         width=50,
@@ -1585,9 +1877,6 @@ def main(page: ft.Page):
         bgcolor=ft.colors.GREY_900,
         on_blur=lambda e: (update_config_dict(), )
     )
-
-    # Sig Fig label
-    sf_label = ft.Text("Sig Figs")
 
     # randomness legend checkbox
     rand_legend = ft.Checkbox(
@@ -1609,23 +1898,28 @@ def main(page: ft.Page):
     )
 
     # Reference Diameter text field
-    ref_diam = ft.TextField(
-        width=50, dense=True, bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+    ref_diam = ft.Checkbox(
+        label="Ref diameter, km",
+        value=True,
+        on_change=lambda e: (update_config_dict(), ))
 
-    # Reference Diameter label
-    ref_diam_lbl = ft.Text("Ref diameter,km")
+    invert = ft.Checkbox(
+        label="Invert",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
+    )
 
     # Axis Log D Textfield
-    axis_d_input_box = ft.TextField(
-        width=75, dense=True, value="-3.2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+    x_range = ft.TextField(
+        width=150, dense=True, value="0.01, 100", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Axis y TextField
-    axis_y_input_box = ft.TextField(
-        width=50, dense=True, value="5.5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+    y_range = ft.TextField(
+        width=150, dense=True, value="0.01, 100", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Auto Axis button
-    axis_auto_button = ft.ElevatedButton(
-        text="Auto", width=80, on_click=lambda e: (update_config_dict(), ))
+    axis_auto_button = ft.Checkbox(
+        label="Auto", on_change=lambda e: (update_config_dict(), ))
 
     # Style options dropdown
     style_options = ft.Dropdown(
@@ -1661,7 +1955,7 @@ def main(page: ft.Page):
 
     # Font size textfield
     text_size = ft.TextField(dense=True, value="8", bgcolor=ft.colors.GREY_900, content_padding=ft.padding.all(8),
-                             on_blur=lambda e: (update_config_dict(), ) or print(text_size.value) or print(type(text_size.value)))
+                             on_blur=lambda e: (update_config_dict(), ))
 
     # Plot lists list view
     plot_lists = ft.ListView(
@@ -1791,6 +2085,26 @@ def main(page: ft.Page):
     plot_fit_error = ft.Checkbox(
         label="Plot fit", value=True, on_change=lambda e: (update_config_dict(), ))
 
+    resurf = ft.Checkbox(
+        label="Resurf",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
+    )
+
+    resurf_all = ft.Checkbox(
+        label="Resurf all",
+        value=False,
+        on_change=lambda e: (update_config_dict(), )
+    )
+
+    offset_age = ft.TextField(
+        width=150,
+        dense=True,
+        value="0, 0",
+        bgcolor=ft.colors.GREY_900,
+        on_blur=lambda e: (update_config_dict(), )
+    )
+
     # Binning options dropdown
     binning_options = ft.Dropdown(
         width=150,
@@ -1819,6 +2133,52 @@ def main(page: ft.Page):
         width=1500,
     )
 
+    legend_options_container = ft.Container(
+        content=ft.Column([
+            ft.Row([
+                legend_name,
+                legend_area,
+                legend_perimeter,
+                legend_cratercount,
+                legend_range,
+                legend_n_dref
+            ]),
+            ft.Row([
+                rand_legend,
+                mu_legend,
+                cite_func,
+                ref_diam,
+                invert,
+                sf_label,
+                sf_entry
+            ])
+        ]),
+        padding=10,
+        visible=False,
+    )
+
+    legend_options = ft.Column(
+        controls=[
+            ft.Container(
+                content=ft.Row([
+                    ft.Text(
+                        "Legend Options",
+                        style=ft.TextStyle(size=16, weight="bold")),
+                    ft.IconButton(
+                        icon=ft.icons.EXPAND_MORE,
+                        on_click=lambda e: toggle_sublist(legend_options_container)),
+                ]),
+            ),
+            legend_options_container
+        ]
+    )
+
+    list_view = ft.ListView(
+        expand=True,
+        spacing=10,
+        controls=[legend_options]
+    )
+
     # Global Settings Tab Container
     global_settings = ft.Column(
         [
@@ -1831,23 +2191,21 @@ def main(page: ft.Page):
             epoch,
             equil_func,
             ft.Divider(),
-            ft.Row([iso_text, iso_label]),
-            ft.Row([legend_name, legend_area, legend_perimeter,
-                    legend_cratercount, legend_range, legend_n_dref]),
-            ft.Row([rand_legend, mu_legend, cite_func,
-                   sf_entry, sf_label, ref_diam, ref_diam_lbl]),
+            ft.Row([iso_label, iso_text, show_legends]),
+            ft.Row([list_view]),
             ft.Row([
-                ft.Text("Axes. log D:"),
-                axis_d_input_box,
-                ft.Text("log y:"),
-                axis_y_input_box,
+                ft.Text("X Range"),
+                x_range,
+                ft.Text("Y Range"),
+                y_range,
                 axis_auto_button
             ]),
             ft.Row([
                 ft.Text("Style:"),
                 style_options
             ])
-        ]
+        ],
+        scroll="auto"
     )
 
     # Plot settings tab container
@@ -1915,6 +2273,12 @@ def main(page: ft.Page):
                 show_iso,
                 plot_fit_error,
             ]),
+            ft.Row([
+                resurf,
+                resurf_all,
+                ft.Text("Offset age:"),
+                offset_age
+            ])
         ])
     ])
 
@@ -2066,6 +2430,10 @@ def main(page: ft.Page):
                         leading=ft.Icon(ft.icons.SAVE),
                         style=ft.ButtonStyle(
                             bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
+                        on_click=lambda _: save_plot_dialog.save_file(
+                            dialog_title="Save the plot",
+                            file_type=ft.FilePickerFileType.ANY
+                        )
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Open"),
@@ -2130,17 +2498,11 @@ def main(page: ft.Page):
                             Globals, 'demo_mode', True), update_config_dict(), )
                     ),
                     ft.MenuItemButton(
-                        content=ft.Text("sum .stat files"),
-                        leading=ft.Icon(ft.icons.ADD)
+                        content=ft.Text("Show dev notes"),
+                        leading=ft.Icon(ft.icons.NOTES),
+                        on_click=lambda e: (page.client_storage.set(
+                            "show_note", True), dev_notes())
                     ),
-                    ft.MenuItemButton(
-                        content=ft.Text("merge .diam files"),
-                        leading=ft.Icon(ft.icons.MERGE)
-                    ),
-                    ft.MenuItemButton(
-                        content=ft.Text("randomness analysis"),
-                        leading=ft.Icon(ft.icons.ANALYTICS)
-                    )
                 ]
             ),
             ft.MenuItemButton(
@@ -2180,6 +2542,8 @@ def main(page: ft.Page):
         ],
         expand=True
     )
+
+    dev_notes()
 
     page.add(menubar)
     page.add(page_layout)
