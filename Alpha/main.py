@@ -3,7 +3,7 @@ from argparse import Namespace
 import concurrent.futures
 
 import flet as ft
-from craterstats import cli, Craterplot, Craterplotset
+from craterstats import cli, Craterplot, Craterplotset, constants
 from flet import FilePickerResultEvent
 import shutil
 
@@ -675,8 +675,6 @@ def main(page: ft.Page):
 
         functionStr = read_textstructure(systems, from_string=True)
 
-        print(arg.plot)
-
         try:
             if arg.plot[0]['source'] == '':
                 arg.plot = None
@@ -691,11 +689,7 @@ def main(page: ft.Page):
 
             plot = [Craterplot(d) for d in craterPlot]
 
-            # print(plot[0].range)
-
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
-            print(plotSettings.xrange)
-            print(plotSettings.yrange)
 
             plotSettings.craterplot = plot
 
@@ -1623,6 +1617,7 @@ plot = {{
 
         Globals.template_dict = config
 
+        update_range_to_presentation()
         run_plot_async()
 
     def update_legend():
@@ -1674,6 +1669,32 @@ plot = {{
                     legend_n_dref.value = False
 
         page.update()
+
+    def update_range_to_presentation():
+        """Updates x and y ranges.
+
+        Updates the X and Y ranges to the default for the presentation selected
+
+        Args:
+            none
+        Returns:
+            none
+
+        """
+
+        print(template_dict['plot'])
+
+        # Check if source file is uploaded or plot settings filled
+        if not template_dict['plot'] or template_dict['plot'][0]['source'] == '':
+
+            # grab the current plot presentation
+            presentation = plot_view.value
+
+            # set the x and y ranges to the default for the presentation
+            x_range.value = str(constants.DEFAULT_XRANGE[presentation][0]) + \
+                ", " + str(constants.DEFAULT_XRANGE[presentation][1])
+            y_range.value = str(constants.DEFAULT_YRANGE[presentation][0]) + \
+                ", " + str(constants.DEFAULT_YRANGE[presentation][1])
 
     """
     Default Settings for the application
