@@ -374,6 +374,8 @@ def main(page: ft.Page):
 
                 if list(config['plot'][index].values())[0] == '':
                     key = list(config['plot'][index].keys())[0]
+                    if key == 'source':
+                        continue
                     config['plot'][index][key] = None
 
                 if 'source' in dictionary:
@@ -637,8 +639,10 @@ def main(page: ft.Page):
             template=Globals.template_dict if Globals.template_dict else None,
             title=title_entry.value if title_checkbox.value else None,
             transparent=False,
-            xrange=x_range.value.replace(" ", "").join(","),
-            yrange=y_range.value.replace(" ", "").join(",")
+            xrange=[float(num) for num in x_range.value.replace(
+                " ", "").strip("[]").split(",")],
+            yrange=[float(num) for num in y_range.value.replace(
+                " ", "").strip("[]").split(",")]
         )
 
         if arg.demo:
@@ -671,11 +675,14 @@ def main(page: ft.Page):
 
         functionStr = read_textstructure(systems, from_string=True)
 
+        print(arg.plot)
+
         try:
+            if arg.plot[0]['source'] == '':
+                arg.plot = None
             craterPlot = cli.construct_plot_dicts(arg, {'plot': plot_data})
             craterPlot = filter_crater_plot(craterPlot)
             defaultFilename = generate_output_file_name()
-
             craterPlotSet = cli.construct_cps_dict(
                 arg, settings, functionStr, defaultFilename)
 
@@ -684,7 +691,11 @@ def main(page: ft.Page):
 
             plot = [Craterplot(d) for d in craterPlot]
 
+            # print(plot[0].range)
+
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
+            print(plotSettings.xrange)
+            print(plotSettings.yrange)
 
             plotSettings.craterplot = plot
 
@@ -740,18 +751,11 @@ def main(page: ft.Page):
 
     def save_plot_file(e):
 
-        print("save_plot_file", save_plot_dialog.result)
-        print("save_plot_file", save_plot_dialog.result.path)
-
         if save_plot_dialog.result and save_plot_dialog.result.path:
             export_path = save_plot_dialog.result.path
 
-            print("passed first check")
-
             if not export_path.lower().endswith(".plt"):
                 export_path += ".plt"
-
-                print("passed second check")
 
             with open(export_path, 'w') as file:
                 file.write(
@@ -1265,6 +1269,9 @@ plot = {{
         """
         new_str = ''
 
+        if not Globals.template_dict['plot'] or Globals.template_dict['plot'][0]['source'] == '':
+            return ''
+
         if source_file_entry.value or plot_fit_options.value or error_bars.value or hide_button.value or color_dropdown.value or symbol_dropdown.value or binning_options.value or align_left.value or display_age.value:
 
             new_str += ' -p '
@@ -1570,8 +1577,6 @@ plot = {{
             "set": {},
             "plot": []
         }
-
-        print(Globals.template_dict)
 
         config["set"] = {
             "chronology_system": chron_sys.value,
@@ -1911,11 +1916,11 @@ plot = {{
 
     # Axis Log D Textfield
     x_range = ft.TextField(
-        width=150, dense=True, value="0.01, 100", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+        width=150, dense=True, value="-3, 2", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Axis y TextField
     y_range = ft.TextField(
-        width=150, dense=True, value="0.01, 100", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+        width=150, dense=True, value="-5, 5", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Auto Axis button
     axis_auto_button = ft.Checkbox(
