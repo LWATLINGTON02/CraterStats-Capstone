@@ -343,7 +343,7 @@ def main(page: ft.Page):
             if 'randomness' in config['set']:
                 rand_legend.value = config['set']['randomness']
             if 'ref_diameter' in config['set']:
-                ref_diam.value = True if config['set']['ref_diameter'] == '1' else False
+                ref_diam.value = config['set']['ref_diameter']
             if 'sig_figs' in config['set']:
                 sf_entry.value = config['set']['sig_figs']
             if 'show_isochrons' in config['set']:
@@ -551,7 +551,7 @@ def main(page: ft.Page):
             content=ft.Text(
                 '\n'.join(["GUI Developed by The Lunar Pit Patrol, Senior Capstone group for NAU",
                            "Lunar Pit Patrol Team:",
-                           "Evan Palmisiano",
+                           "Evan Palmisano",
                            "Ibrahim Hmood",
                            "Alden Smith",
                            "Caden Tedeschi",
@@ -676,7 +676,7 @@ def main(page: ft.Page):
         functionStr = read_textstructure(systems, from_string=True)
 
         try:
-            if arg.plot[0]['source'] == '':
+            if arg.plot[0]['source'] == '' or (arg.presentation == 'chronology' or arg.presentation == 'rate'):
                 arg.plot = None
             craterPlot = cli.construct_plot_dicts(arg, {'plot': plot_data})
             craterPlot = filter_crater_plot(craterPlot)
@@ -1496,7 +1496,7 @@ plot = {{
             "print_dimensions": print_scale_entry.value,
             "pt_size": text_size.value,
             "randomness": '1' if rand_legend.value else '0',
-            "ref_diam": '1' if ref_diam.value else '0',
+            "ref_diam": ref_diam.value,
             "sig_figs": sf_entry.value,
             "show_isochrons": '1' if show_iso.value else '0',
             "show_legend_area": '1' if legend_area.value else '0',
@@ -1598,7 +1598,6 @@ plot = {{
         # Check for 'data' plot type
         if plot_fit_options.value == 'data':
 
-            # Disable the correct legend options
             legend_name.disabled = False
             legend_area.disabled = False
             legend_perimeter.disabled = True
@@ -1613,16 +1612,30 @@ plot = {{
 
         else:
 
-            # Enable the correct legend options
             legend_name.disabled = True
             legend_area.disabled = True
             legend_perimeter.disabled = False
             legend_cratercount.disabled = False
             legend_range.disabled = False
-            legend_n_dref.disabled = False
+            legend_n_dref.disabled = True
 
             legend_area.value = False
             legend_name.value = False
+
+        if plot_view.value == 'rate' or plot_view.value == 'chronology':
+
+            legend_name.disabled = True
+            legend_area.disabled = True
+            legend_perimeter.disabled = True
+            legend_cratercount.disabled = True
+            legend_range.disabled = True
+            legend_n_dref.disabled = False
+
+            legend_name.value = False
+            legend_area.value = False
+            legend_perimeter.value = False
+            legend_cratercount.value = False
+            legend_range.value = False
 
     def update_range_to_presentation():
         """Updates x and y ranges.
@@ -1792,7 +1805,7 @@ plot = {{
 
     # Isochron text field
     iso_text = ft.TextField(
-        width=150,
+        width=500,
         dense=True,
         bgcolor=ft.colors.GREY_900,
         on_blur=lambda e: (update_config_dict(), )
@@ -1876,10 +1889,14 @@ plot = {{
     )
 
     # Reference Diameter text field
-    ref_diam = ft.Checkbox(
-        label="Ref diameter, km",
-        value=True,
-        on_change=lambda e: (update_config_dict(), ))
+    ref_diam = ft.TextField(
+        width=100,
+        dense=True,
+        bgcolor=ft.colors.GREY_900,
+        value='1',
+        on_blur=lambda e: (update_config_dict(), ))
+
+    ref_diam_lbl = ft.Text("Ref diameter, km")
 
     invert = ft.Checkbox(
         label="Invert",
@@ -2006,7 +2023,7 @@ plot = {{
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
         dense=True,
-        width=120,
+        width=180,
         options=[
             ft.dropdown.Option("Black"),
             ft.dropdown.Option("Red"),
@@ -2015,14 +2032,34 @@ plot = {{
             ft.dropdown.Option("Yellow"),
             ft.dropdown.Option("Violet"),
             ft.dropdown.Option("Grey"),
-            ft.dropdown.Option("Brown"),
+            ft.dropdown.Option("Blue - 1"),
+            ft.dropdown.Option("Blue - 2"),
+            ft.dropdown.Option("Blue - 3"),
+            ft.dropdown.Option("Blue - 4"),
+            ft.dropdown.Option("Brown - 1"),
+            ft.dropdown.Option("Brown - 2"),
+            ft.dropdown.Option("Brown - 3"),
+            ft.dropdown.Option("Brown - 4"),
+            ft.dropdown.Option("Green - 1"),
+            ft.dropdown.Option("Green - 2"),
+            ft.dropdown.Option("Green - 3"),
             ft.dropdown.Option("Orange"),
-            ft.dropdown.Option("Pink"),
-            ft.dropdown.Option("Purple"),
-            ft.dropdown.Option("Teal"),
+            ft.dropdown.Option("Pink - 1"),
+            ft.dropdown.Option("Pink - 2"),
+            ft.dropdown.Option("Pink - 3"),
+            ft.dropdown.Option("Purple - 1"),
+            ft.dropdown.Option("Purple - 2"),
+            ft.dropdown.Option("Red - 1"),
+            ft.dropdown.Option("Red - 2"),
+            ft.dropdown.Option("Red - 3"),
+            ft.dropdown.Option("Teal - 1"),
+            ft.dropdown.Option("Teal - 2"),
+            ft.dropdown.Option("Yellow - 1"),
+            ft.dropdown.Option("Yellow - 2"),
+            ft.dropdown.Option("Yellow - Green"),
         ],
         value="Black",
-        on_change=lambda e: (update_config_dict(), )
+        on_change=lambda e: (update_config_dict(), ),
     )
 
     # Plot point color symbol
@@ -2032,16 +2069,18 @@ plot = {{
         options=[
             ft.dropdown.Option("Square"),
             ft.dropdown.Option("Circle"),
-            ft.dropdown.Option("Star"),
+            ft.dropdown.Option("Star (4 points)"),
             ft.dropdown.Option("Triangle"),
+            ft.dropdown.Option("Star (5 points)"),
             ft.dropdown.Option("Diagonal cross"),
             ft.dropdown.Option("Cross"),
             ft.dropdown.Option("Point"),
             ft.dropdown.Option("Inverted triangle"),
             ft.dropdown.Option("Filled square"),
             ft.dropdown.Option("Filled circle"),
-            ft.dropdown.Option("Filled star"),
+            ft.dropdown.Option("Filled star (4 points)"),
             ft.dropdown.Option("Filled triangle"),
+            ft.dropdown.Option("Filled star (5 points)"),
             ft.dropdown.Option("Filled inverted triangle"),
         ],
         value='Square',
@@ -2126,6 +2165,7 @@ plot = {{
                 rand_legend,
                 mu_legend,
                 cite_func,
+                ref_diam_lbl,
                 ref_diam,
                 invert,
                 sf_label,
@@ -2149,7 +2189,7 @@ plot = {{
                 ]),
             ),
             legend_options_container
-        ]
+        ],
     )
 
     list_view = ft.ListView(
