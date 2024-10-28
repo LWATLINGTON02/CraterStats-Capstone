@@ -1598,6 +1598,7 @@ plot = {{
         # Check for 'data' plot type
         if plot_fit_options.value == 'data':
 
+            # Disable the correct legend options
             legend_name.disabled = False
             legend_area.disabled = False
             legend_perimeter.disabled = True
@@ -1612,6 +1613,7 @@ plot = {{
 
         else:
 
+            # Enable the correct legend options
             legend_name.disabled = True
             legend_area.disabled = True
             legend_perimeter.disabled = False
@@ -1636,6 +1638,11 @@ plot = {{
             legend_perimeter.value = False
             legend_cratercount.value = False
             legend_range.value = False
+            legend_n_dref.disabled = False
+
+            legend_area.value = False
+            legend_name.value = False
+
 
     def update_range_to_presentation():
         """Updates x and y ranges.
