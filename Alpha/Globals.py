@@ -62,12 +62,58 @@ chron_systems = {
 
 }
 
-colours = ['Black', 'Red', 'Green', 'Blue', 'Yellow',
-           'Violet', 'Grey', 'Brown', 'Orange', 'Pink', 'Purple', 'Teal']
+colours = [
+    "Black",
+    "Red",
+    "Green",
+    "Blue",
+    "Yellow",
+    "Violet",
+    "Grey",
+    "Blue - 1",
+    "Blue - 2",
+    "Blue - 3",
+    "Blue - 4",
+    "Brown - 1",
+    "Brown - 2",
+    "Brown - 3",
+    "Brown - 4",
+    "Green - 1",
+    "Green - 2",
+    "Green - 3",
+    "Orange",
+    "Pink - 1",
+    "Pink - 2",
+    "Pink - 3",
+    "Purple - 1",
+    "Purple - 2",
+    "Red - 1",
+    "Red - 2",
+    "Red - 3",
+    "Teal - 1",
+    "Teal - 2",
+    "Yellow - 1",
+    "Yellow - 2",
+    "Yellow - Green",
+]
 
-symbols = ['Square', 'Circle', 'Star', 'Triangle', 'Diagonal cross',
-           'Cross', 'Point', 'Inverted triangle', 'Filled square',
-           'Filled circle', 'Filled star', 'Filled triangle', 'Filled inverted triangle']
+symbols = [
+    "Square",
+    "Circle",
+    "Star (4 points)",
+    "Triangle",
+    "Star (5 points)",
+    "Diagonal cross",
+    "Cross",
+    "Point",
+    "Inverted triangle",
+    "Filled square",
+    "Filled circle",
+    "Filled star (4 points)",
+    "Filled triangle",
+    "Filled star (5 points)",
+    "Filled inverted triangle",
+]
 
 plots_dict = {}
 
@@ -78,6 +124,8 @@ template_dict = {
     "set": {"format": {"png"}},
     "plot": [],
 }
+
+SUMMARY = False
 
 """
 DEMO CAROUSEL GLBOALS
