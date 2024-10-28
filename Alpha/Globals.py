@@ -79,6 +79,8 @@ template_dict = {
     "plot": [],
 }
 
+SUMMARY = False
+
 """
 DEMO CAROUSEL GLBOALS
 """
