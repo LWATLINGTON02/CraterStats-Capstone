@@ -702,6 +702,9 @@ def main(page: ft.Page):
 
             craterPlotSet['out'] = PATH + '/assets/plots/' + newFileName
 
+            if Globals.SUMMARY:
+                plotSettings.format = {'txt'}
+
             drawn = False
             for format in plotSettings.format:
                 if format in {'png', 'jpg', 'pdf', 'svg', 'tif'}:
@@ -714,6 +717,7 @@ def main(page: ft.Page):
                     plot_image.update()
                 if format in {'txt'}:
                     plotSettings.create_summary_table()
+                    setattr(Globals, 'SUMMARY', False)
 
             set_cmd_line_str()
             page.update()
@@ -795,104 +799,6 @@ plot = {{
   offset_age={offset_age.value.replace(" ","").split(",")}
 }}"""
                 )
-
-    def set_plot_info(e):
-        """Sets plotsetting info for subplots
-
-        Changes the settings on the Plot Settings tab depending on which subplot is
-        selected
-
-        Args:
-            e: EventHandler
-
-        Returns:
-            none
-        """
-
-        correct_key = ''
-
-        # print(e.control.label.value)
-        for key, val in plots_dict.items():
-            # print(val)
-
-            try:
-                try:
-                    if val["plot1.name"] == e.control.label.value:
-                        correct_key = key
-                except KeyError:
-                    pass
-                try:
-                    if val["plot2.name"] == e.control.label.value:
-                        correct_key = key
-                except KeyError:
-                    pass
-                try:
-                    if val["plot3.name"] == e.control.label.value:
-
-                        correct_key = key
-                except KeyError:
-                    pass
-            except KeyError:
-                print("No values")
-
-        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
-
-        range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
-        range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
-        range_val = ''
-
-        if range_start < 1:
-
-            if range_end < 1:
-
-                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
-
-            else:
-                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
-
-        else:
-            range_val = f"[{int(range_start)} km, {int(range_end)} km]"
-
-        diam_range_entry.value = range_val.strip("[]")
-
-        plot_options = plots_dict[correct_key][f"{correct_key}.type"]
-
-        if plot_options == "data":
-            plot_fit_options.value = "crater count"
-
-        elif plot_options == "diff_fit":
-            plot_fit_options.value = "differential fit"
-
-        elif plot_options == "cumu_fit":
-            plot_fit_options.value = "cumulative fit"
-
-        elif plot_options == "poisson":
-            plot_fit_options.value = "Poisson pdf"
-
-        elif plot_options == "poisson_buffer":
-            plot_fit_options.value = "Poisson buffer pdf"
-
-        error_bars.value = plots_dict[correct_key][f"{correct_key}.error_bars"]
-
-        hide_button.value = plots_dict[correct_key][f"{correct_key}.hide"]
-
-        color_dropdown.value = colours[int(
-            plots_dict[correct_key][f"{correct_key}.colour"])]
-
-        symbol_dropdown.value = symbols[int(
-            plots_dict[correct_key][f"{correct_key}.psym"])]
-
-        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
-        binning_options.options = [ft.dropdown.Option(
-            plots_dict[correct_key][f"{correct_key}.binning"])]
-
-        align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
-
-        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
-
-        plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
-
-        page.update()
 
     def set_chron_func(value, e):
         """Sets chronology function.
@@ -1617,6 +1523,7 @@ plot = {{
 
         Globals.template_dict = config
 
+        update_legend_options()
         update_range_to_presentation()
         run_plot_async()
 
@@ -1669,6 +1576,48 @@ plot = {{
                     legend_n_dref.value = False
 
         page.update()
+
+    def update_legend_options():
+        """Updates Legend options availability settings.
+
+        Updates the legend options availability settings depending on the
+        plot type
+
+        Args:
+            none
+        Returns:
+            none
+
+        """
+
+        # Check for 'data' plot type
+        if plot_fit_options.value == 'data':
+
+            # Disable the correct legend options
+            legend_name.disabled = False
+            legend_area.disabled = False
+            legend_perimeter.disabled = True
+            legend_cratercount.disabled = True
+            legend_range.disabled = True
+            legend_n_dref.disabled = True
+
+            legend_perimeter.value = False
+            legend_cratercount.value = False
+            legend_range.value = False
+            legend_n_dref.value = False
+
+        else:
+
+            # Enable the correct legend options
+            legend_name.disabled = True
+            legend_area.disabled = True
+            legend_perimeter.disabled = False
+            legend_cratercount.disabled = False
+            legend_range.disabled = False
+            legend_n_dref.disabled = False
+
+            legend_area.value = False
+            legend_name.value = False
 
     def update_range_to_presentation():
         """Updates x and y ranges.
@@ -2031,7 +1980,8 @@ plot = {{
     )
 
     # Hide Button
-    hide_button = ft.Checkbox(label="Hide plot", value=False)
+    hide_button = ft.Checkbox(
+        label="Hide plot", value=False, on_change=lambda e: (update_config_dict()))
 
     # Source file label
     source_file_label = ft.Text("Source file:")
@@ -2504,7 +2454,9 @@ plot = {{
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Summary file"),
-                        leading=ft.Icon(ft.icons.FILE_DOWNLOAD)
+                        leading=ft.Icon(ft.icons.FILE_DOWNLOAD),
+                        on_click=lambda _: (
+                            setattr(Globals, 'SUMMARY', True), run_plot_async())
                     ),
                     ft.MenuItemButton(
                         content=ft.Text(".stat table"),
