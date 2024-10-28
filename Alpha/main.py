@@ -716,8 +716,13 @@ def main(page: ft.Page):
                     plot_image.src = craterPlotSet['out'] + '.png'
                     plot_image.update()
                 if format in {'txt'}:
-                    plotSettings.create_summary_table()
-                    setattr(Globals, 'SUMMARY', False)
+                    try:
+                        plotSettings.create_summary_table()
+                        setattr(Globals, 'SUMMARY', False)
+                    except UnboundLocalError:
+                        setattr(Globals, 'SUMMARY', False)
+                        error_view(
+                            "Please select one of the following types: 'c-fit', 'd-fit', 'poisson', 'b-poisson'")
 
             set_cmd_line_str()
             page.update()
@@ -2453,7 +2458,7 @@ plot = {{
                             file_type="image/png")
                     ),
                     ft.MenuItemButton(
-                        content=ft.Text("Summary file"),
+                        content=ft.Text("Summary table"),
                         leading=ft.Icon(ft.icons.FILE_DOWNLOAD),
                         on_click=lambda _: (
                             setattr(Globals, 'SUMMARY', True), run_plot_async())
