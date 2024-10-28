@@ -1682,8 +1682,6 @@ plot = {{
 
         """
 
-        print(template_dict['plot'])
-
         # Check if source file is uploaded or plot settings filled
         if not template_dict['plot'] or template_dict['plot'][0]['source'] == '':
 
