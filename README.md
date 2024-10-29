@@ -49,6 +49,17 @@ flet run ./Alpha
 ```
 With that the GUI should be executing and ready to generate plots
 
+## Getting Started
+You should be greeted with the application home screen when opening the application.
+
+![image](https://github.com/user-attachments/assets/4ed48b5e-8ec8-4966-8f36-f16c8f153ff7)
+
+In the toolbar, you can select the "Open" button from the "File" dropdown list
+
+![image](https://github.com/user-attachments/assets/f7a10ca5-b683-4984-8cfd-8e31173a2881)
+
+Select an example 
+
 ## References
 
 [Github](https://github.com/ggmichael/craterstats) of craterstats CLI program created and developed by Greg Michaels.
