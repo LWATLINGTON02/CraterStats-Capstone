@@ -30,6 +30,16 @@ PATH = os.path.dirname(os.path.abspath(__file__))
 
 def main(page: ft.Page):
 
+    def close_app():
+        page.update()
+        delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
+        delete_temp_plots(PATH + "/../demo/", None)
+        page.window.destroy()  
+
+    def handle_window_event(e):
+        if e.data == "close":
+            close_app()
+
     def create_plot_lists():
         """Creates a dictionary of plots.
 
@@ -513,10 +523,10 @@ def main(page: ft.Page):
         if (e.key == "E" and (e.ctrl or e.meta)):
             save_file_dialog.save_file()
 
-    def loading_circle():
+    def loading_circle(text_to_display):
 
         loading = ft.AlertDialog(
-            title=ft.Text("Creating Demo Plots..."),
+            title=ft.Text(text_to_display),
             content=ft.ProgressRing(
                 stroke_cap=ft.StrokeCap.BUTT,
                 stroke_width=5
@@ -1464,7 +1474,7 @@ plot = {{
 
         command_dict = {}
 
-        loading = loading_circle()
+        loading = loading_circle("Creating Demo Plots...")
 
         cli.demo()
 
@@ -1697,6 +1707,10 @@ plot = {{
     Start of FLET GUI options
     """
     # This sets up an event listener for window resizing
+    page.window.prevent_close = True
+
+    page.window.on_event = handle_window_event
+
     page.on_resize = on_resize
 
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
@@ -2473,7 +2487,7 @@ plot = {{
                         leading=ft.Icon(ft.icons.CLOSE),
                         style=ft.ButtonStyle(
                             bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
-                        on_click=lambda _: page.window_close()
+                        on_click=lambda _: close_app()
                     )
                 ]
             ),
@@ -2579,7 +2593,11 @@ plot = {{
     page.on_keyboard_event = handle_keypress_events
 
 
-ft.app(target=main, assets_dir="assets")
+try:
+    ft.app(target=main, assets_dir="assets")
 
-delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
-delete_temp_plots(PATH + "/../demo/", None)
+finally:
+    print("Exit state reached")
+    delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
+    delete_temp_plots(PATH + "/../demo/", None)
+
