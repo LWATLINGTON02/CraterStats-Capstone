@@ -11,6 +11,7 @@ from Globals import *
 from gm.file import file_exists, read_textstructure, read_textfile, filename
 from helperFunctions import *
 import Globals
+import platform
 
 import traceback
 
@@ -32,9 +33,10 @@ def main(page: ft.Page):
 
     def close_app():
         page.update()
-        delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
+        delete_temp_plots(PATH + "/assets/plots/",
+                          ['png', 'jpg', 'pdf', 'svg', 'tif'])
         delete_temp_plots(PATH + "/../demo/", None)
-        page.window.destroy()  
+        page.window.destroy()
 
     def handle_window_event(e):
         if e.data == "close":
@@ -239,12 +241,15 @@ def main(page: ft.Page):
     def data_file_picker_result(e: FilePickerResultEvent):
         source_file = e.files[0]
         if source_file.path.endswith(".scc") or source_file.path.endswith(""):
-            print(source_file.path[2:])
-            source_file_entry.value = source_file.path[2:]
-            update_config_dict()
+            if (platform.system() == 'Windows'):
+                print(source_file.path[2:])
+                source_file_entry.value = source_file.path[2:]
+            else:
+                source_file_entry.value = source_file.path
+                update_config_dict()
         else:
             pass  # error dialouge here
-            
+
     def file_picker_result(e: FilePickerResultEvent):
         """Fills out data based off of file.
 
@@ -2610,6 +2615,6 @@ try:
 
 finally:
     print("Exit state reached")
-    delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
+    delete_temp_plots(PATH + "/assets/plots/",
+                      ['png', 'jpg', 'pdf', 'svg', 'tif'])
     delete_temp_plots(PATH + "/../demo/", None)
-
