@@ -244,7 +244,6 @@ def main(page: ft.Page):
     def data_file_picker_result(e: FilePickerResultEvent):
         source_file = e.files[0]
         if source_file.path.endswith(".scc") or source_file.path.endswith(".diam"):
-
             if (platform.system() == 'Windows'):
                 print(source_file.path[2:])
                 source_file_entry.value = source_file.path[2:]
