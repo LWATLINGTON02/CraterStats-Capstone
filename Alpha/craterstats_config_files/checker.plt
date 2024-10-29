@@ -26,7 +26,7 @@ set = {
 }
 
 plot={
-   source='/Users/caden/Library/Mobile Documents/com~apple~CloudDocs/Fall2024/CS486C/CraterStats-Capstone/Alpha/sample/Pickering.scc'
+   source=''
    name='ECHUS_CHAP_AR1_A'
    range=[0.01,100]
    type='data'
