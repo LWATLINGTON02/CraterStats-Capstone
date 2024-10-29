@@ -1492,18 +1492,20 @@ plot = {{
 
     def toggle_demo(e):
 
-        command_dict = {}
+        if Globals.DEMO_RAN == False:
 
-        loading = loading_circle("Creating Demo Plots...")
+            loading = loading_circle("Creating Demo Plots...")
 
-        cli.demo()
+            cli.demo()
 
-        command_dict = parse_demo_commands(PATH + "/../demo/")
+            Globals.command_dict = parse_demo_commands(PATH + "/../demo/")
 
-        loading.open = False
+            loading.open = False
+
         page.update()
-        demo = demo_view(command_dict)
+        demo = demo_view(Globals.command_dict)
 
+        Globals.DEMO_RAN = True
         Globals.demo_mode = False
 
     def update_config_dict():
