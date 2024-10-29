@@ -130,6 +130,8 @@ SUMMARY = False
 """
 DEMO CAROUSEL GLBOALS
 """
+command_dict = {}
+DEMO_RAN = False
 demo_mode = False
 image_index = 0
 demo_cmd_str = ''
