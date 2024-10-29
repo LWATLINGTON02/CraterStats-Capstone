@@ -236,6 +236,15 @@ def main(page: ft.Page):
         error_sheet.open = True
         page.update()
 
+    def data_file_picker_result(e: FilePickerResultEvent):
+        source_file = e.files[0]
+        if source_file.path.endswith(".scc") or source_file.path.endswith(""):
+            print(source_file.path[2:])
+            source_file_entry.value = source_file.path[2:]
+            update_config_dict()
+        else:
+            pass  # error dialouge here
+            
     def file_picker_result(e: FilePickerResultEvent):
         """Fills out data based off of file.
 
@@ -1653,7 +1662,6 @@ plot = {{
             legend_area.value = False
             legend_name.value = False
 
-
     def update_range_to_presentation():
         """Updates x and y ranges.
 
@@ -1716,6 +1724,10 @@ plot = {{
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
+
+    pick_data_file_dialog = ft.FilePicker(on_result=data_file_picker_result)
+
+    page.overlay.append(pick_data_file_dialog)
 
     save_file_dialog = ft.FilePicker(on_result=save_image)
 
@@ -2035,7 +2047,7 @@ plot = {{
 
     # File Browse button
     browse_button = ft.ElevatedButton(
-        text="Browse...", width=115, on_click=lambda _: pick_files_dialog.pick_files())
+        text="Browse...", width=115, on_click=lambda _: pick_data_file_dialog.pick_files())
 
     # Diameter Range textfield
     diam_range_entry = ft.TextField(
