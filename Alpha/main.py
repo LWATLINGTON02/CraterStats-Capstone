@@ -60,7 +60,10 @@ def main(page: ft.Page):
 
         if Globals.template_dict:
 
-            plot_name = Globals.template_dict['plot'][1]['name']
+            try:
+                plot_name = Globals.template_dict['plot'][1]['name']
+            except IndexError:
+                plot_name = "Default"
 
             content_list.append(
                 ft.Chip(ft.Text(plot_name), on_click=lambda e: (set_plot_info(e), update_config_dict())))
@@ -241,6 +244,7 @@ def main(page: ft.Page):
     def data_file_picker_result(e: FilePickerResultEvent):
         source_file = e.files[0]
         if source_file.path.endswith(".scc") or source_file.path.endswith(".diam"):
+
             if (platform.system() == 'Windows'):
                 print(source_file.path[2:])
                 source_file_entry.value = source_file.path[2:]
@@ -440,6 +444,8 @@ def main(page: ft.Page):
                         config['plot'][index]['offset_age'][0] + ", " + config['plot'][index]['offset_age'][1])
 
             Globals.template_dict = config
+
+        print_tree(Globals.template_dict)
 
         update_legend()
         create_plot_lists()
@@ -1550,7 +1556,7 @@ plot = {{
                                'offset_age': offset_age.value.replace(" ", "").split(",")
                                })
 
-        Globals.template_dict = config
+        setattr(Globals, 'template_dict', config)
 
         update_legend_options()
         update_range_to_presentation()
@@ -2056,7 +2062,7 @@ plot = {{
 
     # Diameter Range textfield
     diam_range_entry = ft.TextField(
-        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+        width=150, dense=True, value="0, 10", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
