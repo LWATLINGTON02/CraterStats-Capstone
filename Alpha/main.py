@@ -244,9 +244,10 @@ def main(page: ft.Page):
             if (platform.system() == 'Windows'):
                 print(source_file.path[2:])
                 source_file_entry.value = source_file.path[2:]
+                print("File path is set")
             else:
-                source_file_entry.value = source_file.path
-                update_config_dict()
+                source_file_entry.value = source_file.path    
+            update_config_dict()
         else:
             pass  # error dialouge here
 
