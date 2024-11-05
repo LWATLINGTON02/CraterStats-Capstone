@@ -27,7 +27,12 @@ pip install flet
 pip install craterstats
 ```
 
-Download the ZIP file for the repository or `git clone` to your local machine.
+As of now, there are two methods for aquiring CraterstatsGUI on your local system
+- Download the repository
+  - ![image](https://github.com/user-attachments/assets/619683c5-c3d6-4bf9-87f8-a691013d97ab)
+
+
+- If you have git installed you can `git clone` to your local machine.
 ```
 git clone https://github.com/LWATLINGTON02/CraterStats-Capstone.git
 ```
@@ -35,11 +40,11 @@ git clone https://github.com/LWATLINGTON02/CraterStats-Capstone.git
 After installing python, required dependencies, and downloading the application from github, navigate to the repository's directory within your system
 Windows example:
 ```
-cd Documents/Github/CraterStats-Capstone
+cd CraterStats-Capstone
 ```
 
 To run the application execute the following command
 ```
-flet run ./Alpha
+flet Alpha
 ```
 With that the GUI should be running and ready to generate plots
