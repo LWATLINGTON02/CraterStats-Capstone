@@ -55,8 +55,8 @@ Upon running the application you should be greeted with the home screen.
 ![image](https://github.com/user-attachments/assets/4ed48b5e-8ec8-4966-8f36-f16c8f153ff7)
 
 In the toolbar, you can select the "Open" button from the "File" dropdown list. If you do not have your own plot configuration and data files, you can download samples here:
-[Configuration File](https://raw.githubusercontent.com/LWATLINGTON02/CraterStats-Capstone/refs/heads/main/Alpha/craterstats_config_files/checker.plt)
-[Data File](https://raw.githubusercontent.com/LWATLINGTON02/CraterStats-Capstone/refs/heads/main/Alpha/sample/sample.scc)
+[Configuration File](https://githubusercontent.com/LWATLINGTON02/CraterStats-Capstone/refs/heads/main/Alpha/craterstats_config_files/checker.plt)
+[Data File](https://githubusercontent.com/LWATLINGTON02/CraterStats-Capstone/refs/heads/main/Alpha/sample/sample.scc)
 
 ![image](https://github.com/user-attachments/assets/f7a10ca5-b683-4984-8cfd-8e31173a2881)
 
