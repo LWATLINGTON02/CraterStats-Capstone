@@ -50,11 +50,13 @@ flet run ./Alpha
 With that the GUI should be executing and ready to generate plots
 
 ## Getting Started
-You should be greeted with the application home screen when opening the application.
+Upon running the application you should be greeted with the home screen.
 
 ![image](https://github.com/user-attachments/assets/4ed48b5e-8ec8-4966-8f36-f16c8f153ff7)
 
-In the toolbar, you can select the "Open" button from the "File" dropdown list
+In the toolbar, you can select the "Open" button from the "File" dropdown list. If you do not have your own plot configuration and data files, you can download samples here:
+<a id="raw-url" href="https://raw.githubusercontent.com/LWATLINGTON02/CraterStats-Capstone/refs/heads/main/Alpha/craterstats_config_files/checker.plt" download>Configuration File</a>
+<a id="raw-url" href="https://raw.githubusercontent.com/LWATLINGTON02/CraterStats-Capstone/refs/heads/main/Alpha/sample/sample.scc" download>Data File</a>
 
 ![image](https://github.com/user-attachments/assets/f7a10ca5-b683-4984-8cfd-8e31173a2881)
 
