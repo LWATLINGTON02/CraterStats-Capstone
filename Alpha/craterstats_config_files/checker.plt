@@ -27,7 +27,7 @@ set = {
 
 plot={
    source=''
-   name='ECHUS_CHAP_AR1_A'
+   name=''
    range=[0.01,100]
    type='data'
    error_bars=1
