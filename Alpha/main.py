@@ -635,9 +635,9 @@ def main(page: ft.Page):
             none
         """
 
-        template = PATH + "/craterstats_config_files/default.plt"
-        functions = PATH + "/craterstats_config_files/functions.txt"
-        functions_user = PATH + "/craterstats_config_files/functions_user.txt"
+        template = PATH + "/assets/config files/default.plt"
+        functions = PATH + "/assets/config files/functions.txt"
+        functions_user = PATH + "/assets/config files/functions_user.txt"
 
         arg = Namespace(
             about=False,
