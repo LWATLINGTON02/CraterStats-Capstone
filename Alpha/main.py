@@ -1119,10 +1119,10 @@ def main(page: ft.Page):
         new_str = ''
 
         if epoch.value == 'Moon, Wilhelms (1987)':
-            new_str = ' -ep 1'
+            new_str = ' -ep moon'
 
         elif epoch.value == 'Mars, Michael (2013)':
-            new_str = ' -ep 2'
+            new_str = ' -ep mars'
 
         return new_str
 
@@ -1143,9 +1143,9 @@ def main(page: ft.Page):
         new_str = ''
 
         if equil_func.value == 'Standard lunar equilibrium (Trask, 1966)':
-            new_str = ' -ef 1'
+            new_str = ' -ef standard'
         elif equil_func.value == 'Hartmann (1984)':
-            new_str = ' -ef 2'
+            new_str = ' -ef hartmann'
 
         return new_str
 
