@@ -726,7 +726,10 @@ def main(page: ft.Page):
             if plot and arg.autoscale:
                 x_range.value = ", ".join(map(str, plotSettings.xrange))
                 y_range.value = ", ".join(map(str, plotSettings.yrange))
-                plotSettings.autoscale()
+                try:
+                    plotSettings.autoscale()
+                except BaseException:
+                    error_view("No data within range selected")
 
             newFileName = generate_output_file_name()
 
@@ -2319,7 +2322,7 @@ def main(page: ft.Page):
             browse_button
         ]),
         ft.Row([
-            ft.Text("Diameter range:"),
+            ft.Text("Range:"),
             diam_range_entry,
             ft.Text("Binning"),
             binning_options
