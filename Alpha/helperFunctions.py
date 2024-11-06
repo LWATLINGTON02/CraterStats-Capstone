@@ -64,7 +64,7 @@ def parse_demo_commands(demo_file_path):
         print("Demos need to be created first")
         return
 
-    with open(PATH + "/craterstats_config_files/demo_commands.txt", "r") as file:
+    with open(PATH + "/assets/config files/demo_commands.txt", "r") as file:
         for line in file:
 
             line = line.strip()

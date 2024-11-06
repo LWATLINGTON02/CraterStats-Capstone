@@ -118,7 +118,7 @@ symbols = [
 plots_dict = {}
 
 
-template_file = PATH + '/craterstats_config_files/default.plt'
+template_file = PATH + '/assets/config files/default.plt'
 
 template_dict = {
     "set": {"format": {"png"}},
@@ -130,6 +130,8 @@ SUMMARY = False
 """
 DEMO CAROUSEL GLBOALS
 """
+command_dict = {}
+DEMO_RAN = False
 demo_mode = False
 image_index = 0
 demo_cmd_str = ''

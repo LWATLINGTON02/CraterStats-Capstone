@@ -11,6 +11,7 @@ from Globals import *
 from gm.file import file_exists, read_textstructure, read_textfile, filename
 from helperFunctions import *
 import Globals
+import platform
 
 import traceback
 
@@ -32,9 +33,10 @@ def main(page: ft.Page):
 
     def close_app():
         page.update()
-        delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
+        delete_temp_plots(PATH + "/assets/plots/",
+                          ['png', 'jpg', 'pdf', 'svg', 'tif'])
         delete_temp_plots(PATH + "/../demo/", None)
-        page.window.destroy()  
+        page.window.destroy()
 
     def handle_window_event(e):
         if e.data == "close":
@@ -58,7 +60,10 @@ def main(page: ft.Page):
 
         if Globals.template_dict:
 
-            plot_name = Globals.template_dict['plot'][1]['name']
+            try:
+                plot_name = Globals.template_dict['plot'][1]['name']
+            except IndexError:
+                plot_name = "Default"
 
             content_list.append(
                 ft.Chip(ft.Text(plot_name), on_click=lambda e: (set_plot_info(e), update_config_dict())))
@@ -236,6 +241,19 @@ def main(page: ft.Page):
         error_sheet.open = True
         page.update()
 
+    def data_file_picker_result(e: FilePickerResultEvent):
+        source_file = e.files[0]
+        if source_file.path.endswith(".scc") or source_file.path.endswith(".diam"):
+            if (platform.system() == 'Windows'):
+                print(source_file.path[2:])
+                source_file_entry.value = source_file.path[2:]
+                print("File path is set")
+            else:
+                source_file_entry.value = source_file.path    
+            update_config_dict()
+        else:
+            pass  # error dialouge here
+
     def file_picker_result(e: FilePickerResultEvent):
         """Fills out data based off of file.
 
@@ -388,10 +406,10 @@ def main(page: ft.Page):
                         continue
                     config['plot'][index][key] = None
 
-                if 'source' in dictionary:
+                if 'source' in dictionary and config['plot'][index]['source'] != "":
                     source_file_entry.value = config['plot'][index]['source']
+                    
                 if 'name' in dictionary:
-
                     if config['plot'][index]['name'] == None:
                         config['plot'][index]['name'] = 'Default'
 
@@ -426,6 +444,8 @@ def main(page: ft.Page):
                         config['plot'][index]['offset_age'][0] + ", " + config['plot'][index]['offset_age'][1])
 
             Globals.template_dict = config
+
+        print_tree(Globals.template_dict)
 
         update_legend()
         create_plot_lists()
@@ -615,9 +635,9 @@ def main(page: ft.Page):
             none
         """
 
-        template = PATH + "/craterstats_config_files/default.plt"
-        functions = PATH + "/craterstats_config_files/functions.txt"
-        functions_user = PATH + "/craterstats_config_files/functions_user.txt"
+        template = PATH + "/assets/config files/default.plt"
+        functions = PATH + "/assets/config files/functions.txt"
+        functions_user = PATH + "/assets/config files/functions_user.txt"
 
         arg = Namespace(
             about=False,
@@ -773,47 +793,47 @@ def main(page: ft.Page):
             with open(export_path, 'w') as file:
                 file.write(
                     f"""set = {{
-  chronology_system={chron_sys.value}
-  cite_functions= {1 if cite_func.value else 0}
-  epochs= {epoch.value}
-  equilibrium= {equil_func.value}
-  isochrons= {iso_text.value}
-  mu= {mu_legend.value}
-  presentation= {plot_view.value}
-  print_dimensions= {print_scale_entry.value}
-  pt_size= {text_size.value}
-  randomness= {rand_legend.value}
-  ref_diameter= {1 if ref_diam.value else 0}
-  sig_figs= {sf_entry.value}
-  show_isochrons= {1 if show_iso.value else 0}
-  show_subtitle= {1 if subtitle_checkbox.value else 0}
-  show_title= {1 if title_checkbox.value else 0}
-  style= {style_options.value}
-  subtitle= {subtitle_entry.value}
-  title= {title_entry.value}
-  invert= {1 if invert.value else 0}
-  show_legend_area= {1 if legend_name.value else 0}
-  xrange= {x_range.value.replace(" ","").split(",")}
-  yrange= {y_range.value.replace(" ","").split(",")}
-}}
+                        chronology_system={chron_sys.value}
+                        cite_functions= {1 if cite_func.value else 0}
+                        epochs= {epoch.value}
+                        equilibrium= {equil_func.value}
+                        isochrons= {iso_text.value}
+                        mu= {mu_legend.value}
+                        presentation= {plot_view.value}
+                        print_dimensions= {print_scale_entry.value}
+                        pt_size= {text_size.value}
+                        randomness= {rand_legend.value}
+                        ref_diameter= {1 if ref_diam.value else 0}
+                        sig_figs= {sf_entry.value}
+                        show_isochrons= {1 if show_iso.value else 0}
+                        show_subtitle= {1 if subtitle_checkbox.value else 0}
+                        show_title= {1 if title_checkbox.value else 0}
+                        style= {style_options.value}
+                        subtitle= {subtitle_entry.value}
+                        title= {title_entry.value}
+                        invert= {1 if invert.value else 0}
+                        show_legend_area= {1 if legend_name.value else 0}
+                        xrange= {x_range.value.replace(" ","").split(",")}
+                        yrange= {y_range.value.replace(" ","").split(",")}
+                        }}
 
-plot = {{
-  source={source_file_entry.value},
-  name={plot_fit_text.value},
-  range={diam_range_entry.value.replace(" ","").split(",")}
-  type={plot_fit_options.value}
-  error_bars={1 if error_bars.value else 0}
-  hide={1 if hide_button.value else 0}
-  colour={colours.index(color_dropdown.value)}
-  psym={symbols.index(symbol_dropdown.value)}
-  binning={binning_options.value}
-  age_left={1 if align_left.value else 0}
-  display_age={1 if display_age.value else 0}
-  resurf={1 if resurf.value else 0}
-  resurf_showall={1 if resurf_all.value else 0}
-  offset_age={offset_age.value.replace(" ","").split(",")}
-}}"""
-                )
+                        plot = {{
+                        source={source_file_entry.value},
+                        name={plot_fit_text.value},
+                        range={diam_range_entry.value.replace(" ","").split(",")}
+                        type={plot_fit_options.value}
+                        error_bars={1 if error_bars.value else 0}
+                        hide={1 if hide_button.value else 0}
+                        colour={colours.index(color_dropdown.value)}
+                        psym={symbols.index(symbol_dropdown.value)}
+                        binning={binning_options.value}
+                        age_left={1 if align_left.value else 0}
+                        display_age={1 if display_age.value else 0}
+                        resurf={1 if resurf.value else 0}
+                        resurf_showall={1 if resurf_all.value else 0}
+                        offset_age={offset_age.value.replace(" ","").split(",")}
+                        }}"""
+                    )
 
     def set_chron_func(value, e):
         """Sets chronology function.
@@ -1099,10 +1119,10 @@ plot = {{
         new_str = ''
 
         if epoch.value == 'Moon, Wilhelms (1987)':
-            new_str = ' -ep 1'
+            new_str = ' -ep moon'
 
         elif epoch.value == 'Mars, Michael (2013)':
-            new_str = ' -ep 2'
+            new_str = ' -ep mars'
 
         return new_str
 
@@ -1123,9 +1143,9 @@ plot = {{
         new_str = ''
 
         if equil_func.value == 'Standard lunar equilibrium (Trask, 1966)':
-            new_str = ' -ef 1'
+            new_str = ' -ef standard'
         elif equil_func.value == 'Hartmann (1984)':
-            new_str = ' -ef 2'
+            new_str = ' -ef hartmann'
 
         return new_str
 
@@ -1472,18 +1492,20 @@ plot = {{
 
     def toggle_demo(e):
 
-        command_dict = {}
+        if Globals.DEMO_RAN == False:
 
-        loading = loading_circle("Creating Demo Plots...")
+            loading = loading_circle("Creating Demo Plots...")
 
-        cli.demo()
+            cli.demo()
 
-        command_dict = parse_demo_commands(PATH + "/../demo/")
+            Globals.command_dict = parse_demo_commands(PATH + "/../demo/")
 
-        loading.open = False
+            loading.open = False
+
         page.update()
-        demo = demo_view(command_dict)
+        demo = demo_view(Globals.command_dict)
 
+        Globals.DEMO_RAN = True
         Globals.demo_mode = False
 
     def update_config_dict():
@@ -1536,7 +1558,7 @@ plot = {{
                                'offset_age': offset_age.value.replace(" ", "").split(",")
                                })
 
-        Globals.template_dict = config
+        setattr(Globals, 'template_dict', config)
 
         update_legend_options()
         update_range_to_presentation()
@@ -1653,7 +1675,6 @@ plot = {{
             legend_area.value = False
             legend_name.value = False
 
-
     def update_range_to_presentation():
         """Updates x and y ranges.
 
@@ -1716,6 +1737,10 @@ plot = {{
     pick_files_dialog = ft.FilePicker(on_result=file_picker_result)
 
     page.overlay.append(pick_files_dialog)
+
+    pick_data_file_dialog = ft.FilePicker(on_result=data_file_picker_result)
+
+    page.overlay.append(pick_data_file_dialog)
 
     save_file_dialog = ft.FilePicker(on_result=save_image)
 
@@ -2035,11 +2060,11 @@ plot = {{
 
     # File Browse button
     browse_button = ft.ElevatedButton(
-        text="Browse...", width=115, on_click=lambda _: pick_files_dialog.pick_files())
+        text="Browse...", width=115, on_click=lambda _: pick_data_file_dialog.pick_files())
 
     # Diameter Range textfield
     diam_range_entry = ft.TextField(
-        width=150, dense=True, value="0.0", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
+        width=150, dense=True, value="0, 10", bgcolor=ft.colors.GREY_900, on_blur=lambda e: (update_config_dict(), ))
 
     # Plot point color dropdown
     color_dropdown = ft.Dropdown(
@@ -2598,6 +2623,6 @@ try:
 
 finally:
     print("Exit state reached")
-    delete_temp_plots(PATH + "/assets/plots/", ['png', 'jpg', 'pdf', 'svg', 'tif'])
+    delete_temp_plots(PATH + "/assets/plots/",
+                      ['png', 'jpg', 'pdf', 'svg', 'tif'])
     delete_temp_plots(PATH + "/../demo/", None)
-
