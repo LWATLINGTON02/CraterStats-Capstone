@@ -1707,8 +1707,8 @@ def main(page: ft.Page):
     """
     page.title = 'Craterstats IV'  # Application title
     page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
-    page.window.width = 1920  # Application width
-    page.window.height = 1080  # Application Height
+    page.window.width = 1024  # Application width
+    page.window.height = 768  # Application Height
     page.window.resizable = True  # Application size is static
     page.window.left = 0    # Set the window position to the leftmost side
     page.window.top = 0
@@ -2298,18 +2298,18 @@ def main(page: ft.Page):
             spacing=20
 
         ),
-        ft.Row([
-            plot_lists_container,
-            ft.Column([
-                new_button,
-                duplicate_button,
-                delete_button,
-            ]),
-            ft.Column([
-                up_button,
-                down_button,
-            ])
-        ]),
+#        ft.Row([
+#            plot_lists_container,
+#            ft.Column([
+#                new_button,
+#                duplicate_button,
+#                delete_button,
+#            ]),
+#            ft.Column([
+#                up_button,
+#                down_button,
+#            ])
+#        ]),
         ft.Divider(),
         ft.Row([
             plot_fit_text,
@@ -2355,7 +2355,7 @@ def main(page: ft.Page):
         src="/plots/blank_plot.png",
         height=page.window.height * 0.55,
         width=page.window.width * 0.55,
-        fit=ft.ImageFit.CONTAIN
+        fit=ft.ImageFit.FIT_WIDTH
     )
 
     plot_image.resizable = True
@@ -2586,13 +2586,15 @@ def main(page: ft.Page):
         controls=[
             ft.Container(
                 content=tabs,
-                expand=2,
+                expand=6,
                 width=page.window.width * 0.5
             ),
             ft.Container(
                 content=plot_image if not Globals.demo_mode else None,
-                expand=2,
-                width=page.window.width * 0.5
+                expand=5,
+                width=page.window.width,
+                height=page.window.height,
+                padding=ft.padding.all(30)
             ),
         ],
         expand=True
