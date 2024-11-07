@@ -2563,9 +2563,9 @@ def main(page: ft.Page):
     # plot image
     plot_image = ft.Image(
         src="/plots/blank_plot.png",
-        height=page.window.height * 0.85,
-        width=page.window.width * 0.85,
-        fit=ft.ImageFit.CONTAIN,
+        height=page.window.width,
+        width=page.window.width * 0.8,
+        fit=ft.ImageFit.FIT_WIDTH,
     )
 
     plot_image.resizable = True
