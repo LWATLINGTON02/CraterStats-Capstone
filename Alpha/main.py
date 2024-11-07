@@ -2445,18 +2445,24 @@ def main(page: ft.Page):
                 ],
                 spacing=20,
             ),
-            #        ft.Row([
-            #            plot_lists_container,
-            #            ft.Column([
-            #                new_button,
-            #                duplicate_button,
-            #                delete_button,
-            #            ]),
-            #            ft.Column([
-            #                up_button,
-            #                down_button,
-            #            ])
-            #        ]),
+            # ft.Row(
+            #     [
+            #         plot_lists_container,
+            #         ft.Column(
+            #             [
+            #                 new_button,
+            #                 duplicate_button,
+            #                 delete_button,
+            #             ]
+            #         ),
+            #         ft.Column(
+            #             [
+            #                 up_button,
+            #                 down_button,
+            #             ]
+            #         ),
+            #     ]
+            # ),
             ft.Divider(),
             ft.Row(
                 [
