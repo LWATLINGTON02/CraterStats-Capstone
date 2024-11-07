@@ -4,7 +4,7 @@ import concurrent.futures
 
 import flet as ft
 from craterstats import cli, Craterplot, Craterplotset, constants
-from flet import FilePickerResultEvent, ControlEvent
+from flet import FilePickerResultEvent
 import shutil
 
 from Globals import *
@@ -736,7 +736,7 @@ def main(page: ft.Page):
         """
 
         dlg = ft.AlertDialog(
-            title=ft.Text("CraterstatsIV"),
+            title=ft.Text("Craterstats Capstone"),
             content=ft.Text(
                 "\n".join(
                     [
@@ -749,6 +749,7 @@ def main(page: ft.Page):
                         "Levi Watlington\n",
                         "Craterstats Program developed by Greg Michael",
                         "Version: 0.2",
+                        "Craterstats III version (pypi): 3.0.21"
                         "",
                         "Explanations of concepts and calculations used in the software are given in publications below:",
                         "",
@@ -1863,7 +1864,7 @@ def main(page: ft.Page):
     """
     Default Settings for the application
     """
-    page.title = "Craterstats IV"  # Application title
+    page.title = "Craterstats Capstone"  # Application title
     page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
     page.window.width = 1024  # Application width
     page.window.height = 768  # Application Height
