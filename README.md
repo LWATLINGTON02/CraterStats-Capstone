@@ -1,7 +1,7 @@
 # CraterStats GUI
 
 Northern Arizona University Senior Computer Science Capstone project.  
-This project is to create a GUI for the current Craterstats CLI program.
+This project is to create a Graphical User Interface for the current [Craterstats3](https://github.com/ggmichael/craterstats) command line program.
 
 ## Installation
 
@@ -13,9 +13,11 @@ Upon running the application you should be greeted with the home screen.
 
 ![image](https://github.com/user-attachments/assets/4ed48b5e-8ec8-4966-8f36-f16c8f153ff7)
 
-In the toolbar, you can select the "Open" button from the "File" dropdown list. If you do not have your own plot configuration and data files, you can download samples here:
+In the toolbar, you can select the "Open" button from the "File" dropdown list. <br>
+If you do not have your own plot configuration and data files, you can download samples here:
 [Configuration File](https://github.com/LWATLINGTON02/CraterStats-Capstone/blob/main/Alpha/craterstats_config_files/checker.plt)
-[Data File](https://github.com/LWATLINGTON02/CraterStats-Capstone/blob/main/Alpha/sample/sample.scc)
+[Data File](https://github.com/LWATLINGTON02/CraterStats-Capstone/blob/main/Alpha/sample/sample.scc) <br>
+***Disclaimer: CraterstatsGUI can only process .scc and .diam files at this stage in development.***
 
 ![image](https://github.com/user-attachments/assets/f7a10ca5-b683-4984-8cfd-8e31173a2881)
 
@@ -34,7 +36,7 @@ Select your source file
 After upload, the application should be displaying your plot configuration
 ![image](https://github.com/user-attachments/assets/6bd5898d-5fa6-4212-8baf-b4302821c56c)
 
-
+### Happy Plotting!
 
 
 
