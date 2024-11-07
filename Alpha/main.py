@@ -2517,14 +2517,6 @@ def main(page: ft.Page):
                     ft.Column(
                         [
                             new_button,
-                            duplicate_button,
-                            delete_button,
-                        ]
-                    ),
-                    ft.Column(
-                        [
-                            up_button,
-                            down_button,
                         ]
                     ),
                 ]
