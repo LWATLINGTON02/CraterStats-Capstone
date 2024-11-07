@@ -72,6 +72,29 @@ def main(page: ft.Page):
         if e.data == "close":
             close_app()
 
+    def change_subplot_name(e):
+        selected_chip = next(
+            (chip for chip in plot_lists.controls if chip.selected), None
+        )
+
+        if selected_chip:
+            selected_chip.label = ft.Text(e.control.value)
+            selected_chip.data[0]["name"] = e.control.value
+            update_config_dict()
+            page.update()
+
+    def chip_on_click(e):
+
+        if len(plot_lists.controls) > 1:
+            for chip in plot_lists.controls:
+                if chip.selected:
+                    chip.selected = False
+            e.control.selected = True
+
+        set_plot_info(e)
+
+        page.update()
+
     def create_plot_lists():
         """Creates a dictionary of plots.
 
@@ -286,9 +309,7 @@ def main(page: ft.Page):
         source_file = e.files[0]
         if source_file.path.endswith(".scc") or source_file.path.endswith(".diam"):
             if platform.system() == "Windows":
-                print(source_file.path[2:])
                 source_file_entry.value = source_file.path[2:]
-                print("File path is set")
             else:
                 source_file_entry.value = source_file.path
             update_config_dict()
@@ -698,20 +719,6 @@ def main(page: ft.Page):
 
     def on_resize(e):
         # Trigger UI update when window is resized
-        page.update()
-
-    def chip_on_click(e):
-
-        print(len(plot_lists.controls))
-
-        if len(plot_lists.controls) > 1:
-            for chip in plot_lists.controls:
-                if chip.selected:
-                    chip.selected = False
-            e.control.selected = True
-
-        set_plot_info(e)
-
         page.update()
 
     def open_about_dialog(e):
@@ -1453,8 +1460,6 @@ def main(page: ft.Page):
             none
         """
 
-        print("\n\nSet plot chip\n", e.control.data)
-
         data = e.control.data
 
         source_file_entry.value = data[0]["source"]
@@ -1472,7 +1477,6 @@ def main(page: ft.Page):
         resurf_showall.value = True if data[1]["resurf_showall"] == "1" else False
         offset_age.value = f"{data[1]['offset_age'][0]},{data[1]['offset_age'][1]}"
 
-        print("\n\nSource\n", source_file_entry.value)
         page.update()
 
     def set_plot_view_str():
@@ -1702,7 +1706,6 @@ def main(page: ft.Page):
 
         if selected_chip is not None:
 
-            print("Setting selected chip data")
             selected_chip.data = config["plot"]
 
         Globals.template_dict["set"] = config["set"]
@@ -1842,16 +1845,20 @@ def main(page: ft.Page):
             presentation = plot_view.value
 
             # set the x and y ranges to the default for the presentation
-            x_range.value = (
+            Globals.template_dict["set"]["xrange"] = (
                 str(constants.DEFAULT_XRANGE[presentation][0])
                 + ", "
                 + str(constants.DEFAULT_XRANGE[presentation][1])
             )
-            y_range.value = (
+            Globals.template_dict["set"]["yrange"] = (
                 str(constants.DEFAULT_YRANGE[presentation][0])
                 + ", "
                 + str(constants.DEFAULT_YRANGE[presentation][1])
             )
+
+            x_range.value = Globals.template_dict["set"]["xrange"]
+            y_range.value = Globals.template_dict["set"]["yrange"]
+            page.update()
 
     """
     Default Settings for the application
@@ -1917,7 +1924,10 @@ def main(page: ft.Page):
             ]
         ),
         value="differential",
-        on_change=lambda e: (update_config_dict(), update_range_to_presentation()),
+        on_change=lambda e: (
+            update_range_to_presentation(),
+            update_config_dict(),
+        ),
     )
 
     # Celestial body fropdown options
@@ -2222,7 +2232,7 @@ def main(page: ft.Page):
         dense=True,
         value="Default",
         bgcolor=ft.colors.GREY_900,
-        on_blur=lambda e: (update_config_dict(),),
+        on_blur=lambda e: (update_config_dict(), change_subplot_name(e)),
     )
 
     # Plot fit dropdown
