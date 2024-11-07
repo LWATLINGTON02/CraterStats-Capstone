@@ -4,7 +4,7 @@ import concurrent.futures
 
 import flet as ft
 from craterstats import cli, Craterplot, Craterplotset, constants
-from flet import FilePickerResultEvent
+from flet import FilePickerResultEvent, ControlEvent
 import shutil
 
 from Globals import *
@@ -27,6 +27,36 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 PATH = os.path.dirname(os.path.abspath(__file__))
 
 
+# Custom component for plot chips
+class PlotChip(ft.Chip):
+
+    def __init__(self, label, selected, selected_color, show_checkmark, on_click):
+        super().__init__(label)
+        self.data = [
+            {"source": ""},
+            {
+                "name": "",
+                "range": [0, 100],
+                "type": "data",
+                "error_bars": 1,
+                "hide": 0,
+                "colour": 0,
+                "psym": "1",
+                "binning": "pseudo-log",
+                "age_left": 0,
+                "display_age": 1,
+                "resurf": 0,
+                "resurf_showall": 0,
+                "offset_age": [0, 0],
+            },
+        ]
+        self.label = label
+        self.selected = selected
+        self.selected_colour = selected_color
+        self.show_checkmark = show_checkmark
+        self.on_click = on_click
+
+
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 
 
@@ -41,6 +71,29 @@ def main(page: ft.Page):
     def handle_window_event(e):
         if e.data == "close":
             close_app()
+
+    def change_subplot_name(e):
+        selected_chip = next(
+            (chip for chip in plot_lists.controls if chip.selected), None
+        )
+
+        if selected_chip:
+            selected_chip.label = ft.Text(e.control.value)
+            selected_chip.data[0]["name"] = e.control.value
+            update_config_dict()
+            page.update()
+
+    def chip_on_click(e):
+
+        if len(plot_lists.controls) > 1:
+            for chip in plot_lists.controls:
+                if chip.selected:
+                    chip.selected = False
+            e.control.selected = True
+
+        set_plot_info(e)
+
+        page.update()
 
     def create_plot_lists():
         """Creates a dictionary of plots.
@@ -66,9 +119,12 @@ def main(page: ft.Page):
                 plot_name = "Default"
 
             content_list.append(
-                ft.Chip(
-                    ft.Text(plot_name),
-                    on_click=lambda e: (set_plot_info(e), update_config_dict()),
+                PlotChip(
+                    label=ft.Text(plot_name),
+                    selected=True,
+                    selected_color=ft.colors.BLUE,
+                    show_checkmark=True,
+                    on_click=lambda e: (chip_on_click(e), update_config_dict()),
                 )
             )
 
@@ -253,9 +309,7 @@ def main(page: ft.Page):
         source_file = e.files[0]
         if source_file.path.endswith(".scc") or source_file.path.endswith(".diam"):
             if platform.system() == "Windows":
-                print(source_file.path[2:])
                 source_file_entry.value = source_file.path[2:]
-                print("File path is set")
             else:
                 source_file_entry.value = source_file.path
             update_config_dict()
@@ -276,6 +330,11 @@ def main(page: ft.Page):
         Returns:
             none
         """
+
+        selected_chip = next(
+            (chip for chip in plot_lists.controls if chip.selected), None
+        )
+
         if e.files[0].path.endswith(".plt") and len(e.files) >= 1:
             # Reads through each line of data and sets data based off of line
             config = {}
@@ -346,7 +405,7 @@ def main(page: ft.Page):
 
             """
             TODO HERE: ADD CITE_FUNCTIONS, INVERT, LEGEND, SHOW_LEGEND_AREA TO SET SETTINGS
-                       ADD RESURF, RESURF_ALL, ISOCHRON, OFFSET_AGE TO PLOT SETTINGS
+                       ADD RESURF, resurf_showall, ISOCHRON, OFFSET_AGE TO PLOT SETTINGS
             """
 
             if "chronology_system" in config["set"]:
@@ -486,9 +545,11 @@ def main(page: ft.Page):
                     resurf.value = (
                         True if config["plot"][index]["resurf"] == "1" else False
                     )
-                if "resurf_all" in dictionary:
-                    resurf_all.value = (
-                        True if config["plot"][index]["resurf_all"] == "1" else False
+                if "resurf_showall" in dictionary:
+                    resurf_showall.value = (
+                        True
+                        if config["plot"][index]["resurf_showall"] == "1"
+                        else False
                     )
                 if "offset_age" in dictionary:
                     offset_age.value = (
@@ -497,7 +558,9 @@ def main(page: ft.Page):
                         + config["plot"][index]["offset_age"][1]
                     )
 
-            Globals.template_dict = config
+            selected_chip.data = config["plot"]
+            Globals.template_dict["set"] = config["set"]
+            Globals.template_dict["plot"] = selected_chip.data
 
         update_legend()
         create_plot_lists()
@@ -608,6 +671,52 @@ def main(page: ft.Page):
 
         return loading
 
+    def new_subplot():
+        """Creates new subplots.
+
+        Create new subplots on button press to allow for more customization of the plots
+
+
+        Args:
+            none
+
+        Returns:
+            none
+        """
+
+        subplot = [
+            {"source": ""},
+            {
+                "name": "",
+                "range": [0, 100],
+                "type": "data",
+                "error_bars": 1,
+                "hide": 0,
+                "colour": 0,
+                "psym": "1",
+                "binning": "pseudo-log",
+                "age_left": 0,
+                "display_age": 1,
+                "resurf": 0,
+                "resurf_showall": 0,
+                "offset_age": [0, 0],
+            },
+        ]
+
+        Globals.template_dict["plot"].append(subplot[0])
+        Globals.template_dict["plot"].append(subplot[1])
+
+        newChip = PlotChip(
+            label=ft.Text("Default"),
+            selected=False,
+            selected_color=ft.colors.BLUE,
+            show_checkmark=True,
+            on_click=lambda e: (chip_on_click(e), update_config_dict()),
+        )
+        plot_lists.controls.append(newChip)
+
+        page.update()
+
     def on_resize(e):
         # Trigger UI update when window is resized
         page.update()
@@ -625,6 +734,7 @@ def main(page: ft.Page):
         Returns:
             none
         """
+
         dlg = ft.AlertDialog(
             title=ft.Text("CraterstatsIV"),
             content=ft.Text(
@@ -691,6 +801,10 @@ def main(page: ft.Page):
         template = PATH + "/assets/config files/default.plt"
         functions = PATH + "/assets/config files/functions.txt"
         functions_user = PATH + "/assets/config files/functions_user.txt"
+
+        selected_chip = next(
+            (chip for chip in plot_lists.controls if chip.selected), None
+        )
 
         arg = Namespace(
             about=False,
@@ -898,7 +1012,7 @@ def main(page: ft.Page):
                         age_left={1 if align_left.value else 0}
                         display_age={1 if display_age.value else 0}
                         resurf={1 if resurf.value else 0}
-                        resurf_showall={1 if resurf_all.value else 0}
+                        resurf_showall={1 if resurf_showall.value else 0}
                         offset_age={offset_age.value.replace(" ","").split(",")}
                         }}"""
                 )
@@ -1346,91 +1460,22 @@ def main(page: ft.Page):
             none
         """
 
-        correct_key = ""
+        data = e.control.data
 
-        for key, val in plots_dict.items():
-
-            try:
-                try:
-                    if val["plot1.name"] == e.control.label.value:
-
-                        correct_key = key
-                except KeyError:
-                    pass
-                try:
-                    if val["plot2.name"] == e.control.label.value:
-
-                        correct_key = key
-                except KeyError:
-                    pass
-                try:
-                    if val["plot3.name"] == e.control.label.value:
-
-                        correct_key = key
-                except KeyError:
-                    pass
-            except KeyError:
-                pass
-
-        source_file_entry.value = plots_dict[correct_key][f"{correct_key}.source"]
-
-        range_start = float(plots_dict[correct_key][f"{correct_key}.range"][0])
-        range_end = float(plots_dict[correct_key][f"{correct_key}.range"][1])
-        range_val = ""
-
-        if range_start < 1:
-
-            if range_end < 1:
-
-                range_val = f"[{int(range_start * 100)} m, {int(range_end * 100)} m]"
-
-            else:
-                range_val = f"[{int(range_start * 100)} m, {int(range_end)} km]"
-
-        else:
-            range_val = f"[{int(range_start)} km, {int(range_end)} km]"
-
-        diam_range_entry.value = range_val.strip("[]")
-
-        plot_options = plots_dict[correct_key][f"{correct_key}.type"]
-
-        if plot_options == "data":
-            plot_fit_options.value = "crater count"
-
-        elif plot_options == "diff_fit":
-            plot_fit_options.value = "differential fit"
-
-        elif plot_options == "cumu_fit":
-            plot_fit_options.value = "cumulative fit"
-
-        elif plot_options == "poisson":
-            plot_fit_options.value = "Poisson pdf"
-
-        elif plot_options == "poisson_buffer":
-            plot_fit_options.value = "Poisson buffer pdf"
-
-        error_bars.value = plots_dict[correct_key][f"{correct_key}.error_bars"]
-
-        hide_button.value = plots_dict[correct_key][f"{correct_key}.hide"]
-
-        color_dropdown.value = colours[
-            int(plots_dict[correct_key][f"{correct_key}.colour"])
-        ]
-
-        symbol_dropdown.value = symbols[
-            int(plots_dict[correct_key][f"{correct_key}.psym"])
-        ]
-
-        binning_options.value = plots_dict[correct_key][f"{correct_key}.binning"]
-        binning_options.options = [
-            ft.dropdown.Option(plots_dict[correct_key][f"{correct_key}.binning"])
-        ]
-
-        align_left.value = plots_dict[correct_key][f"{correct_key}.age_left"]
-
-        display_age.value = plots_dict[correct_key][f"{correct_key}.display_age"]
-
-        plot_fit_text.value = plots_dict[correct_key][f"{correct_key}.name"]
+        source_file_entry.value = data[0]["source"]
+        plot_fit_text.value = data[1]["name"]
+        diam_range_entry.value = f"{data[1]['range'][0]},{data[1]['range'][1]}"
+        plot_fit_options.value = data[1]["type"]
+        error_bars.value = True if data[1]["error_bars"] == "1" else False
+        hide_button.value = True if data[1]["hide"] == "1" else False
+        color_dropdown.value = Globals.colours[int(data[1]["colour"])]
+        symbol_dropdown.value = Globals.symbols[int(data[1]["psym"])]
+        binning_options.value = data[1]["binning"]
+        align_left.value = True if data[1]["age_left"] == "1" else False
+        display_age.value = True if data[1]["display_age"] == "1" else False
+        resurf.value = True if data[1]["resurf"] == "1" else False
+        resurf_showall.value = True if data[1]["resurf_showall"] == "1" else False
+        offset_age.value = f"{data[1]['offset_age'][0]},{data[1]['offset_age'][1]}"
 
         page.update()
 
@@ -1634,6 +1679,7 @@ def main(page: ft.Page):
             "yrange": y_range.value.replace(" ", "").split(","),
             "format": list(Globals.template_dict["set"]["format"]),
         }
+
         config["plot"].append({"source": source_file_entry.value})
         config["plot"].append(
             {
@@ -1648,13 +1694,22 @@ def main(page: ft.Page):
                 "age_left": "1" if align_left.value else "0",
                 "display_age": "1" if display_age.value else "0",
                 "resurf": "1" if resurf.value else "0",
-                "resurf_showall": "1" if resurf_all.value else "0",
+                "resurf_showall": "1" if resurf_showall.value else "0",
                 "isochron": "1" if show_iso.value else "0",
                 "offset_age": offset_age.value.replace(" ", "").split(","),
             }
         )
 
-        setattr(Globals, "template_dict", config)
+        selected_chip = next(
+            (chip for chip in plot_lists.controls if chip.selected), None
+        )
+
+        if selected_chip is not None:
+
+            selected_chip.data = config["plot"]
+
+        Globals.template_dict["set"] = config["set"]
+        Globals.template_dict["plot"] = selected_chip.data
 
         update_legend_options()
         # update_range_to_presentation()
@@ -1790,16 +1845,20 @@ def main(page: ft.Page):
             presentation = plot_view.value
 
             # set the x and y ranges to the default for the presentation
-            x_range.value = (
+            Globals.template_dict["set"]["xrange"] = (
                 str(constants.DEFAULT_XRANGE[presentation][0])
                 + ", "
                 + str(constants.DEFAULT_XRANGE[presentation][1])
             )
-            y_range.value = (
+            Globals.template_dict["set"]["yrange"] = (
                 str(constants.DEFAULT_YRANGE[presentation][0])
                 + ", "
                 + str(constants.DEFAULT_YRANGE[presentation][1])
             )
+
+            x_range.value = Globals.template_dict["set"]["xrange"]
+            y_range.value = Globals.template_dict["set"]["yrange"]
+            page.update()
 
     """
     Default Settings for the application
@@ -1865,7 +1924,10 @@ def main(page: ft.Page):
             ]
         ),
         value="differential",
-        on_change=lambda e: (update_config_dict(), update_range_to_presentation()),
+        on_change=lambda e: (
+            update_range_to_presentation(),
+            update_config_dict(),
+        ),
     )
 
     # Celestial body fropdown options
@@ -2133,7 +2195,13 @@ def main(page: ft.Page):
         spacing=10,
         padding=10,
         controls=[
-            ft.Chip(ft.Text("default"), on_click=lambda e: (update_config_dict(),))
+            PlotChip(
+                label=ft.Text("Default"),
+                selected=True,
+                selected_color=ft.colors.BLUE,
+                show_checkmark=True,
+                on_click=lambda e: (chip_on_click(e), update_config_dict()),
+            )
         ],
         first_item_prototype=True,
     )
@@ -2146,7 +2214,9 @@ def main(page: ft.Page):
     )
 
     """Plot Lists buttons"""
-    new_button = ft.ElevatedButton(text="New", width=115)
+    new_button = ft.ElevatedButton(
+        text="New", width=115, on_click=lambda e: new_subplot()
+    )
 
     duplicate_button = ft.ElevatedButton(text="Duplicate", width=115)
 
@@ -2162,7 +2232,7 @@ def main(page: ft.Page):
         dense=True,
         value="Default",
         bgcolor=ft.colors.GREY_900,
-        on_blur=lambda e: (update_config_dict(),),
+        on_blur=lambda e: (update_config_dict(), change_subplot_name(e)),
     )
 
     # Plot fit dropdown
@@ -2301,7 +2371,7 @@ def main(page: ft.Page):
         label="Resurf", value=False, on_change=lambda e: (update_config_dict(),)
     )
 
-    resurf_all = ft.Checkbox(
+    resurf_showall = ft.Checkbox(
         label="Resurf all", value=False, on_change=lambda e: (update_config_dict(),)
     )
 
@@ -2445,24 +2515,24 @@ def main(page: ft.Page):
                 ],
                 spacing=20,
             ),
-            # ft.Row(
-            #     [
-            #         plot_lists_container,
-            #         ft.Column(
-            #             [
-            #                 new_button,
-            #                 duplicate_button,
-            #                 delete_button,
-            #             ]
-            #         ),
-            #         ft.Column(
-            #             [
-            #                 up_button,
-            #                 down_button,
-            #             ]
-            #         ),
-            #     ]
-            # ),
+            ft.Row(
+                [
+                    plot_lists_container,
+                    ft.Column(
+                        [
+                            new_button,
+                            duplicate_button,
+                            delete_button,
+                        ]
+                    ),
+                    ft.Column(
+                        [
+                            up_button,
+                            down_button,
+                        ]
+                    ),
+                ]
+            ),
             ft.Divider(),
             ft.Row(
                 [
@@ -2494,7 +2564,9 @@ def main(page: ft.Page):
                             plot_fit_error,
                         ]
                     ),
-                    ft.Row([resurf, resurf_all, ft.Text("Offset age:"), offset_age]),
+                    ft.Row(
+                        [resurf, resurf_showall, ft.Text("Offset age:"), offset_age]
+                    ),
                 ]
             ),
         ]
