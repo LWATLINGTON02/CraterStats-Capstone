@@ -2218,13 +2218,9 @@ def main(page: ft.Page):
         text="New", width=115, on_click=lambda e: new_subplot()
     )
 
-    duplicate_button = ft.ElevatedButton(text="Duplicate", width=115)
+    # duplicate_button = ft.ElevatedButton(text="Duplicate", width=115)
 
-    delete_button = ft.ElevatedButton(text="Delete", width=115)
-
-    up_button = ft.ElevatedButton(text="Up", width=115)
-
-    down_button = ft.ElevatedButton(text="Down", width=115)
+    # delete_button = ft.ElevatedButton(text="Delete", width=115)
 
     # Plot fit text field
     plot_fit_text = ft.TextField(
