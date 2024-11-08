@@ -1202,7 +1202,7 @@ def main(page: ft.Page):
         elif chron_sys.value == "Mars, Neukum-Ivanov (2001)":
             new_str = " -cs neukumivanov"
         elif chron_sys.value == "Mars, Ivanov (2001)":
-            new_str = " -cs 6"
+            new_str = " -cs MarsIvan01"
         elif chron_sys.value == "Mars, Hartmann 2004 iteration":
             new_str = " -cs hart2004"
         elif chron_sys.value == "Mars, Hartmann & Daubar (2016)":
@@ -1212,9 +1212,9 @@ def main(page: ft.Page):
         elif chron_sys.value == "Mercury, Neukum et al. (2001)":
             new_str = " -cs mercneukum01"
         elif chron_sys.value == "Mercury, Le Feuvre and Wieczorek 2011 non-porous":
-            new_str = " -cs feuverewieczoreknon"
+            new_str = " -cs FW11np"
         elif chron_sys.value == "Mercury, Le Feuvre and Wieczorek 2011 porous":
-            new_str = " -cs 12"
+            new_str = " -cs FW11"
         elif chron_sys.value == "Vesta, Rev4, Schmedemann et al (2014)":
             new_str = " -cs vestarev42014"
         elif chron_sys.value == "Vesta, Rev3, Schmedemann et al (2014)":
