@@ -5,8 +5,8 @@ This project is to create a Graphical User Interface for the current [Craterstat
 
 ## Installation
 
-Due to the application still being in the alpha stage, the initialization for execution has requirements and the setup process depends on your operating system. Please select your operating system instructions below.<br>
-[Windows](https://github.com/LWATLINGTON02/CraterStats-Capstone/blob/main/User%20Guides/Windows.md)
+Due to the application still being in the alpha stage, the initialization for execution has environment requirements for running the application.<br>
+[Installation](https://github.com/LWATLINGTON02/CraterStats-Capstone/blob/main/User%20Guides/Windows.md)
 
 ## Getting Started
 Upon running the application you should be greeted with the home screen.
