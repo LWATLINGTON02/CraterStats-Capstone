@@ -749,8 +749,7 @@ def main(page: ft.Page):
                         "Levi Watlington\n",
                         "Craterstats Program developed by Greg Michael",
                         "Version: 0.2",
-                        "Craterstats III version (pypi): 3.0.21"
-                        "",
+                        "Craterstats III version (pypi): 3.0.21" "",
                         "Explanations of concepts and calculations used in the software are given in publications below:",
                         "",
                         "Standardisation of crater count data presentation",
@@ -810,7 +809,7 @@ def main(page: ft.Page):
         arg = Namespace(
             about=False,
             autoscale=axis_auto_button.value,
-            chronology_system=set_chron_str()[-2:].replace(" ", ""),
+            chronology_system=set_chron_str().replace(" ", "")[3:],
             cite_function=cite_func.value,
             demo=Globals.demo_mode,
             epochs=epoch.value if epoch.value != "none" else None,
@@ -847,6 +846,8 @@ def main(page: ft.Page):
             ],
         )
 
+        print(arg.chronology_system)
+
         if arg.demo:
             toggle_demo(None)
             return
@@ -877,7 +878,7 @@ def main(page: ft.Page):
             )
 
         functionStr = read_textstructure(systems, from_string=True)
-
+        
         try:
             if arg.plot[0]["source"] == "" or (
                 arg.presentation == "chronology" or arg.presentation == "rate"
@@ -1177,48 +1178,61 @@ def main(page: ft.Page):
 
         new_str = ""
 
+        functions = PATH + "/assets/config files/functions.txt"
+        functions_user = PATH + "/assets/config files/functions_user.txt"
+
+        systems = read_textfile(functions, ignore_hash=True, strip=";", as_string=True)
+        if file_exists(functions_user):
+            systems += read_textfile(
+                functions_user, ignore_hash=True, strip=";", as_string=True
+            )
+
+        functionStr = read_textstructure(systems, from_string=True)
+
+        print("Abbreviation", cli.decode_abbreviation(functionStr, "6"))
+
         if chron_sys.value == "Moon, Neukum (1983)":
-            new_str = " -cs 1"
+            new_str = " -cs neukum83"
         elif chron_sys.value == "Moon, Neukum et al. (2001)":
-            new_str = " -cs 2"
+            new_str = " -cs moonneukum01"
         elif chron_sys.value == "Moon, Hartmann 2010 iteration":
-            new_str = " -cs 3"
+            new_str = " -cs hart2010"
         elif chron_sys.value == "Moon, Yue et al. (2022)":
-            new_str = " -cs 4"
+            new_str = " -cs yue22"
         elif chron_sys.value == "Mars, Neukum-Ivanov (2001)":
-            new_str = " -cs 5"
+            new_str = " -cs neukumivanov"
         elif chron_sys.value == "Mars, Ivanov (2001)":
-            new_str = " -cs 6"
+            new_str = " -cs MarsIvan01"
         elif chron_sys.value == "Mars, Hartmann 2004 iteration":
-            new_str = " -cs 7"
+            new_str = " -cs hart2004"
         elif chron_sys.value == "Mars, Hartmann & Daubar (2016)":
-            new_str = " -cs 8"
+            new_str = " -cs hartmanndaubar"
         elif chron_sys.value == "Mercury, Strom & Neukum (1988)":
-            new_str = " -cs 9"
+            new_str = " -cs stromneukum"
         elif chron_sys.value == "Mercury, Neukum et al. (2001)":
-            new_str = " -cs 10"
+            new_str = " -cs mercneukum01"
         elif chron_sys.value == "Mercury, Le Feuvre and Wieczorek 2011 non-porous":
-            new_str = " -cs 11"
+            new_str = " -cs FW11np"
         elif chron_sys.value == "Mercury, Le Feuvre and Wieczorek 2011 porous":
-            new_str = " -cs 12"
+            new_str = " -cs FW11"
         elif chron_sys.value == "Vesta, Rev4, Schmedemann et al (2014)":
-            new_str = " -cs 13"
+            new_str = " -cs vestarev42014"
         elif chron_sys.value == "Vesta, Rev3, Schmedemann et al (2014)":
-            new_str = " -cs 14"
+            new_str = " -cs vestarev3"
         elif chron_sys.value == "Vesta, Marchi & O'Brien (2014)":
-            new_str = " -cs 15"
+            new_str = " -cs vestamarchi"
         elif chron_sys.value == "Ceres, Hiesinger et al. (2016)":
-            new_str = " -cs 16"
+            new_str = " -cs cereshiesinger"
         elif chron_sys.value == "Ida, Schmedemann et al (2014)":
-            new_str = " -cs 17"
+            new_str = " -cs idashmed"
         elif chron_sys.value == "Gaspra, Schmedemann et al (2014)":
-            new_str = " -cs 18"
+            new_str = " -cs gaspraschmed"
         elif chron_sys.value == "Lutetia, Schmedemann et al (2014)":
-            new_str = " -cs 19"
+            new_str = " -cs lutetiaschmed"
         elif chron_sys.value == "Phobos, Case A - SOM, Schmedemann et al (2014)":
-            new_str = " -cs 20"
+            new_str = " -cs phobosSOM"
         elif chron_sys.value == "Phobos, Case B - MBA, Schedemann et al (2014)":
-            new_str = " -cs 21"
+            new_str = " -cs phobosMBA"
 
         return new_str
 
