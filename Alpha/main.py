@@ -168,9 +168,12 @@ def main(page: ft.Page):
 
         demo_image = ft.Image(
             src=f"{PATH}/../demo/{carousel_images[Globals.image_index]}",
-            width=600,
-            height=600,
+            width=page.window.width * 0.65,
+            height=page.window.height * 0.65,
+            fit=ft.ImageFit.CONTAIN,
         )
+
+        demo_image.resizable = True
 
         cmd_str = ft.TextField(
             value=Globals.demo_cmd_str,
@@ -660,6 +663,7 @@ def main(page: ft.Page):
         loading = ft.AlertDialog(
             title=ft.Text(text_to_display),
             content=ft.ProgressRing(stroke_cap=ft.StrokeCap.BUTT, stroke_width=5),
+            modal=False,
         )
 
         page.dialog = loading
