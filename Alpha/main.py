@@ -878,7 +878,7 @@ def main(page: ft.Page):
             )
 
         functionStr = read_textstructure(systems, from_string=True)
-        
+
         try:
             if arg.plot[0]["source"] == "" or (
                 arg.presentation == "chronology" or arg.presentation == "rate"
@@ -1372,6 +1372,9 @@ def main(page: ft.Page):
 
             '-isochrons 0.1,0.1,0.1'
         """
+        if not iso_text.value:
+            return ""
+
         new_str = f" -isochrons {iso_text.value}"
 
         return new_str
@@ -1396,6 +1399,93 @@ def main(page: ft.Page):
         new_str = f' -mu {"1" if mu_legend.value else "0"}'
 
         return new_str
+
+    def set_options_from_string(e):
+
+        functions = PATH + "/assets/config files/functions.txt"
+        functions_user = PATH + "/assets/config files/functions_user.txt"
+
+        systems = read_textfile(functions, ignore_hash=True, strip=";", as_string=True)
+        if file_exists(functions_user):
+            systems += read_textfile(
+                functions_user, ignore_hash=True, strip=";", as_string=True
+            )
+
+        functionStr = read_textstructure(systems, from_string=True)
+
+        print(e.control.value)
+
+        options_dict = parse_command_string(e.control.value)
+
+        print(options_dict)
+
+        if "-cs " in options_dict:
+            names = [e["name"] for e in functionStr["chronology_system"]]
+            print(names)
+            name = functionStr["chronology_system"][
+                cli.decode_abbreviation(
+                    names, options_dict["-cs "], one_based=True, allow_ambiguous=True
+                )
+            ]["name"]
+
+            print("\n\nAbb name", name)
+
+        if "-ef" in options_dict:
+            pass
+
+        if "-ep" in options_dict:
+            pass
+
+        if "-title" in options_dict:
+            pass
+
+        if "-subtitle" in options_dict:
+            pass
+
+        if "-pr" in options_dict:
+            pass
+
+        if "-xrange" in options_dict:
+            pass
+
+        if "-yrange" in options_dict:
+            pass
+
+        if "-isochrons" in options_dict:
+            pass
+
+        if "-show_isochrons" in options_dict:
+            pass
+
+        if "-legend" in options_dict:
+            pass
+
+        if "-cite_functions" in options_dict:
+            pass
+
+        if "-mu" in options_dict:
+            pass
+
+        if "-style" in options_dict:
+            pass
+
+        if "-invert" in options_dict:
+            pass
+
+        if "-print_dim" in options_dict:
+            pass
+
+        if "-pt_size" in options_dict:
+            pass
+
+        if "-ref_diameter" in options_dict:
+            pass
+
+        if "-sf" in options_dict:
+            pass
+
+        if "-p" in options_dict:
+            pass
 
     def set_p_str():
         """Sets overplot command line string.
@@ -1539,7 +1629,7 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        new_str = f' - print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
+        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
 
         return new_str
 
@@ -1561,9 +1651,6 @@ def main(page: ft.Page):
         new_str = f" -pt_size {text_size.value}"
 
         return new_str
-
-    def set_ref_diameter_str():
-        pass
 
     def set_show_isochron_str():
         """Sets show isochron command line string.
@@ -2414,12 +2501,13 @@ def main(page: ft.Page):
     # Default command line string
     cmd_str = ft.TextField(
         dense=True,
-        value="craterstats -cs 1 -pr differential -isochrons  -show_isochron 1 -mu 0 -style natural -print_dim {7.5x7.5} -pt_size 8",
+        value="craterstats -cs neukum83 -pr differential -show_isochron 1 -mu 0 -style natural -print_dim {7.5x7.5} -pt_size 8",
         text_size=12,
         bgcolor=ft.colors.BLACK,
         color=ft.colors.WHITE,
         text_style=ft.TextStyle(font_family="Courier New"),
         width=1500,
+        on_blur=lambda e: (set_options_from_string(e),),
     )
 
     legend_options_container = ft.Container(
