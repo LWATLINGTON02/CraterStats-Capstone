@@ -1401,93 +1401,6 @@ def main(page: ft.Page):
 
         return new_str
 
-    def set_options_from_string(e):
-
-        functions = PATH + "/assets/config files/functions.txt"
-        functions_user = PATH + "/assets/config files/functions_user.txt"
-
-        systems = read_textfile(functions, ignore_hash=True, strip=";", as_string=True)
-        if file_exists(functions_user):
-            systems += read_textfile(
-                functions_user, ignore_hash=True, strip=";", as_string=True
-            )
-
-        functionStr = read_textstructure(systems, from_string=True)
-
-        print(e.control.value)
-
-        options_dict = parse_command_string(e.control.value)
-
-        print(options_dict)
-
-        if "-cs " in options_dict:
-            names = [e["name"] for e in functionStr["chronology_system"]]
-            print(names)
-            name = functionStr["chronology_system"][
-                cli.decode_abbreviation(
-                    names, options_dict["-cs "], one_based=True, allow_ambiguous=True
-                )
-            ]["name"]
-
-            print("\n\nAbb name", name)
-
-        if "-ef" in options_dict:
-            pass
-
-        if "-ep" in options_dict:
-            pass
-
-        if "-title" in options_dict:
-            pass
-
-        if "-subtitle" in options_dict:
-            pass
-
-        if "-pr" in options_dict:
-            pass
-
-        if "-xrange" in options_dict:
-            pass
-
-        if "-yrange" in options_dict:
-            pass
-
-        if "-isochrons" in options_dict:
-            pass
-
-        if "-show_isochrons" in options_dict:
-            pass
-
-        if "-legend" in options_dict:
-            pass
-
-        if "-cite_functions" in options_dict:
-            pass
-
-        if "-mu" in options_dict:
-            pass
-
-        if "-style" in options_dict:
-            pass
-
-        if "-invert" in options_dict:
-            pass
-
-        if "-print_dim" in options_dict:
-            pass
-
-        if "-pt_size" in options_dict:
-            pass
-
-        if "-ref_diameter" in options_dict:
-            pass
-
-        if "-sf" in options_dict:
-            pass
-
-        if "-p" in options_dict:
-            pass
-
     def set_p_str():
         """Sets overplot command line string.
 
@@ -2508,7 +2421,6 @@ def main(page: ft.Page):
         color=ft.colors.WHITE,
         text_style=ft.TextStyle(font_family="Courier New"),
         width=1500,
-        on_blur=lambda e: (set_options_from_string(e),),
     )
 
     legend_options_container = ft.Container(
