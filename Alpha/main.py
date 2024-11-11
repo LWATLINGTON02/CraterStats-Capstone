@@ -1854,27 +1854,24 @@ def main(page: ft.Page):
 
         """
 
-        # Check if source file is uploaded or plot settings filled
-        if not template_dict["plot"] or template_dict["plot"][0]["source"] == "":
+        # grab the current plot presentation
+        presentation = plot_view.value
 
-            # grab the current plot presentation
-            presentation = plot_view.value
+        # set the x and y ranges to the default for the presentation
+        Globals.template_dict["set"]["xrange"] = (
+            str(constants.DEFAULT_XRANGE[presentation][0])
+            + ", "
+            + str(constants.DEFAULT_XRANGE[presentation][1])
+        )
+        Globals.template_dict["set"]["yrange"] = (
+            str(constants.DEFAULT_YRANGE[presentation][0])
+            + ", "
+            + str(constants.DEFAULT_YRANGE[presentation][1])
+        )
 
-            # set the x and y ranges to the default for the presentation
-            Globals.template_dict["set"]["xrange"] = (
-                str(constants.DEFAULT_XRANGE[presentation][0])
-                + ", "
-                + str(constants.DEFAULT_XRANGE[presentation][1])
-            )
-            Globals.template_dict["set"]["yrange"] = (
-                str(constants.DEFAULT_YRANGE[presentation][0])
-                + ", "
-                + str(constants.DEFAULT_YRANGE[presentation][1])
-            )
-
-            x_range.value = Globals.template_dict["set"]["xrange"]
-            y_range.value = Globals.template_dict["set"]["yrange"]
-            page.update()
+        x_range.value = Globals.template_dict["set"]["xrange"]
+        y_range.value = Globals.template_dict["set"]["yrange"]
+        page.update()
 
     """
     Default Settings for the application
