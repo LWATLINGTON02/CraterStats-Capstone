@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 import shutil
+import re
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -10,8 +11,11 @@ def count_files_in_folder(folder_path):
 
         all_files = os.listdir(folder_path)
 
-        files = [file for file in all_files if os.path.isfile(
-            os.path.join(folder_path, file))]
+        files = [
+            file
+            for file in all_files
+            if os.path.isfile(os.path.join(folder_path, file))
+        ]
 
         return len(files)
 
@@ -55,6 +59,41 @@ def generate_output_file_name():
     return file_name
 
 
+def parse_command_string(command_string):
+
+    print(command_string)
+
+    curr_word = ""
+
+    option_list = []
+
+    for index, char in enumerate(command_string):
+        curr_word += char
+        if char == " " or index == len(command_string) - 1:
+            if "source" in curr_word:
+                if ".scc" in curr_word or ".diam" in curr_word:
+                    option_list.append(curr_word)
+                    curr_word = ""
+            else:
+                option_list.append(curr_word)
+                curr_word = ""
+
+    print(option_list)
+    option_list.pop(0)
+
+    option_dict = {}
+    for index, option in enumerate(option_list):
+        if index % 2 == 0:
+            if "-p" in option:
+                if option in option_dict:
+                    option_dict[option].add(option_list[index + 1])
+                else:
+                    option_dict[option] = {option_list[index + 1]}
+            else:
+                option_dict[option] = option_list[index + 1]
+
+    return option_dict
+
 def parse_demo_commands(demo_file_path):
 
     commands_dict = {}
@@ -89,8 +128,8 @@ def parse_demo_commands(demo_file_path):
 
 def print_tree(dictionary, indent=0):
     for key, value in dictionary.items():
-        print('  ' * indent + str(key))
+        print("  " * indent + str(key))
         if isinstance(value, dict):
             print_tree(value, indent + 1)
         else:
-            print('  ' * (indent + 1) + str(value))
+            print("  " * (indent + 1) + str(value))

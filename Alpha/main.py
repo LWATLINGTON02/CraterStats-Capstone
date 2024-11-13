@@ -165,9 +165,12 @@ def main(page: ft.Page):
 
         demo_image = ft.Image(
             src=f"{PATH}/../demo/{carousel_images[Globals.image_index]}",
-            width=600,
-            height=600,
+            width=page.window.width * 0.65,
+            height=page.window.height * 0.65,
+            fit=ft.ImageFit.CONTAIN,
         )
+
+        demo_image.resizable = True
 
         cmd_str = ft.TextField(
             value=Globals.demo_cmd_str,
@@ -562,19 +565,19 @@ def main(page: ft.Page):
 
         page.update()
 
-    def filter_crater_plot(crater_plot):
-        seen = set()
-        unique_crater_plot = []
+    # def filter_crater_plot(crater_plot):
+    #     seen = set()
+    #     unique_crater_plot = []
 
-        for plot in crater_plot:
+    #     for plot in crater_plot:
 
-            identifier = plot["source"]
+    #         identifier = plot["source"]
 
-            if identifier not in seen:
-                seen.add(identifier)
-                unique_crater_plot.append(plot)
+    #         if identifier not in seen:
+    #             seen.add(identifier)
+    #             unique_crater_plot.append(plot)
 
-        return unique_crater_plot
+    #     return unique_crater_plot
 
     def get_body(chron_sys):
 
@@ -657,6 +660,7 @@ def main(page: ft.Page):
         loading = ft.AlertDialog(
             title=ft.Text(text_to_display),
             content=ft.ProgressRing(stroke_cap=ft.StrokeCap.BUTT, stroke_width=5),
+            modal=False,
         )
 
         page.dialog = loading
@@ -796,10 +800,6 @@ def main(page: ft.Page):
         functions = PATH + "/assets/config files/functions.txt"
         functions_user = PATH + "/assets/config files/functions_user.txt"
 
-        selected_chip = next(
-            (chip for chip in plot_lists.controls if chip.selected), None
-        )
-
         arg = Namespace(
             about=False,
             autoscale=axis_auto_button.value,
@@ -840,8 +840,6 @@ def main(page: ft.Page):
             ],
         )
 
-        print(arg.chronology_system)
-
         if arg.demo:
             toggle_demo(None)
             return
@@ -872,14 +870,14 @@ def main(page: ft.Page):
             )
 
         functionStr = read_textstructure(systems, from_string=True)
-        
+
         try:
             if arg.plot[0]["source"] == "" or (
                 arg.presentation == "chronology" or arg.presentation == "rate"
             ):
                 arg.plot = None
             craterPlot = cli.construct_plot_dicts(arg, {"plot": plot_data})
-            craterPlot = filter_crater_plot(craterPlot)
+            # craterPlot = filter_crater_plot(craterPlot)
             defaultFilename = generate_output_file_name()
             craterPlotSet = cli.construct_cps_dict(
                 arg, settings, functionStr, defaultFilename
@@ -891,6 +889,8 @@ def main(page: ft.Page):
                 craterPlotSet["legend"] += "p"
 
             plot = [Craterplot(d) for d in craterPlot]
+
+            print("\n\nPlot", plot)
 
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
@@ -1366,6 +1366,9 @@ def main(page: ft.Page):
 
             '-isochrons 0.1,0.1,0.1'
         """
+        if not iso_text.value:
+            return ""
+
         new_str = f" -isochrons {iso_text.value}"
 
         return new_str
@@ -1533,7 +1536,7 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        new_str = f' - print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
+        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
 
         return new_str
 
@@ -1555,9 +1558,6 @@ def main(page: ft.Page):
         new_str = f" -pt_size {text_size.value}"
 
         return new_str
-
-    def set_ref_diameter_str():
-        pass
 
     def set_show_isochron_str():
         """Sets show isochron command line string.
@@ -1709,6 +1709,8 @@ def main(page: ft.Page):
             }
         )
 
+        plot_list = []
+
         selected_chip = next(
             (chip for chip in plot_lists.controls if chip.selected), None
         )
@@ -1717,8 +1719,18 @@ def main(page: ft.Page):
 
             selected_chip.data = config["plot"]
 
+        for index, chip in enumerate(plot_lists.controls):
+
+            if index == 0:
+                plot_list.append(chip.data[0])
+                plot_list.append(chip.data[1])
+            else:
+                plot_list.append(chip.data[1])
+
         Globals.template_dict["set"] = config["set"]
-        Globals.template_dict["plot"] = selected_chip.data
+        Globals.template_dict["plot"] = plot_list
+
+        print(Globals.template_dict["plot"])
 
         update_legend_options()
         # update_range_to_presentation()
@@ -1847,27 +1859,24 @@ def main(page: ft.Page):
 
         """
 
-        # Check if source file is uploaded or plot settings filled
-        if not template_dict["plot"] or template_dict["plot"][0]["source"] == "":
+        # grab the current plot presentation
+        presentation = plot_view.value
 
-            # grab the current plot presentation
-            presentation = plot_view.value
+        # set the x and y ranges to the default for the presentation
+        Globals.template_dict["set"]["xrange"] = (
+            str(constants.DEFAULT_XRANGE[presentation][0])
+            + ", "
+            + str(constants.DEFAULT_XRANGE[presentation][1])
+        )
+        Globals.template_dict["set"]["yrange"] = (
+            str(constants.DEFAULT_YRANGE[presentation][0])
+            + ", "
+            + str(constants.DEFAULT_YRANGE[presentation][1])
+        )
 
-            # set the x and y ranges to the default for the presentation
-            Globals.template_dict["set"]["xrange"] = (
-                str(constants.DEFAULT_XRANGE[presentation][0])
-                + ", "
-                + str(constants.DEFAULT_XRANGE[presentation][1])
-            )
-            Globals.template_dict["set"]["yrange"] = (
-                str(constants.DEFAULT_YRANGE[presentation][0])
-                + ", "
-                + str(constants.DEFAULT_YRANGE[presentation][1])
-            )
-
-            x_range.value = Globals.template_dict["set"]["xrange"]
-            y_range.value = Globals.template_dict["set"]["yrange"]
-            page.update()
+        x_range.value = Globals.template_dict["set"]["xrange"]
+        y_range.value = Globals.template_dict["set"]["yrange"]
+        page.update()
 
     """
     Default Settings for the application
@@ -2408,7 +2417,7 @@ def main(page: ft.Page):
     # Default command line string
     cmd_str = ft.TextField(
         dense=True,
-        value="craterstats -cs 1 -pr differential -isochrons  -show_isochron 1 -mu 0 -style natural -print_dim {7.5x7.5} -pt_size 8",
+        value="craterstats -cs neukum83 -pr differential -show_isochron 1 -mu 0 -style natural -print_dim {7.5x7.5} -pt_size 8",
         text_size=12,
         bgcolor=ft.colors.BLACK,
         color=ft.colors.WHITE,
