@@ -15,6 +15,7 @@ import platform
 
 import traceback
 
+
 """
 IGNORE DEPRECATED WARNINGS
 """
@@ -25,7 +26,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # GM Folder from CraterstatsIII
 # Also from craterstats
 PATH = os.path.dirname(os.path.abspath(__file__))
-
 
 # Custom component for plot chips
 class PlotChip(ft.Chip):
@@ -56,18 +56,15 @@ class PlotChip(ft.Chip):
         self.show_checkmark = show_checkmark
         self.on_click = on_click
 
-
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
 
-
 def main(page: ft.Page):
-
     def close_app():
-        page.update()
-        delete_temp_plots(PATH + "/assets/plots/", ["png", "jpg", "pdf", "svg", "tif"])
-        delete_temp_plots(PATH + "/../demo/", None)
-        page.window.destroy()
+      delete_temp_plots(PATH + "/assets/plots/", ["png", "jpg", "pdf", "svg", "tif"])
+      delete_temp_plots(PATH + "/../demo/", None)
+      page.window.destroy()
 
+      
     def handle_window_event(e):
         if e.data == "close":
             close_app()
@@ -1877,8 +1874,8 @@ def main(page: ft.Page):
     """
     page.title = "Craterstats Capstone"  # Application title
     page.theme_mode = ft.ThemeMode.DARK  # Flet Default dark theme
-    page.window.width = 1024  # Application width
-    page.window.height = 768  # Application Height
+    page.window.width = 1920  # Application width
+    page.window.height = 1080  # Application Height
     page.window.resizable = True  # Application size is static
     page.window.left = 0  # Set the window position to the leftmost side
     page.window.top = 0
@@ -2742,7 +2739,7 @@ def main(page: ft.Page):
                         style=ft.ButtonStyle(
                             bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}
                         ),
-                        on_click=lambda _: close_app(),
+                        on_click=lambda _: close_app,
                     ),
                 ],
             ),
@@ -2840,9 +2837,8 @@ def main(page: ft.Page):
 
     page.on_keyboard_event = handle_keypress_events
 
-
 try:
-    ft.app(target=main, assets_dir="assets")
+   ft.app(target=main, assets_dir="/assets")
 
 finally:
     delete_temp_plots(PATH + "/assets/plots/", ["png", "jpg", "pdf", "svg", "tif"])
