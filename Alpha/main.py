@@ -568,19 +568,19 @@ def main(page: ft.Page):
 
         page.update()
 
-    def filter_crater_plot(crater_plot):
-        seen = set()
-        unique_crater_plot = []
+    # def filter_crater_plot(crater_plot):
+    #     seen = set()
+    #     unique_crater_plot = []
 
-        for plot in crater_plot:
+    #     for plot in crater_plot:
 
-            identifier = plot["source"]
+    #         identifier = plot["source"]
 
-            if identifier not in seen:
-                seen.add(identifier)
-                unique_crater_plot.append(plot)
+    #         if identifier not in seen:
+    #             seen.add(identifier)
+    #             unique_crater_plot.append(plot)
 
-        return unique_crater_plot
+    #     return unique_crater_plot
 
     def get_body(chron_sys):
 
@@ -803,10 +803,6 @@ def main(page: ft.Page):
         functions = PATH + "/assets/config files/functions.txt"
         functions_user = PATH + "/assets/config files/functions_user.txt"
 
-        selected_chip = next(
-            (chip for chip in plot_lists.controls if chip.selected), None
-        )
-
         arg = Namespace(
             about=False,
             autoscale=axis_auto_button.value,
@@ -847,8 +843,6 @@ def main(page: ft.Page):
             ],
         )
 
-        print(arg.chronology_system)
-
         if arg.demo:
             toggle_demo(None)
             return
@@ -886,7 +880,7 @@ def main(page: ft.Page):
             ):
                 arg.plot = None
             craterPlot = cli.construct_plot_dicts(arg, {"plot": plot_data})
-            craterPlot = filter_crater_plot(craterPlot)
+            # craterPlot = filter_crater_plot(craterPlot)
             defaultFilename = generate_output_file_name()
             craterPlotSet = cli.construct_cps_dict(
                 arg, settings, functionStr, defaultFilename
@@ -898,6 +892,8 @@ def main(page: ft.Page):
                 craterPlotSet["legend"] += "p"
 
             plot = [Craterplot(d) for d in craterPlot]
+
+            print("\n\nPlot", plot)
 
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
@@ -1716,6 +1712,8 @@ def main(page: ft.Page):
             }
         )
 
+        plot_list = []
+
         selected_chip = next(
             (chip for chip in plot_lists.controls if chip.selected), None
         )
@@ -1724,8 +1722,18 @@ def main(page: ft.Page):
 
             selected_chip.data = config["plot"]
 
+        for index, chip in enumerate(plot_lists.controls):
+
+            if index == 0:
+                plot_list.append(chip.data[0])
+                plot_list.append(chip.data[1])
+            else:
+                plot_list.append(chip.data[1])
+
         Globals.template_dict["set"] = config["set"]
-        Globals.template_dict["plot"] = selected_chip.data
+        Globals.template_dict["plot"] = plot_list
+
+        print(Globals.template_dict["plot"])
 
         update_legend_options()
         # update_range_to_presentation()
