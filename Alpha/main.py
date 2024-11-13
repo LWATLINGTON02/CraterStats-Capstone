@@ -1390,9 +1390,10 @@ def main(page: ft.Page):
             ' -mu 1'
         """
 
-        new_str = f' -mu {"1" if mu_legend.value else "0"}'
+        if mu_legend.value:
+            return " -mu 1"
 
-        return new_str
+        return ""
 
     def set_p_str():
         """Sets overplot command line string.
@@ -1416,48 +1417,30 @@ def main(page: ft.Page):
         ):
             return ""
 
-        if (
-            source_file_entry.value
-            or plot_fit_options.value
-            or error_bars.value
-            or hide_button.value
-            or color_dropdown.value
-            or symbol_dropdown.value
-            or binning_options.value
-            or align_left.value
-            or display_age.value
-        ):
+        result_str = ""
+        for plot in Globals.template_dict["plot"]:
+            # Construct the `-p` string for each dictionary
+            p_str = "-p "
+            plot_entries = []
 
-            new_str += " -p "
+            for key, value in plot.items():
+                # Handle list values (like ranges or offset_age) by formatting them as [x, y]
+                if isinstance(value, list):
+                    formatted_value = f"[{','.join(value)}]"
+                else:
+                    formatted_value = str(value)
+                # Append key-value pair to plot entries
+                if not formatted_value == "0":
+                    plot_entries.append(f"{key}={formatted_value}")
 
-            if source_file_entry.value:
-                new_str += f"source={source_file_entry.value} -p "
+            # Join all entries in the dictionary with commas and add to the `-p` tag
+            p_str += ",".join(plot_entries)
+            result_str += " " + p_str
 
-            if plot_fit_options.value:
-                new_str += f"name={plot_fit_text.value},"
+        # Strip any trailing whitespace for a clean output
+        result_str = result_str
 
-            if error_bars.value:
-                new_str += "error_bars=1,"
-
-            if hide_button.value:
-                new_str += "hide=1,"
-
-            if color_dropdown.value:
-                new_str += f"colour={color_dropdown.value},"
-
-            if symbol_dropdown.value:
-                new_str += f"psym={symbol_dropdown.value},"
-
-            if binning_options.value:
-                new_str += f"binning={binning_options.value},"
-
-            if align_left.value:
-                new_str += "age_left=1,"
-
-            if display_age.value:
-                new_str += "display_age=1,"
-
-        return new_str[:-1]
+        return result_str
 
     def set_plot_info(e):
         """Sets plotsetting info for subplots
@@ -1510,7 +1493,7 @@ def main(page: ft.Page):
         if plot_view.value == "cumulative":
             new_str = " -pr cumulative"
         elif plot_view.value == "differential":
-            new_str = " -pr differential"
+            new_str = ""
         elif plot_view.value == "R-plot":
             new_str = " -pr R-plot"
         elif plot_view.value == "Hartmann":
@@ -1555,9 +1538,10 @@ def main(page: ft.Page):
             '-pt_size 8'
         """
 
-        new_str = f" -pt_size {text_size.value}"
+        if text_size.value == "8":
+            return ""
 
-        return new_str
+        return f" -pt_size {text_size.value}"
 
     def set_show_isochron_str():
         """Sets show isochron command line string.
@@ -1592,9 +1576,10 @@ def main(page: ft.Page):
             '-style decadel'
         """
 
-        new_str = f" -style {style_options.value}"
+        if style_options.value == "root-2":
+            return " -style root-2"
 
-        return new_str
+        return ""
 
     def set_subtitle_str():
         """Sets subtitle command line string.
@@ -2417,11 +2402,12 @@ def main(page: ft.Page):
     # Default command line string
     cmd_str = ft.TextField(
         dense=True,
-        value="craterstats -cs neukum83 -pr differential -show_isochron 1 -mu 0 -style natural -print_dim {7.5x7.5} -pt_size 8",
+        value="craterstats -cs neukum83 -show_isochron 1 -print_dim {7.5x7.5}",
         text_size=12,
         bgcolor=ft.colors.BLACK,
         color=ft.colors.WHITE,
         text_style=ft.TextStyle(font_family="Courier New"),
+        max_lines=3,
         width=1500,
     )
 
