@@ -27,6 +27,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # Also from craterstats
 PATH = os.path.dirname(os.path.abspath(__file__))
 
+
 # Custom component for plot chips
 class PlotChip(ft.Chip):
 
@@ -56,15 +57,16 @@ class PlotChip(ft.Chip):
         self.show_checkmark = show_checkmark
         self.on_click = on_click
 
+
 """Main Function - EVERYTHING FLET IS INSIDE THIS FUNCTION"""
+
 
 def main(page: ft.Page):
     def close_app():
-      delete_temp_plots(PATH + "/assets/plots/", ["png", "jpg", "pdf", "svg", "tif"])
-      delete_temp_plots(PATH + "/../demo/", None)
-      page.window.destroy()
+        delete_temp_plots(PATH + "/assets/plots/", ["png", "jpg", "pdf", "svg", "tif"])
+        delete_temp_plots(PATH + "/../demo/", None)
+        page.window.destroy()
 
-      
     def handle_window_event(e):
         if e.data == "close":
             close_app()
@@ -1519,9 +1521,12 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        new_str = f' -print_dim {print_scale_entry.value if len(print_scale_entry.value) == 1 else f"{{{print_scale_entry.value}}}"}'
+        print(f"print_scale_entry.value: {print_scale_entry.value}")
 
-        return new_str
+        if not print_scale_entry.value == "7.5x7.5":
+            return f" -print_dim {print_scale_entry.value}"
+
+        return ""
 
     def set_pt_size_str():
         """Sets font size command line string.
@@ -2402,7 +2407,7 @@ def main(page: ft.Page):
     # Default command line string
     cmd_str = ft.TextField(
         dense=True,
-        value="craterstats -cs neukum83 -show_isochron 1 -print_dim {7.5x7.5}",
+        value="craterstats -cs neukum83 -show_isochron 1",
         text_size=12,
         bgcolor=ft.colors.BLACK,
         color=ft.colors.WHITE,
@@ -2832,8 +2837,9 @@ def main(page: ft.Page):
 
     page.on_keyboard_event = handle_keypress_events
 
+
 try:
-   ft.app(target=main, assets_dir="/assets")
+    ft.app(target=main, assets_dir="/assets")
 
 finally:
     delete_temp_plots(PATH + "/assets/plots/", ["png", "jpg", "pdf", "svg", "tif"])
