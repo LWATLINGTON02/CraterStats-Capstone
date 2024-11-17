@@ -414,7 +414,6 @@ def main(page: ft.Page):
                                     Globals.symbols.index(option_split[1])
                                 )
                             plot_settings[option_split[0]] = option_split[1]
-                        print("Plot, ", plot_settings)
                         config["plot"].append(plot_settings)
 
             if "chronology_system" in config["set"]:
@@ -1214,7 +1213,6 @@ def main(page: ft.Page):
 
         functionStr = read_textstructure(systems, from_string=True)
 
-        print("Abbreviation", cli.decode_abbreviation(functionStr, "6"))
 
         if chron_sys.value == "Moon, Neukum (1983)":
             new_str = " -cs neukum83"
@@ -1550,7 +1548,6 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        print(f"print_scale_entry.value: {print_scale_entry.value}")
 
         if not print_scale_entry.value == "7.5x7.5":
             return f" -print_dim {print_scale_entry.value}"
@@ -1748,8 +1745,6 @@ def main(page: ft.Page):
 
         Globals.template_dict["set"] = config["set"]
         Globals.template_dict["plot"] = plot_list
-
-        print(Globals.template_dict["plot"])
 
         update_legend_options()
         # update_range_to_presentation()
