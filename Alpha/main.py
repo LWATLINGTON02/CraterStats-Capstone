@@ -2508,9 +2508,9 @@ def main(page: ft.Page):
             ft.Row([list_view]),
             ft.Row(
                 [
-                    ft.Text("X Range"),
+                    ft.Text("X Range, km"),
                     x_range,
-                    ft.Text("Y Range"),
+                    ft.Text("Y Range, km"),
                     y_range,
                     axis_auto_button,
                 ]
@@ -2565,7 +2565,7 @@ def main(page: ft.Page):
             ft.Row([source_file_label, source_file_entry, browse_button]),
             ft.Row(
                 [
-                    ft.Text("Range:"),
+                    ft.Text("Range, km:"),
                     diam_range_entry,
                     ft.Text("Binning"),
                     binning_options,
@@ -2590,7 +2590,8 @@ def main(page: ft.Page):
                     ),
                 ]
             ),
-        ]
+        ],
+        scroll="auto",
     )
 
     # plot image
