@@ -330,10 +330,14 @@ def main(page: ft.Page):
             none
         """
 
-        settings = read_textfile(Globals.FUNCTIONS, ignore_hash=True, strip=';', as_string=True)  # read and remove comments
+        settings = read_textfile(
+            Globals.FUNCTIONS, ignore_hash=True, strip=";", as_string=True
+        )  # read and remove comments
         if file_exists(Globals.USER_FUNCTIONS):
-            settings = settings + read_textfile(Globals.USER_FUNCTIONS, ignore_hash=True, strip=';', as_string=True)
-        functions = read_textstructure(settings,from_string=True)
+            settings = settings + read_textfile(
+                Globals.USER_FUNCTIONS, ignore_hash=True, strip=";", as_string=True
+            )
+        functions = read_textstructure(settings, from_string=True)
 
         selected_chip = next(
             (chip for chip in plot_lists.controls if chip.selected), None
@@ -346,10 +350,7 @@ def main(page: ft.Page):
             current_item_list = None
 
             with open(e.files[0].path, "r") as file:
-                config = {
-                    'set': {},
-                    'plot': []
-                }
+                config = {"set": {}, "plot": []}
 
                 for line in file:
                     line = line.strip()
@@ -358,42 +359,45 @@ def main(page: ft.Page):
                         continue
 
                     if line.startswith("-cs"):
-                        config['set']['chronology_system'] = line.split(" ")[1]
+                        config["set"]["chronology_system"] = line.split(" ")[1]
                     elif line.startswith("-ep"):
-                        config['set']['epochs'] = line.split(" ")[1]
+                        config["set"]["epochs"] = line.split(" ")[1]
                     elif line.startswith("-ef"):
-                        config["set"]['equilibrium'] = line.split(" ")[1]
+                        config["set"]["equilibrium"] = line.split(" ")[1]
                     elif line.startswith("-title"):
-                        config['set']['title'] = line.split(" ")[1]
+                        config["set"]["title"] = line.split(" ")[1]
                     elif line.startswith("-subtitle"):
-                        config['set']['subtitle'] = line.split(" ")[1]
+                        config["set"]["subtitle"] = line.split(" ")[1]
                     elif line.split(" ")[0] == "-pr":
-                        config['set']['presentation'] = line.split(" ")[1]
+                        config["set"]["presentation"] = line.split(" ")[1]
                     elif line.split(" ")[0] == "-xrange":
-                        config['set']['xrange'] = line.split(" ")[1].strip("{}").split(",")
+                        config["set"]["xrange"] = (
+                            line.split(" ")[1].strip("{}").split(",")
+                        )
                     elif line.startswith("-isochrons"):
-                        config['set']['isochrons'] = line.split(" ")[1]
+                        config["set"]["isochrons"] = line.split(" ")[1]
                     elif line.startswith("-show_isochrons"):
-                        config['set']['show_isochrons'] = line.split(" ")[1]
+                        config["set"]["show_isochrons"] = line.split(" ")[1]
                     elif line.startswith("-legend"):
-                        config['set']['legend'] = line.split(" ")[1]
+                        config["set"]["legend"] = line.split(" ")[1]
                     elif line.startswith("-cite_functions"):
-                        config['set']['cite_functions'] = line.split(" ")[1]
+                        config["set"]["cite_functions"] = line.split(" ")[1]
                     elif line.startswith("-mu"):
-                        config['set']['mu'] = line.split(" ")[1]
+                        config["set"]["mu"] = line.split(" ")[1]
                     elif line.startswith("-style"):
-                        config['set']['style'] = line.split(" ")[1]
+                        config["set"]["style"] = line.split(" ")[1]
                     elif line.startswith("-invert"):
-                        config['set']['invert'] = line.split(" ")[1]
+                        config["set"]["invert"] = line.split(" ")[1]
                     elif line.startswith("-print_dim"):
-                        config['set']['print_dimensions'] = line.split(" ")[1].strip("{}")
+                        config["set"]["print_dimensions"] = line.split(" ")[1].strip(
+                            "{}"
+                        )
                     elif line.startswith("-pt_size"):
-                        config['set']['pt_size'] = line.split(" ")[1]
+                        config["set"]["pt_size"] = line.split(" ")[1]
                     elif line.startswith("-ref_diameter"):
-                        config['set']['ref_diameter'] = line.split(" ")[1]
+                        config["set"]["ref_diameter"] = line.split(" ")[1]
                     elif line.startswith("-sf"):
-                        config['set']['sig_figs'] = line.split(" ")[1]
-
+                        config["set"]["sig_figs"] = line.split(" ")[1]
 
                     if line.startswith("-p "):
                         plot_settings = {}
@@ -402,16 +406,27 @@ def main(page: ft.Page):
                         for option in overplot_options:
                             option_split = option.split("=")
                             if option_split[0] == "colour":
-                                option_split[1] = str(Globals.colours.index(option_split[1]))
+                                option_split[1] = str(
+                                    Globals.colours.index(option_split[1])
+                                )
                             if option_split[0] == "psym":
-                                option_split[1] = str(Globals.symbols.index(option_split[1]))
+                                option_split[1] = str(
+                                    Globals.symbols.index(option_split[1])
+                                )
                             plot_settings[option_split[0]] = option_split[1]
                         print("Plot, ", plot_settings)
-                        config['plot'].append(plot_settings)
+                        config["plot"].append(plot_settings)
 
             if "chronology_system" in config["set"]:
-                names = [e['name'] for e in functions["chronology_system"]]
-                index=functions['chronology_system'][cli.decode_abbreviation(names, config['set']['chronology_system'], one_based=True, allow_ambiguous=True)]['name']
+                names = [e["name"] for e in functions["chronology_system"]]
+                index = functions["chronology_system"][
+                    cli.decode_abbreviation(
+                        names,
+                        config["set"]["chronology_system"],
+                        one_based=True,
+                        allow_ambiguous=True,
+                    )
+                ]["name"]
                 body.value = get_body(index)
                 set_chron_sys(body.value, None)
                 chron_sys.value = index
@@ -422,21 +437,31 @@ def main(page: ft.Page):
                 )
 
             if "epochs" in config["set"]:
-                names = [e['name'] for e in functions["chronology_system"]]
-                index=functions['chronology_system'][cli.decode_abbreviation(names, config['set']['chronology_system'], one_based=True, allow_ambiguous=True)]['name']
-                epoch.value = (
-                    index if config["set"]["epochs"] != "" else "none"
-                )
+                names = [e["name"] for e in functions["epochs"]]
+                index = functions["epochs"][
+                    cli.decode_abbreviation(
+                        names,
+                        config["set"]["epochs"],
+                        one_based=True,
+                        allow_ambiguous=True,
+                    )
+                ]["name"]
+                epoch.value = index if config["set"]["epochs"] != "" else "none"
             else:
-                config['set']['epochs'] = "none"
+                config["set"]["epochs"] = "none"
 
             if "equilibrium" in config["set"]:
-                names = [e['name'] for e in functions["chronology_system"]]
-                index=functions['chronology_system'][cli.decode_abbreviation(names, config['set']['chronology_system'], one_based=True, allow_ambiguous=True)]['name']
+                names = [e["name"] for e in functions["equilibrium"]]
+                index = functions["equilibrium"][
+                    cli.decode_abbreviation(
+                        names,
+                        config["set"]["equilibrium"],
+                        one_based=True,
+                        allow_ambiguous=True,
+                    )
+                ]["name"]
                 equil_func.value = (
-                    index
-                    if config["set"]["equilibrium"] != ""
-                    else "none"
+                    index if config["set"]["equilibrium"] != "" else "none"
                 )
 
             if "isochrons" in config["set"]:
@@ -478,12 +503,12 @@ def main(page: ft.Page):
             if "ref_diameter" in config["set"]:
                 ref_diam.value = config["set"]["ref_diameter"]
             else:
-                ref_diam.value = '1'
+                ref_diam.value = "1"
 
             if "sig_figs" in config["set"]:
                 sf_entry.value = config["set"]["sig_figs"]
             else:
-                sf_entry.value = '3'
+                sf_entry.value = "3"
 
             if "show_isochrons" in config["set"]:
                 show_iso.value = (
@@ -528,7 +553,6 @@ def main(page: ft.Page):
                 y_range.value = (
                     (config["set"]["yrange"][0]) + ", " + (config["set"]["yrange"][1])
                 )
-
 
             # Plot settings
             for index, dictionary in enumerate(config["plot"]):
@@ -598,7 +622,11 @@ def main(page: ft.Page):
                         + config["plot"][index]["offset_age"][1]
                     )
 
-                config['plot'][index]['isochron'] = config['set']['show_isochron'] if 'show_isochron' in config['set'] else 0
+                config["plot"][index]["isochron"] = (
+                    config["set"]["show_isochron"]
+                    if "show_isochron" in config["set"]
+                    else 0
+                )
 
             selected_chip.data = config["plot"]
             Globals.template_dict["set"] = config["set"]
@@ -841,10 +869,6 @@ def main(page: ft.Page):
             none
         """
 
-        template = PATH + "/assets/config files/default.plt"
-        functions = PATH + "/assets/config files/functions.txt"
-        functions_user = PATH + "/assets/config files/functions_user.txt"
-
         arg = Namespace(
             about=False,
             autoscale=axis_auto_button.value,
@@ -891,7 +915,7 @@ def main(page: ft.Page):
 
         if type(arg.template) == str:
             settings = read_textstructure(
-                template if arg.template is None else arg.template
+                TEMPLATE if arg.template is None else arg.template
             )
 
         else:
@@ -908,13 +932,14 @@ def main(page: ft.Page):
         if settings["set"]["equilibrium"] == "none":
             settings["set"]["equilibrium"] = ""
 
-        systems = read_textfile(functions, ignore_hash=True, strip=";", as_string=True)
-        if file_exists(functions_user):
+        systems = read_textfile(FUNCTIONS, ignore_hash=True, strip=";", as_string=True)
+        if file_exists(USER_FUNCTIONS):
             systems += read_textfile(
-                functions_user, ignore_hash=True, strip=";", as_string=True
+                USER_FUNCTIONS, ignore_hash=True, strip=";", as_string=True
             )
 
         functionStr = read_textstructure(systems, from_string=True)
+
 
         try:
             if arg.plot[0]["source"] == "" or (
@@ -924,6 +949,7 @@ def main(page: ft.Page):
             craterPlot = cli.construct_plot_dicts(arg, {"plot": plot_data})
             # craterPlot = filter_crater_plot(craterPlot)
             defaultFilename = generate_output_file_name()
+
             craterPlotSet = cli.construct_cps_dict(
                 arg, settings, functionStr, defaultFilename
             )
@@ -934,8 +960,6 @@ def main(page: ft.Page):
                 craterPlotSet["legend"] += "p"
 
             plot = [Craterplot(d) for d in craterPlot]
-
-            print("\n\nPlot", plot)
 
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
@@ -953,8 +977,10 @@ def main(page: ft.Page):
 
             craterPlotSet["out"] = PATH + "/assets/plots/" + newFileName
 
-            if Globals.SUMMARY:
+            if SUMMARY:
                 plotSettings.format = {"txt"}
+            else:
+                plotSettings.format = {"png"}
 
             drawn = False
             for format in plotSettings.format:

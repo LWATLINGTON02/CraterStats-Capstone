@@ -2,6 +2,10 @@ import os
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
+TEMPLATE = PATH + "/assets/config files/default.plt"
+FUNCTIONS = PATH + "/assets/config files/functions.txt"
+USER_FUNCTIONS = PATH + "/assets/config files/functions_user.txt"
+
 chron_systems = {
     # Moon Systems
     "Moon, Neukum (1983)": ["Moon, Neukum (1983)",
