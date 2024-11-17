@@ -8,7 +8,7 @@ from flet import FilePickerResultEvent
 import shutil
 
 from Globals import *
-from gm.file import file_exists, read_textstructure, read_textfile, filename
+from gm.file import file_exists, read_textstructure, read_textfile, write_textfile
 from helperFunctions import *
 import Globals
 import platform
@@ -1036,53 +1036,13 @@ def main(page: ft.Page):
         if save_plot_dialog.result and save_plot_dialog.result.path:
             export_path = save_plot_dialog.result.path
 
-            if not export_path.lower().endswith(".plt"):
-                export_path += ".plt"
+            if not export_path.lower().endswith(".cs"):
+                export_path += ".cs"
 
-            with open(export_path, "w") as file:
-                file.write(
-                    f"""set = {{
-                        chronology_system={chron_sys.value}
-                        cite_functions= {1 if cite_func.value else 0}
-                        epochs= {epoch.value}
-                        equilibrium= {equil_func.value}
-                        isochrons= {iso_text.value}
-                        mu= {mu_legend.value}
-                        presentation= {plot_view.value}
-                        print_dimensions= {print_scale_entry.value}
-                        pt_size= {text_size.value}
-                        randomness= {rand_legend.value}
-                        ref_diameter= {1 if ref_diam.value else 0}
-                        sig_figs= {sf_entry.value}
-                        show_isochrons= {1 if show_iso.value else 0}
-                        show_subtitle= {1 if subtitle_checkbox.value else 0}
-                        show_title= {1 if title_checkbox.value else 0}
-                        style= {style_options.value}
-                        subtitle= {subtitle_entry.value}
-                        title= {title_entry.value}
-                        invert= {1 if invert.value else 0}
-                        show_legend_area= {1 if legend_name.value else 0}
-                        xrange= {x_range.value.replace(" ","").split(",")}
-                        yrange= {y_range.value.replace(" ","").split(",")}
-                        }}
+            output_str = cmd_str.value.split(" ")
+            output_str.pop(0)
 
-                        plot = {{
-                        source={source_file_entry.value},
-                        name={plot_fit_text.value},
-                        range={diam_range_entry.value.replace(" ","").split(",")}
-                        type={plot_fit_options.value}
-                        error_bars={1 if error_bars.value else 0}
-                        hide={1 if hide_button.value else 0}
-                        colour={colours.index(color_dropdown.value)}
-                        psym={symbols.index(symbol_dropdown.value)}
-                        binning={binning_options.value}
-                        age_left={1 if align_left.value else 0}
-                        display_age={1 if display_age.value else 0}
-                        resurf={1 if resurf.value else 0}
-                        resurf_showall={1 if resurf_showall.value else 0}
-                        offset_age={offset_age.value.replace(" ","").split(",")}
-                        }}"""
-                )
+            write_textfile(export_path,''.join(['\n'+e if e[0]=='-' and not (e+' ')[1].isdigit() else ' '+e for e in output_str])[1:]) # Taken from cli.py of craterstats and modified
 
     def set_chron_func(value, e):
         """Sets chronology function.
