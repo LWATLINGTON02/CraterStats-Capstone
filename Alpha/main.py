@@ -321,7 +321,7 @@ def main(page: ft.Page):
         Data in application is filled out based off of the file that is selected.
         Data that is filled out is dependent on the file.
 
-        File types allowed: .plt
+        File types allowed: .cs
 
         Args:
             e: FilePickerResultEvent
@@ -400,18 +400,24 @@ def main(page: ft.Page):
                         config["set"]["sig_figs"] = line.split(" ")[1]
 
                     if line.startswith("-p "):
+                        print(line)
                         plot_settings = {}
                         overplot_options = line.split(",")
+                        for index, option in enumerate(overplot_options):
+                            if "]" in option:
+                                overplot_options[index - 1] = overplot_options[index - 1] + "," + option
+                                overplot_options.pop(index)
                         overplot_options[0] = overplot_options[0].strip("-p ")
                         for option in overplot_options:
                             option_split = option.split("=")
+                            print(option_split)
                             if option_split[0] == "colour":
                                 option_split[1] = str(
-                                    Globals.colours.index(option_split[1])
+                                    Globals.colours.index(int(option_split[1]))
                                 )
                             if option_split[0] == "psym":
                                 option_split[1] = str(
-                                    Globals.symbols.index(option_split[1])
+                                    Globals.symbols.index(int(option_split[1]))
                                 )
                             plot_settings[option_split[0]] = option_split[1]
                         config["plot"].append(plot_settings)
