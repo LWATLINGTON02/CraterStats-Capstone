@@ -8,7 +8,7 @@ from flet import FilePickerResultEvent
 import shutil
 
 from Globals import *
-from gm.file import file_exists, read_textstructure, read_textfile, filename
+from gm.file import file_exists, read_textstructure, read_textfile, write_textfile
 from helperFunctions import *
 import Globals
 import platform
@@ -321,7 +321,7 @@ def main(page: ft.Page):
         Data in application is filled out based off of the file that is selected.
         Data that is filled out is dependent on the file.
 
-        File types allowed: .plt
+        File types allowed: .cs
 
         Args:
             e: FilePickerResultEvent
@@ -330,156 +330,234 @@ def main(page: ft.Page):
             none
         """
 
+        settings = read_textfile(
+            Globals.FUNCTIONS, ignore_hash=True, strip=";", as_string=True
+        )  # read and remove comments
+        if file_exists(Globals.USER_FUNCTIONS):
+            settings = settings + read_textfile(
+                Globals.USER_FUNCTIONS, ignore_hash=True, strip=";", as_string=True
+            )
+        functions = read_textstructure(settings, from_string=True)
+
         selected_chip = next(
             (chip for chip in plot_lists.controls if chip.selected), None
         )
 
-        if e.files[0].path.endswith(".plt") and len(e.files) >= 1:
+        if e.files[0].path.endswith(".cs") and len(e.files) >= 1:
             # Reads through each line of data and sets data based off of line
             config = {}
             current_dict_name = None
             current_item_list = None
 
             with open(e.files[0].path, "r") as file:
-                config = {}
-                current_dict_name = None
-                current_item_dict = None  # Dictionary for 'set' or other sections
+                config = {"set": {}, "plot": []}
 
                 for line in file:
                     line = line.strip()
-
                     # Skip empty lines and comments
                     if not line or line.startswith("#"):
                         continue
 
-                    # Detect start of a new section
-                    if line.endswith("{"):  # Start of a new block (e.g., set = {)
-                        current_dict_name = line.split("=")[0].strip()
+                    if line.startswith("-cs"):
+                        config["set"]["chronology_system"] = line.split(" ")[1]
+                    elif line.startswith("-ep"):
+                        config["set"]["epochs"] = line.split(" ")[1]
+                    elif line.startswith("-ef"):
+                        config["set"]["equilibrium"] = line.split(" ")[1]
+                    elif line.startswith("-title"):
+                        config["set"]["title"] = line.split(" ")[1]
+                    elif line.startswith("-subtitle"):
+                        config["set"]["subtitle"] = line.split(" ")[1]
+                    elif line.split(" ")[0] == "-pr":
+                        config["set"]["presentation"] = line.split(" ")[1]
+                    elif line.split(" ")[0] == "-xrange":
+                        config["set"]["xrange"] = (
+                            line.split(" ")[1].strip("{}").split(",")
+                        )
+                    elif line.startswith("-isochrons"):
+                        config["set"]["isochrons"] = line.split(" ")[1]
+                    elif line.startswith("-show_isochrons"):
+                        config["set"]["show_isochrons"] = line.split(" ")[1]
+                    elif line.startswith("-legend"):
+                        config["set"]["legend"] = line.split(" ")[1]
+                    elif line.startswith("-cite_functions"):
+                        config["set"]["cite_functions"] = line.split(" ")[1]
+                    elif line.startswith("-mu"):
+                        config["set"]["mu"] = line.split(" ")[1]
+                    elif line.startswith("-style"):
+                        config["set"]["style"] = line.split(" ")[1]
+                    elif line.startswith("-invert"):
+                        config["set"]["invert"] = line.split(" ")[1]
+                    elif line.startswith("-print_dim"):
+                        config["set"]["print_dimensions"] = line.split(" ")[1].strip(
+                            "{}"
+                        )
+                    elif line.startswith("-pt_size"):
+                        config["set"]["pt_size"] = line.split(" ")[1]
+                    elif line.startswith("-ref_diameter"):
+                        config["set"]["ref_diameter"] = line.split(" ")[1]
+                    elif line.startswith("-sf"):
+                        config["set"]["sig_figs"] = line.split(" ")[1]
 
-                        if current_dict_name == "plot":
-                            # Create a list for plot items
-                            config[current_dict_name] = []
-                            current_item_list = config[current_dict_name]
-                        else:
-                            # For other sections (including 'set'), initialize as a dictionary
-                            config[current_dict_name] = {}
-                            current_item_dict = config[current_dict_name]
-
-                    elif "=" in line:  # Key-value pair inside the block
-                        key, value = line.split("=", 1)
-                        key = key.strip()
-                        value = value.strip()
-
-                        # Handle lists in the form [value1, value2]
-                        if value.startswith("[") and value.endswith("]"):
-                            value = value[1:-1].split(",")
-                            value = [v.strip().strip("'") for v in value]
-
-                        # Handle strings enclosed in single quotes
-                        elif value.startswith("'") and value.endswith("'"):
-                            value = value[1:-1]
-
-                        # For 'plot', append the dictionary to the list
-                        if current_dict_name == "plot":
-                            if key == "source":
-                                current_item_list.append({key: value})
-                            else:
-                                if current_item_list and isinstance(
-                                    current_item_list[-1], dict
-                                ):
-                                    last_item = current_item_list[-1]
-                                    if len(last_item) == 1 and "source" in last_item:
-                                        current_item_list.append({key: value})
-                                    else:
-                                        last_item[key] = value
+                    if line.startswith("-p "):
+                        plot_settings = {}
+                        overplot_options = line.split(",")
+                        for index, option in enumerate(overplot_options):
+                            if "]" in option:
+                                overplot_options[index - 1] = overplot_options[index - 1] + "," + option
+                                overplot_options.pop(index)
+                        overplot_options[0] = overplot_options[0].strip("-p ")
+                        for option in overplot_options:
+                            option_split = option.split("=")
+                            if option_split[0] == "colour":
+                                if not len(option_split[1]) > 2:
+                                    option_split[1] = str(
+                                        Globals.colours.index(int(option_split[1]))
+                                    )
                                 else:
-                                    current_item_list.append({key: value})
-                        else:
-                            # For 'set' or other sections, update the dictionary directly
-                            current_item_dict[key] = value
-
-                    elif line == "}":  # End of the block
-                        current_dict_name = None
-                        current_item_dict = None
-
-            """
-            TODO HERE: ADD CITE_FUNCTIONS, INVERT, LEGEND, SHOW_LEGEND_AREA TO SET SETTINGS
-                       ADD RESURF, resurf_showall, ISOCHRON, OFFSET_AGE TO PLOT SETTINGS
-            """
+                                    option_split[1] = str(
+                                        Globals.colours.index(option_split[1])
+                                    )
+                            if option_split[0] == "psym":
+                                if not len(option_split[1]) > 2:
+                                    option_split[1] = str(
+                                        Globals.symbols.index(int(option_split[1]))
+                                    )
+                                else:
+                                    option_split[1] = str(
+                                        Globals.symbols.index(option_split[1])
+                                    )
+                            plot_settings[option_split[0]] = option_split[1]
+                        config["plot"].append(plot_settings)
 
             if "chronology_system" in config["set"]:
-                body.value = get_body(config["set"]["chronology_system"])
+                names = [e["name"] for e in functions["chronology_system"]]
+                index = functions["chronology_system"][
+                    cli.decode_abbreviation(
+                        names,
+                        config["set"]["chronology_system"],
+                        one_based=True,
+                        allow_ambiguous=True,
+                    )
+                ]["name"]
+                body.value = get_body(index)
                 set_chron_sys(body.value, None)
-                chron_sys.value = config["set"]["chronology_system"]
+                chron_sys.value = index
+
             if "cite_functions" in config["set"]:
                 cite_func.value = (
                     True if config["set"]["cite_functions"] == "1" else False
                 )
+
             if "epochs" in config["set"]:
-                epoch.value = (
-                    config["set"]["epochs"] if config["set"]["epochs"] != "" else "none"
-                )
+                names = [e["name"] for e in functions["epochs"]]
+                index = functions["epochs"][
+                    cli.decode_abbreviation(
+                        names,
+                        config["set"]["epochs"],
+                        one_based=True,
+                        allow_ambiguous=True,
+                    )
+                ]["name"]
+                epoch.value = index if config["set"]["epochs"] != "" else "none"
+            else:
+                config["set"]["epochs"] = "none"
+
             if "equilibrium" in config["set"]:
+                names = [e["name"] for e in functions["equilibrium"]]
+                index = functions["equilibrium"][
+                    cli.decode_abbreviation(
+                        names,
+                        config["set"]["equilibrium"],
+                        one_based=True,
+                        allow_ambiguous=True,
+                    )
+                ]["name"]
                 equil_func.value = (
-                    config["set"]["equilibrium"]
-                    if config["set"]["equilibrium"] != ""
-                    else "none"
+                    index if config["set"]["equilibrium"] != "" else "none"
                 )
+
             if "isochrons" in config["set"]:
                 iso_text.value = config["set"]["isochrons"]
+
             if "mu" in config["set"]:
                 mu_legend.value = config["set"]["mu"]
+            else:
+                mu_legend.value = False
+
             if "presentation" in config["set"]:
                 plot_view.value = config["set"]["presentation"]
-            if "print_dimensions" in config["set"]:
+            else:
+                plot_view.value = "Differential"
 
+            if "print_dimensions" in config["set"]:
                 if type(config["set"]["print_dimensions"]) == list:
                     config["set"]["print_dimensions"] = "x".join(
                         config["set"]["print_dimensions"]
                     )
 
                 print_scale_entry.value = config["set"]["print_dimensions"]
+            else:
+                print_scale_entry.value = "7.5x7.5"
+
             if "pt_size" in config["set"]:
                 if type(config["set"]["pt_size"]) == list:
                     text_size.value = max(config["set"]["pt_size"])
                 else:
                     text_size.value = config["set"]["pt_size"]
+            else:
+                text_size.value = "8"
+
             if "randomness" in config["set"]:
                 rand_legend.value = config["set"]["randomness"]
+            else:
+                rand_legend.value = False
+
             if "ref_diameter" in config["set"]:
                 ref_diam.value = config["set"]["ref_diameter"]
+            else:
+                ref_diam.value = "1"
+
             if "sig_figs" in config["set"]:
                 sf_entry.value = config["set"]["sig_figs"]
+            else:
+                sf_entry.value = "3"
+
             if "show_isochrons" in config["set"]:
                 show_iso.value = (
                     True if config["set"]["show_isochrons"] == "1" else False
                 )
-            if "show_subtitle" in config["set"]:
-                subtitle_checkbox.value = (
-                    True if config["set"]["show_subtitle"] == "1" else False
-                )
-            if "show_title" in config["set"]:
-                title_checkbox.value = (
-                    True if config["set"]["show_title"] == "1" else False
-                )
+            else:
+                show_iso.value = True
+
             if "style" in config["set"]:
                 style_options.value = config["set"]["style"]
+            else:
+                style_options.value = "natural"
+
             if "subtitle" in config["set"]:
+                subtitle_checkbox.value = True
                 subtitle_entry.value = (
                     config["set"]["subtitle"]
                     if config["set"]["subtitle"] != ""
                     else None
                 )
+            else:
+                subtitle_checkbox.value = False
+
             if "title" in config["set"]:
+                title_checkbox.value = True
                 title_entry.value = (
                     config["set"]["title"] if config["set"]["title"] != "" else None
                 )
+            else:
+                title_checkbox.value = False
+
             if "invert" in config["set"]:
                 invert.value = True if config["set"]["invert"] == "1" else False
-            if "show_legned_area" in config["set"]:
-                legend_name.value = (
-                    True if config["set"]["show_legend_area"] == "1" else False
-                )
+            else:
+                invert.value = False
+
             if "xrange" in config["set"]:
                 x_range.value = (
                     (config["set"]["xrange"][0]) + ", " + (config["set"]["xrange"][1])
@@ -556,6 +634,12 @@ def main(page: ft.Page):
                         + ", "
                         + config["plot"][index]["offset_age"][1]
                     )
+
+                config["plot"][index]["isochron"] = (
+                    config["set"]["show_isochron"]
+                    if "show_isochron" in config["set"]
+                    else 0
+                )
 
             selected_chip.data = config["plot"]
             Globals.template_dict["set"] = config["set"]
@@ -798,10 +882,6 @@ def main(page: ft.Page):
             none
         """
 
-        template = PATH + "/assets/config files/default.plt"
-        functions = PATH + "/assets/config files/functions.txt"
-        functions_user = PATH + "/assets/config files/functions_user.txt"
-
         arg = Namespace(
             about=False,
             autoscale=axis_auto_button.value,
@@ -848,7 +928,7 @@ def main(page: ft.Page):
 
         if type(arg.template) == str:
             settings = read_textstructure(
-                template if arg.template is None else arg.template
+                TEMPLATE if arg.template is None else arg.template
             )
 
         else:
@@ -865,13 +945,14 @@ def main(page: ft.Page):
         if settings["set"]["equilibrium"] == "none":
             settings["set"]["equilibrium"] = ""
 
-        systems = read_textfile(functions, ignore_hash=True, strip=";", as_string=True)
-        if file_exists(functions_user):
+        systems = read_textfile(FUNCTIONS, ignore_hash=True, strip=";", as_string=True)
+        if file_exists(USER_FUNCTIONS):
             systems += read_textfile(
-                functions_user, ignore_hash=True, strip=";", as_string=True
+                USER_FUNCTIONS, ignore_hash=True, strip=";", as_string=True
             )
 
         functionStr = read_textstructure(systems, from_string=True)
+
 
         try:
             if arg.plot[0]["source"] == "" or (
@@ -881,6 +962,7 @@ def main(page: ft.Page):
             craterPlot = cli.construct_plot_dicts(arg, {"plot": plot_data})
             # craterPlot = filter_crater_plot(craterPlot)
             defaultFilename = generate_output_file_name()
+
             craterPlotSet = cli.construct_cps_dict(
                 arg, settings, functionStr, defaultFilename
             )
@@ -891,8 +973,6 @@ def main(page: ft.Page):
                 craterPlotSet["legend"] += "p"
 
             plot = [Craterplot(d) for d in craterPlot]
-
-            print("\n\nPlot", plot)
 
             plotSettings = Craterplotset(craterPlotSet, craterPlot=plot)
 
@@ -910,8 +990,10 @@ def main(page: ft.Page):
 
             craterPlotSet["out"] = PATH + "/assets/plots/" + newFileName
 
-            if Globals.SUMMARY:
+            if SUMMARY:
                 plotSettings.format = {"txt"}
+            else:
+                plotSettings.format = {"png"}
 
             drawn = False
             for format in plotSettings.format:
@@ -967,53 +1049,13 @@ def main(page: ft.Page):
         if save_plot_dialog.result and save_plot_dialog.result.path:
             export_path = save_plot_dialog.result.path
 
-            if not export_path.lower().endswith(".plt"):
-                export_path += ".plt"
+            if not export_path.lower().endswith(".cs"):
+                export_path += ".cs"
 
-            with open(export_path, "w") as file:
-                file.write(
-                    f"""set = {{
-                        chronology_system={chron_sys.value}
-                        cite_functions= {1 if cite_func.value else 0}
-                        epochs= {epoch.value}
-                        equilibrium= {equil_func.value}
-                        isochrons= {iso_text.value}
-                        mu= {mu_legend.value}
-                        presentation= {plot_view.value}
-                        print_dimensions= {print_scale_entry.value}
-                        pt_size= {text_size.value}
-                        randomness= {rand_legend.value}
-                        ref_diameter= {1 if ref_diam.value else 0}
-                        sig_figs= {sf_entry.value}
-                        show_isochrons= {1 if show_iso.value else 0}
-                        show_subtitle= {1 if subtitle_checkbox.value else 0}
-                        show_title= {1 if title_checkbox.value else 0}
-                        style= {style_options.value}
-                        subtitle= {subtitle_entry.value}
-                        title= {title_entry.value}
-                        invert= {1 if invert.value else 0}
-                        show_legend_area= {1 if legend_name.value else 0}
-                        xrange= {x_range.value.replace(" ","").split(",")}
-                        yrange= {y_range.value.replace(" ","").split(",")}
-                        }}
+            output_str = cmd_str.value.split(" ")
+            output_str.pop(0)
 
-                        plot = {{
-                        source={source_file_entry.value},
-                        name={plot_fit_text.value},
-                        range={diam_range_entry.value.replace(" ","").split(",")}
-                        type={plot_fit_options.value}
-                        error_bars={1 if error_bars.value else 0}
-                        hide={1 if hide_button.value else 0}
-                        colour={colours.index(color_dropdown.value)}
-                        psym={symbols.index(symbol_dropdown.value)}
-                        binning={binning_options.value}
-                        age_left={1 if align_left.value else 0}
-                        display_age={1 if display_age.value else 0}
-                        resurf={1 if resurf.value else 0}
-                        resurf_showall={1 if resurf_showall.value else 0}
-                        offset_age={offset_age.value.replace(" ","").split(",")}
-                        }}"""
-                )
+            write_textfile(export_path,''.join(['\n'+e if e[0]=='-' and not (e+' ')[1].isdigit() else ' '+e for e in output_str])[1:]) # Taken from cli.py of craterstats and modified
 
     def set_chron_func(value, e):
         """Sets chronology function.
@@ -1185,7 +1227,6 @@ def main(page: ft.Page):
 
         functionStr = read_textstructure(systems, from_string=True)
 
-        print("Abbreviation", cli.decode_abbreviation(functionStr, "6"))
 
         if chron_sys.value == "Moon, Neukum (1983)":
             new_str = " -cs neukum83"
@@ -1521,7 +1562,6 @@ def main(page: ft.Page):
 
             '-print_dim {7.5x7.5}'
         """
-        print(f"print_scale_entry.value: {print_scale_entry.value}")
 
         if not print_scale_entry.value == "7.5x7.5":
             return f" -print_dim {print_scale_entry.value}"
@@ -1719,8 +1759,6 @@ def main(page: ft.Page):
 
         Globals.template_dict["set"] = config["set"]
         Globals.template_dict["plot"] = plot_list
-
-        print(Globals.template_dict["plot"])
 
         update_legend_options()
         # update_range_to_presentation()
@@ -2484,9 +2522,9 @@ def main(page: ft.Page):
             ft.Row([list_view]),
             ft.Row(
                 [
-                    ft.Text("X Range"),
+                    ft.Text("X Range, km"),
                     x_range,
-                    ft.Text("Y Range"),
+                    ft.Text("Y Range, km"),
                     y_range,
                     axis_auto_button,
                 ]
@@ -2541,7 +2579,7 @@ def main(page: ft.Page):
             ft.Row([source_file_label, source_file_entry, browse_button]),
             ft.Row(
                 [
-                    ft.Text("Range:"),
+                    ft.Text("Range, km:"),
                     diam_range_entry,
                     ft.Text("Binning"),
                     binning_options,
@@ -2566,7 +2604,8 @@ def main(page: ft.Page):
                     ),
                 ]
             ),
-        ]
+        ],
+        scroll="auto",
     )
 
     # plot image
