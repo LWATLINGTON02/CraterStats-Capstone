@@ -400,7 +400,6 @@ def main(page: ft.Page):
                         config["set"]["sig_figs"] = line.split(" ")[1]
 
                     if line.startswith("-p "):
-                        print(line)
                         plot_settings = {}
                         overplot_options = line.split(",")
                         for index, option in enumerate(overplot_options):
@@ -410,15 +409,24 @@ def main(page: ft.Page):
                         overplot_options[0] = overplot_options[0].strip("-p ")
                         for option in overplot_options:
                             option_split = option.split("=")
-                            print(option_split)
                             if option_split[0] == "colour":
-                                option_split[1] = str(
-                                    Globals.colours.index(int(option_split[1]))
-                                )
+                                if not len(option_split[1]) > 2:
+                                    option_split[1] = str(
+                                        Globals.colours.index(int(option_split[1]))
+                                    )
+                                else:
+                                    option_split[1] = str(
+                                        Globals.colours.index(option_split[1])
+                                    )
                             if option_split[0] == "psym":
-                                option_split[1] = str(
-                                    Globals.symbols.index(int(option_split[1]))
-                                )
+                                if not len(option_split[1]) > 2:
+                                    option_split[1] = str(
+                                        Globals.symbols.index(int(option_split[1]))
+                                    )
+                                else:
+                                    option_split[1] = str(
+                                        Globals.symbols.index(option_split[1])
+                                    )
                             plot_settings[option_split[0]] = option_split[1]
                         config["plot"].append(plot_settings)
 
