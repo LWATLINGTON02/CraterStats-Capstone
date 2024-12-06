@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="Craterstats GUI",                    # Project name
+    name="craterstats_gui",                    # Project name
     version="1.0.0",                      # Version
     author="Lunar Pit Patrol",
     author_email="EPalmisanoConnect@gmail.com",
@@ -22,8 +22,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "CraterstatsGUI=flet run ./Alpha",  # This makes 'my_project' a command-line command
+            "craterstats-gui=Alpha.run_alpha:main",  # This makes 'my_project' a command-line command
         ],
     },
-    python_requires="=3.8",              # Minimum Python version
+    python_requires=">=3.8.0",              # Minimum Python version
 )
