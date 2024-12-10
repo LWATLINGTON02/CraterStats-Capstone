@@ -1,4 +1,4 @@
 import os
 
 def main():
-    os.system("flet run Alpha")
+    os.system("flet run %s"%(os.path.dirname(__file__)))

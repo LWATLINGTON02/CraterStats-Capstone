@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="craterstats_gui",                    # Project name
+    name="Alpha",                    # Project name
     version="1.0.0",                      # Version
     author="Lunar Pit Patrol",
     author_email="EPalmisanoConnect@gmail.com",
